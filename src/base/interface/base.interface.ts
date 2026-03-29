@@ -1,0 +1,93 @@
+import { EntidadType } from "@src/gateway/dto/gatewayDto.dto";
+import { QueryRunner } from "typeorm";
+import { Base } from "../entity/base.entity";
+import { BaseDto } from "../dto/baseDto";
+import { User } from "@src/user/entity/user.entity";
+
+export interface GenericoProp {
+  usuarioId: string;
+  qR?: QueryRunner;
+}
+
+export interface GetProp<T extends Base> extends GenericoProp {
+  relaciones?: RelationsKey<T>[];
+  entidadError?: string;
+  orden?: keyof T & string;
+  selected?: SelectedDeep<T>
+}
+
+export interface GetIdProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+  id: string;
+}
+
+export interface GetDatoProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+  dato: string;
+}
+
+export interface GetIdsProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+  ids: string[];
+}
+
+export interface DeletProp<T extends Base> extends Omit<GetIdProp<T>, 'relaciones'> {
+  entidad: EntidadType
+}
+
+export interface EditarProp<T extends Base, P extends BaseDto> extends Omit<GetProp<T>, 'orden'> {
+  dto: P;
+  id: string;
+}
+
+export interface EditarElementoProp<T extends Base, P extends BaseDto> extends EditarProp<T,P> {
+  entidad: EntidadType;
+  usuario: User;
+}
+
+export interface EditarElementoControllerProp<T extends Base, P extends BaseDto> extends Omit<EditarElementoProp<T,P>, 'qR'>{}
+
+export interface CreateProp<P extends BaseDto> extends Pick<GenericoProp, 'qR'> {
+  usuario: User;
+  dto: P;
+  entidad: EntidadType;
+}
+
+
+export interface CreateElementoControllerProp<P extends BaseDto> extends Omit<CreateProp<P>, 'qR'> { }
+
+
+export type RelationKeys<T> = {
+  [K in keyof T]: T[K] extends object ? K : never;
+}[keyof T];
+
+type Prev<N extends number> = [never, 0, 1, 2, 3, 4, 5][N];
+
+export type NestedRelations<T, Depth extends number = 5> = Depth extends 0
+  ? never
+  : {
+    [K in RelationKeys<T>]?: T[K] extends Array<infer U>
+    ? NestedRelations<U, Prev<Depth>>
+    : T[K] extends object
+    ? NestedRelations<T[K], Prev<Depth>>
+    : never;
+  };
+
+export interface RelationsKey<T extends Base> {
+  relations?: Array<RelationKeys<T>>;
+  nestedRelations?: NestedRelations<T>;
+}
+export type SelectedDeep<T> = {
+  [K in keyof T]?: T[K] extends Array<infer U>
+  ? true | SelectedDeep<U>
+  : T[K] extends object
+  ? true | SelectedDeep<T[K]>
+  : true;
+};
+
+export interface CriterioProp<T extends Base> {
+  relaciones?: RelationsKey<T> | RelationsKey<T>[];
+  selected?: SelectedDeep<T>;
+  selectedBase?: SelectedDeep<T>;
+  relacionBase?: RelationsKey<T>;
+  orden?: keyof T & string;
+  where: any;
+  usuarioId?: string;
+}

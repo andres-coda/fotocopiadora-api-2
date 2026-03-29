@@ -1,0 +1,18 @@
+import { Controller } from '@nestjs/common';
+import { BaseController } from '@src/base/base.controller';
+import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
+import { Cliente } from './entity/cliente.entity';
+import { DtoClienteCrear } from './dto/clienteCrear.dto';
+import { DtoClienteEditar } from './dto/clienteEditar.dto';
+import { ClienteService } from './cliente.service';
+import { CLIENTE_RELATIONS, CLIENTE_SELECTED } from './default/relacion';
+
+@Controller('cliente')
+export class ClienteController extends BaseController<Cliente, DtoClienteCrear, DtoClienteEditar> {
+  constructor(
+    protected readonly clienteService: ClienteService,
+  ) {
+    super(clienteService, Entidad.CLIENTE, 'cliente', [CLIENTE_RELATIONS], 'telefono', CLIENTE_SELECTED)
+  }
+}
+
