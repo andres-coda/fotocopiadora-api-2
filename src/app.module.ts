@@ -17,6 +17,15 @@ import { ClienteModule } from './cliente/cliente.module';
 import { StockModule } from './stock/stock.module';
 import { LibroPedidoModule } from './libro_pedido/libro_pedido.module';
 import { EspecificacionModule } from './especificacion/especificacion.module';
+import { Precio } from './precio/entity/precio.entity';
+import { Materia } from './materia/entity/materia.entity';
+import { Pedido } from './pedido/entity/pedido.entity';
+import { Sede } from './sede/entity/sede.entity';
+import { Cliente } from './cliente/entity/cliente.entity';
+import { Stock } from './stock/entity/stock.entity';
+import { LibroPedido } from './libro_pedido/entity/libroPedido.entity';
+import { Especificacion } from './especificacion/entity/especificacion.entity';
+import { PropuestaPedidoModule } from './propuesta_pedido/propuesta_pedido.module';
 
 @Module({
    imports: [
@@ -33,7 +42,15 @@ import { EspecificacionModule } from './especificacion/especificacion.module';
       database: process.env.DB_NAME || 'fotocopiadora2',
       ssl: false,
       entities: [
+        Cliente,
+        Especificacion,
+        Materia,
         Libro,
+        LibroPedido,
+        Pedido,
+        Precio,
+        Sede,
+        Stock,
         User,
       ],
       synchronize: false,
@@ -51,6 +68,7 @@ import { EspecificacionModule } from './especificacion/especificacion.module';
     StockModule,
     LibroPedidoModule,
     EspecificacionModule,
+    PropuestaPedidoModule,
   ],
   controllers: [],
   providers: [],

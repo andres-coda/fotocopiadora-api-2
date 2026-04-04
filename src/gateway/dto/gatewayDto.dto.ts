@@ -8,6 +8,7 @@ export const Entidad = {
   "LIBRO_PEDIDO":"libro_pedido",
   "MATERIA":"materia",
   "PEDIDO":"pedido",
+  "PROPUESTA_PEDIDO":"propuesta_pedido",
   "PRECIO":"precio",
   "SEDE": "sede",
   "STOCK": "stock",

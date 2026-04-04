@@ -1,8 +1,9 @@
 import { Base } from "@src/base/entity/base.entity";
 import { LibroPedido } from "@src/libro_pedido/entity/libroPedido.entity";
 import { Materia } from "@src/materia/entity/materia.entity";
+import { Propuesta } from "@src/propuesta_pedido/entity/propuesta_pedido.entity";
 import { Stock } from "@src/stock/entity/stock.entity";
-import { Column, Entity, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne } from "typeorm";
 
 @Entity('libro')
 export class Libro extends Base {
@@ -39,6 +40,9 @@ export class Libro extends Base {
 
   @OneToMany(() => LibroPedido, libroPedido => libroPedido.libro)
   libroPedidos!: LibroPedido[];
+
+  @ManyToMany(()=>Propuesta, propuesta=>propuesta.libro)
+  propuesta!:Propuesta[];
 
   constructor() {
     super();

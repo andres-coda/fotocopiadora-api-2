@@ -13,7 +13,7 @@ export class DtoLibroPedidoEditar extends BaseDto {
   estado!: Estado;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Los detalles del libro pedido deben estar en formato string' })
   detalles?: string;
 
   @IsOptional()
@@ -21,7 +21,11 @@ export class DtoLibroPedidoEditar extends BaseDto {
   libro_id!: string;
 
   @IsOptional()
-  @IsArray()
+  @IsUUID()
+  sede_id!: string;
+
+  @IsOptional()
+  @IsArray({ message: 'Debe enviar un arreglo de especificaciones' })
   @IsEnum(Especificaciones, { each: true })
   especificaciones?: Especificaciones[]
 }

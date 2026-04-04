@@ -26,6 +26,8 @@ import { Stock } from '@src/stock/entity/stock.entity';
 import { StockService } from '@src/stock/stock.service';
 import { DtoStockEditar } from '@src/stock/dto/stockEditar.dto';
 import { STOCK_RELATIONS, STOCK_SELECTED } from '@src/stock/default/relacion';
+import { Sede } from '@src/sede/entity/sede.entity';
+import { SedeService } from '@src/sede/sede.service';
 
 @Injectable()
 export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
@@ -38,6 +40,7 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
     private readonly pedidoService: PedidoService,
     private readonly espService: EspecificacionService,
     private readonly stockService: StockService,
+    private readonly sedeService: SedeService,
   ) {
     super(libroPedidoRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -63,6 +66,13 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
         selected: PEDIDO_SELECTED
       });
 
+      const sede: Sede = await this.sedeService.getDatoByIdOrFail({
+        id: dto.sede_id,
+        qR,
+        entidadError: 'sede',
+        usuarioId: usuario.id,
+      });
+
       const especificaciones: Especificacion[] = await this.espService.getDatosByNombres({
         nombres: dto.especificaciones || [],
         qR,
@@ -77,6 +87,7 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
       libroPedido.detalles = dto.detalles;
       libroPedido.libro = libro;
       libroPedido.pedido = pedido;
+      libroPedido.sede = sede;
       if (especificaciones) libroPedido.especificaciones = especificaciones;
       libroPedido.user = usuario;
 
@@ -144,9 +155,19 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
           selected: SELECTED_ESPECIFICACION
         });
 
+      const sede: Sede = !dto.sede_id || libroPedido.sede.id === dto.sede_id
+        ? libroPedido.sede
+        : await this.sedeService.getDatoByIdOrFail({
+          id: dto.sede_id,
+          qR,
+          entidadError: 'sede',
+          usuarioId,
+        });
+
       libroPedido.cantidad = dto.cantidad ?? libroPedido.cantidad;
       libroPedido.detalles = dto.detalles ?? libroPedido.detalles;
       libroPedido.libro = libro;
+      libroPedido.sede = sede;
       libroPedido.estado = dto.estado ?? libroPedido.estado;
       libroPedido.especificaciones = especificaciones;
 

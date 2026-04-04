@@ -1,8 +1,8 @@
 import { BaseDto } from "@src/base/dto/baseDto";
 import { DtoClienteCrear } from "@src/cliente/dto/clienteCrear.dto";
+import { DtoLibroPedidoCrearParcial } from "@src/libro_pedido/dto/DtoCrearLibroPedido.dto";
 import { Type } from "class-transformer";
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, ValidateIf, ValidateNested } from "class-validator";
-import { type } from "os";
+import { ArrayMinSize, IsArray, IsNotEmpty, IsNumber, IsString, IsUUID, ValidateIf, ValidateNested } from "class-validator";
 
 export class DtoPedidoCrear extends BaseDto {
   @IsNotEmpty()
@@ -37,4 +37,10 @@ export class DtoPedidoCrear extends BaseDto {
   @ValidateNested()
   @Type(() => DtoClienteCrear)
   clienteDatos?: DtoClienteCrear;
+
+  @IsArray({ message: 'Debe enviar un arreglo de libros_pedidos' })
+  @ArrayMinSize(1, { message: 'Debe enviar al menos un libro_pedido para ser cargado' })
+  @ValidateNested({ each: true })
+  @Type(() => DtoLibroPedidoCrearParcial)
+  librosPedidos!: DtoLibroPedidoCrearParcial[];
 }

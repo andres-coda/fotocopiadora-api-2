@@ -4,6 +4,7 @@ import { Libro } from "@src/libro/entity/libro.entity";
 import { Pedido } from "@src/pedido/entity/pedido.entity";
 import { Especificacion } from "@src/especificacion/entity/especificacion.entity";
 import { Estado } from "@src/interface/estado.interface";
+import { Sede } from "@src/sede/entity/sede.entity";
 
 @Entity('libro_pedido')
 export class LibroPedido extends Base {
@@ -13,14 +14,20 @@ export class LibroPedido extends Base {
   @Column({ type: 'varchar', nullable: true, length: 255 })
   detalles?: string;
 
-  @Column({type:'varchar', length: 20, nullable:false})
-  estado!:Estado;
+  @Column({ type: 'varchar', length: 20, nullable: false })
+  estado!: Estado;
 
   @ManyToOne(() => Libro, libro => libro.libroPedidos, {
     nullable: false,
     onDelete: 'CASCADE'
   })
   libro!: Libro;
+
+  @ManyToOne(() => Sede, sede => sede.libroPedidos, {
+    nullable: false,
+    onDelete: 'CASCADE'
+  })
+  sede!: Sede;
 
   @ManyToOne(() => Pedido, pedido => pedido.libroPedidos, {
     nullable: false,
