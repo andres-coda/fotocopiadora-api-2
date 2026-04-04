@@ -9,6 +9,9 @@ export const CLIENTE_RELATIONS: RelationsKey<Cliente> = {
 
 export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
   ...SELECTED_BASE,
+  telefono:true,
+  email:true,
+  nombre:true,
   pedidos:{
     libroPedidos:{
       estado:true,
