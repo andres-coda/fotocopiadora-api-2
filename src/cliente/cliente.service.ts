@@ -98,8 +98,6 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
         dato,
         usuarioId: usuario.id,
         qR,
-        relaciones: [CLIENTE_RELATIONS],
-        selected: CLIENTE_SELECTED,
         entidadError: 'cliente'
       });
 
@@ -138,8 +136,6 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
         id,
         usuarioId,
         qR,
-        relaciones,
-        selected,
         entidadError
       });
 
