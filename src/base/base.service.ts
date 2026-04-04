@@ -284,7 +284,7 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
       const payload: Mensaje = {
         mensaje: Mens.ELIMINAR,
         entidad: entidad,
-        id: id
+        id:id
       }
       this.gateway.actualizacionDato(payload);
 
@@ -315,7 +315,9 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
         const payload: Mensaje = {
           mensaje: Mens.REHACER,
           entidad: entidad,
-          id: id
+          dato: {
+            [entidad]: saved
+          }
         }
         this.gateway.actualizacionDato(payload);
       }
@@ -370,7 +372,9 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
         entidad: entidad,
-        id: newElemento.id
+        dato: {
+          [entidad]: newElemento
+        }
       }
       this.gateway.actualizacionDato(payload);
       return newElemento;
@@ -397,7 +401,9 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
       const payload: Mensaje = {
         mensaje: Mens.EDITAR,
         entidad: entidad,
-        id: newElemento.id
+        dato: {
+          [entidad]: newElemento
+        }
       }
       this.gateway.actualizacionDato(payload);
       return newElemento;

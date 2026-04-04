@@ -117,7 +117,7 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
           entidad: Entidad.CLIENTE,
-          id: newCliente.id
+          dato: {cliente:newCliente}
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -150,8 +150,8 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.CLIENTE,
-          id: newCliente.id
+          entidad: Entidad.CLIENTE,          
+          dato: {cliente:newCliente}
         }
 
         this.gatewayGateway.actualizacionDato(payload);
