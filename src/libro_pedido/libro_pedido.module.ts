@@ -1,22 +1,19 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { PedidoController } from './pedido.controller';
-import { PedidoService } from './pedido.service';
+import { LibroPedidoController } from './libro_pedido.controller';
+import { LibroPedidoService } from './libro_pedido.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '@src/user/entity/user.entity';
+import { LibroPedido } from './entity/libroPedido.entity';
 import { AuthModule } from '@src/auth/auth.module';
 import { UserModule } from '@src/user/user.module';
 import { ErroresModule } from '@src/error/error.module';
 import { GateWayModule } from '@src/gateway/gateway.module';
-import { Cliente } from '@src/cliente/entity/cliente.entity';
-import { ClienteModule } from '@src/cliente/cliente.module';
-import { Pedido } from './entity/pedido.entity';
-import { LibroPedido } from '@src/libro_pedido/entity/libroPedido.entity';
+import { Pedido } from '@src/pedido/entity/pedido.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       User,
-      Cliente,
       LibroPedido,
       Pedido,
     ]),
@@ -24,10 +21,9 @@ import { LibroPedido } from '@src/libro_pedido/entity/libroPedido.entity';
     forwardRef(() => UserModule),
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
-    forwardRef(() => ClienteModule),
   ],
-  controllers: [PedidoController],
-  providers: [PedidoService],
-  exports: [PedidoService]
+  controllers: [LibroPedidoController],
+  providers: [LibroPedidoService],
+  exports: [LibroPedidoService]
 })
-export class PedidoModule { }
+export class LibroPedidoModule { }

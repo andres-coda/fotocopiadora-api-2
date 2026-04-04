@@ -61,7 +61,8 @@ export class LibroService extends BaseService<Libro, DtoLibroCrear, DtoLibroEdit
       libro.autor = dto.autor || undefined;
       libro.cantidadPg = dto.cantidadPg || 0;
       libro.descripcion = dto.descripcion || undefined;
-      libro.edicion = dto.edicion || undefined;
+      libro.editorial = dto.editorial || undefined;
+      libro.anio = dto.anio || undefined;
       libro.img = dto.img || undefined;
       libro.materia = materia;
       libro.stock = stock;
@@ -112,7 +113,8 @@ export class LibroService extends BaseService<Libro, DtoLibroCrear, DtoLibroEdit
       libro.autor = dto.autor || libro.autor;
       libro.cantidadPg = dto.cantidadPg || libro.cantidadPg;
       libro.descripcion = dto.descripcion || libro.descripcion;
-      libro.edicion = dto.edicion || libro.edicion;
+      libro.editorial = dto.editorial || libro.editorial;
+      libro.anio = dto.anio || libro.anio;
       libro.img = dto.img || libro.img;
       libro.materia = materia;
 

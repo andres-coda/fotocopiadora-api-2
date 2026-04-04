@@ -15,6 +15,8 @@ import { PedidoModule } from './pedido/pedido.module';
 import { SedeModule } from './sede/sede.module';
 import { ClienteModule } from './cliente/cliente.module';
 import { StockModule } from './stock/stock.module';
+import { LibroPedidoModule } from './libro_pedido/libro_pedido.module';
+import { EspecificacionModule } from './especificacion/especificacion.module';
 
 @Module({
    imports: [
@@ -47,6 +49,8 @@ import { StockModule } from './stock/stock.module';
     SedeModule,
     ClienteModule,
     StockModule,
+    LibroPedidoModule,
+    EspecificacionModule,
   ],
   controllers: [],
   providers: [],

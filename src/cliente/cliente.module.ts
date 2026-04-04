@@ -8,12 +8,14 @@ import { AuthModule } from '@src/auth/auth.module';
 import { UserModule } from '@src/user/user.module';
 import { ErroresModule } from '@src/error/error.module';
 import { GateWayModule } from '@src/gateway/gateway.module';
+import { Pedido } from '@src/pedido/entity/pedido.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      Cliente,
+      Pedido,
       User,
-      Cliente
     ]),
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),

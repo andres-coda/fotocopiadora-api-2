@@ -54,7 +54,7 @@ export class MateriaService extends BaseService<Materia, DtoMateriaCrear, DtoMat
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return materia;
+      return newMateria;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
@@ -88,7 +88,7 @@ export class MateriaService extends BaseService<Materia, DtoMateriaCrear, DtoMat
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return materia;
+      return newMateria;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de materias`)

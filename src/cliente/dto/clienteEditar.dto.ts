@@ -3,16 +3,16 @@ import { IsEmail, IsOptional, IsPhoneNumber, IsString, Length } from "class-vali
 
 export class DtoClienteEditar extends BaseDto {
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'El nombre debe ser un texto' })
   @Length(1, 100, { message: 'El nombre no debe tener mas de 100 caracteres' })
   nombre!: string;
-  
+
   @IsOptional()
-  @IsEmail()
+  @IsEmail({}, { message: 'El email no es válido' })
   email?: string;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'El telefono debe estar pasado en formato string' })
   @IsPhoneNumber('AR', { message: 'Debe ser un número de teléfono válido de Argentina' })
   telefono?: string
 }

@@ -1,7 +1,8 @@
 import { Base } from "@src/base/entity/base.entity";
+import { LibroPedido } from "@src/libro_pedido/entity/libroPedido.entity";
 import { Materia } from "@src/materia/entity/materia.entity";
 import { Stock } from "@src/stock/entity/stock.entity";
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, OneToOne } from "typeorm";
 
 @Entity('libro')
 export class Libro extends Base {
@@ -13,10 +14,16 @@ export class Libro extends Base {
   descripcion?: string;
 
   @Column({ type: 'varchar', length: 64 })
-  edicion?: string;
+  editorial?: string;
 
   @Column({ type: 'int', length: 5})
   cantidadPg!: number;
+
+  @Column({ type: 'varchar', length: 4, nullable:true})
+  anio?: string;
+
+  @Column({ type: 'int', length: 2, nullable:true})
+  adhesivo?: number;
 
   @Column({ type: 'varchar', nullable: true, length:32 })
   autor?: string;
@@ -30,13 +37,8 @@ export class Libro extends Base {
   @OneToOne(()=> Stock, stock => stock.libro)
   stock!: Stock;
 
-/*   @OneToMany(() => Stock, stock => stock.libro)
-  stock: Stock[];
-
-
   @OneToMany(() => LibroPedido, libroPedido => libroPedido.libro)
-  librosPedidos: LibroPedido[];
-  */
+  libroPedidos!: LibroPedido[];
 
   constructor() {
     super();
