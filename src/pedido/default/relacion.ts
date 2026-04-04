@@ -8,5 +8,11 @@ export const PEDIDO_RELATIONS: RelationsKey<Pedido> = {
 };
 
 export const PEDIDO_SELECTED: SelectedDeep<Pedido> = {
-  ...SELECTED_BASE,
+  ...SELECTED_BASE,  
+    anillados:true,
+    archivos:true,
+    fechaCreacion:true,
+    fechaEntrega:true,
+    importeTotal:true,
+    sena:true,
 }

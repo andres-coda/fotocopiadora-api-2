@@ -7,6 +7,8 @@ export const BASE_RELATIONS: RelationsKey<any> = {
 };
 
 export const SELECTED_BASE: SelectedDeep<Base> = {
+  id:true,
+  deleted:true,
   'user': {
     id: true,
   },

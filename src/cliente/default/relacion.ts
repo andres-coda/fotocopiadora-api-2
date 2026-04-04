@@ -19,3 +19,20 @@ export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
     }
   }
 }
+
+export const CLIENTE_SELECTED_BY_ID: SelectedDeep<Cliente> = {
+  ...CLIENTE_SELECTED,
+  pedidos:{
+    id:true,
+    anillados:true,
+    archivos:true,
+    fechaCreacion:true,
+    fechaEntrega:true,
+    importeTotal:true,
+    sena:true,
+    libroPedidos:{
+      id:true,
+      estado:true,
+    }
+  }
+}
