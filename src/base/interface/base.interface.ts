@@ -1,4 +1,4 @@
-import { EntidadType } from "@src/gateway/dto/gatewayDto.dto";
+import { EntidadDatoMapType } from "@src/gateway/dto/gatewayDto.dto";
 import { QueryRunner } from "typeorm";
 import { Base } from "../entity/base.entity";
 import { BaseDto } from "../dto/baseDto";
@@ -28,30 +28,30 @@ export interface GetIdsProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
   ids: string[];
 }
 
-export interface DeletProp<T extends Base> extends Omit<GetIdProp<T>, 'relaciones'> {
-  entidad: EntidadType
+export interface DeletProp<T extends Base, K extends keyof EntidadDatoMapType> extends Omit<GetIdProp<T>, 'relaciones'> {
+  entidad: K;
 }
 
-export interface EditarProp<T extends Base, P extends BaseDto> extends Omit<GetProp<T>, 'orden'> {
+export interface EditarProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<GetProp<T>, 'orden'> {
   dto: P;
   id: string;
+  entidad: K;
 }
 
-export interface EditarElementoProp<T extends Base, P extends BaseDto> extends EditarProp<T,P> {
-  entidad: EntidadType;
+export interface EditarElementoProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends EditarProp<T,P, K> {
   usuario: User;
 }
 
-export interface EditarElementoControllerProp<T extends Base, P extends BaseDto> extends Omit<EditarElementoProp<T,P>, 'qR'>{}
+export interface EditarElementoControllerProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<EditarElementoProp<T,P, K>, 'qR'>{}
 
-export interface CreateProp<P extends BaseDto> extends Pick<GenericoProp, 'qR'> {
+export interface CreateProp<P extends BaseDto, K extends keyof EntidadDatoMapType> extends Pick<GenericoProp, 'qR'> {
   usuario: User;
   dto: P;
-  entidad: EntidadType;
+  entidad: K;
 }
 
 
-export interface CreateElementoControllerProp<P extends BaseDto> extends Omit<CreateProp<P>, 'qR'> { }
+export interface CreateElementoControllerProp<P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<CreateProp<P, K>, 'qR'> { }
 
 
 export type RelationKeys<T> = {
@@ -90,4 +90,9 @@ export interface CriterioProp<T extends Base> {
   orden?: keyof T & string;
   where: any;
   usuarioId?: string;
+}
+
+export interface UpdateRetorno <T extends Base>{
+  dato: T,
+  isQr?: boolean,
 }

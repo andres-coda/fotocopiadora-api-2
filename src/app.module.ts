@@ -26,6 +26,7 @@ import { Stock } from './stock/entity/stock.entity';
 import { LibroPedido } from './libro_pedido/entity/libroPedido.entity';
 import { Especificacion } from './especificacion/entity/especificacion.entity';
 import { PropuestaPedidoModule } from './propuesta_pedido/propuesta_pedido.module';
+import { ClienteResumenModule } from './cliente_resumen/cliente_resumen.module';
 
 @Module({
    imports: [
@@ -69,6 +70,7 @@ import { PropuestaPedidoModule } from './propuesta_pedido/propuesta_pedido.modul
     LibroPedidoModule,
     EspecificacionModule,
     PropuestaPedidoModule,
+    ClienteResumenModule,
   ],
   controllers: [],
   providers: [],

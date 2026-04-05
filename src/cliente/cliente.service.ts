@@ -1,24 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '@src/base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOneOptions, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp } from '@src/base/interface/base.interface';
+import { CreateProp, EditarProp, GetDatoProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
 import { CLIENTE_RELATIONS, CLIENTE_SELECTED } from './default/relacion';
+import { ClienteRetorno } from './interface/cliente_retorno.interface';
+import { Estado } from '@src/interface/estado.interface';
+import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
+
+interface getClientes {
+  usuarioId: string;
+}
 
 @Injectable()
-export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoClienteEditar> {
+export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente, DtoClienteCrear, DtoClienteEditar> {
   constructor(
     @InjectRepository(Cliente) private readonly clienteRepository: Repository<Cliente>,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
+    private readonly resumenService: ClienteResumenService,
   ) {
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -83,17 +91,73 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
       if (cliente) return cliente;
 
       return await this.getDatoByEmail({ dato, usuarioId, qR, relaciones, selected });
-      
+
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar encontrar el cliente ${dato} `)
     }
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoClienteCrear>): Promise<Cliente> {
+  // Obtiene todos los datos activos (no eliminados) asociados a un usuario.
+  // Permite definir relaciones, orden y selección de campos.
+  // Si se recibe un QueryRunner, la consulta se ejecuta dentro de la transacción.
+  async getDatoCx({ usuarioId }: getClientes): Promise<ClienteRetorno[]> {
+    try {
+      const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
+        relaciones: CLIENTE_RELATIONS,
+        selected: CLIENTE_SELECTED,
+        usuarioId,
+        where: {
+          deleted: false,
+        },
+      });
+
+      const clientes: Cliente[] = await this.baseRepository.find(criterio);
+
+      const estadosPendientes = new Set([
+        Estado.PENDIENTE,
+        Estado.IMPRESO_MITAD,
+        Estado.IMPRESO_COMPLETO
+      ]);
+
+      const clientesRetorno: ClienteRetorno[] = clientes.map((c) => {
+        let listo: number = 0;
+        let pendiente: number = 0;
+        let retirado: number = 0;
+        c.pedidos?.forEach((p) => {
+          let hayPendiente = false;
+          let hayListo = false;
+          p.libroPedidos?.forEach((lp) => {
+            if (lp.estado === Estado.LISTO) hayListo = true;
+            if (estadosPendientes.has(lp.estado)) hayPendiente = true;
+          })
+
+          if (hayPendiente) pendiente++;
+          else if (hayListo) listo++;
+          else retirado++;
+
+        })
+        return {
+          id: c.id,
+          nombre: c.nombre,
+          telefono: c.telefono,
+          email: c.email,
+          listo,
+          pendiente,
+          retirado
+        };
+      })
+
+      return clientesRetorno;
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer los clientes`)
+    }
+  }
+
+  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<Cliente> {
     try {
       const dato: string | undefined = dto.telefono || dto.email;
-      if(!dato) throw new NotFoundException('No se ha proporcionado email ni telefono para crear cliente');
-      
+      if (!dato) throw new NotFoundException('No se ha proporcionado email ni telefono para crear cliente');
+
       const clienteExistente: Cliente | null = await this.clienteExistente({
         dato,
         usuarioId: usuario.id,
@@ -116,8 +180,8 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
-          entidad: Entidad.CLIENTE,
-          dato: {cliente:newCliente}
+          entidad: entidad,
+          dato: newCliente
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -130,13 +194,15 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<Cliente, DtoClienteEditar>): Promise<Cliente> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Cliente, DtoClienteEditar, typeof Entidad.CLIENTE>): Promise<UpdateRetorno<Cliente>> {
     try {
       const cliente: Cliente = await this.getDatoByIdOrFail({
         id,
         usuarioId,
         qR,
-        entidadError
+        entidadError,
+        relaciones,
+        selected
       });
 
       cliente.nombre = dto.nombre || cliente.nombre;
@@ -150,14 +216,14 @@ export class ClienteService extends BaseService<Cliente, DtoClienteCrear, DtoCli
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.CLIENTE,          
-          dato: {cliente:newCliente}
+          entidad: entidad,
+          dato: newCliente
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return cliente;
+      return { dato: newCliente, isQr: true }
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.telefono || id} en el registro de clientes`)

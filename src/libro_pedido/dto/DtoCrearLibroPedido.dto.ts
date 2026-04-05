@@ -12,11 +12,11 @@ export class DtoLibroPedidoCrearParcial extends BaseDto {
   detalles?: string;
 
   @IsNotEmpty({ message: 'El libro pedido debe tener un libro adherido' })
-  @IsUUID()
+  @IsUUID('4', { message: 'El id del libro debe ser un UUID válido' })
   libro_id!: string;
 
   @IsNotEmpty({ message: 'El libro pedido debe tener una sede adherida donde se va a realizar' })
-  @IsUUID()
+  @IsUUID('4', { message: 'El id de la sede debe ser un UUID válido' })
   sede_id!: string;
 
   @IsOptional()
@@ -27,6 +27,6 @@ export class DtoLibroPedidoCrearParcial extends BaseDto {
 
 export class DtoLibroPedidoCrear extends DtoLibroPedidoCrearParcial {
   @IsNotEmpty({ message: 'El libro pedido debe tener el id de un pedido' })
-  @IsUUID()
+  @IsUUID('4', { message: 'El id del pedido debe ser un UUID válido' })
   pedido_id!: string;
 }

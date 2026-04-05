@@ -8,7 +8,7 @@ import { DtoPedidoEditar } from './dto/pedidoEditar.dto';
 import { PEDIDO_RELATIONS, PEDIDO_SELECTED } from './default/relacion';
 
 @Controller('pedido')
-export class PedidoController extends BaseController<Pedido, DtoPedidoCrear, DtoPedidoEditar> {
+export class PedidoController extends BaseController<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
   constructor(
     protected readonly pedidoService: PedidoService,
   ) {

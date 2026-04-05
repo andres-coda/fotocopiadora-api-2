@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityTarget, FindOneOptions, Repository } from 'typeorm';
+import { DataSource, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { GetIdProp } from '@src/base/interface/base.interface';
+import { UsuarioCrear } from './dto/userCrear.dto';
+import { Role } from '@src/auth/rol/rol.enum';
 
 @Injectable()
 export class UserService {
@@ -17,33 +18,28 @@ export class UserService {
   ) {
   }
 
-  async getDatoByIdOrFail({ id, qR, relaciones, entidadError }: GetIdProp<User>): Promise<User> {
+  async getDatoByIdOrFail(id: string): Promise<User> {
     try {
-      const dato: User | null = await this.getDatoById({ id, qR, relaciones, entidadError });
+      const dato: User | null = await this.getDatoById(id);
       if (!dato) throw new NotFoundException('No se encontro el usuario en la base de datos');
       if (dato.deleted) throw new NotFoundException('El usuario ha sido eliminado con anterioridad');
       return dato;
     } catch (error) {
-      throw this.erroresService.handleExceptions(error, `Error al intentar leer el usuario con id ${id} ${entidadError && `de ${entidadError}`}`)
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer el usuario con id ${id}`)
     }
   }
 
-  async getDatoById({ id, qR, relaciones = [], entidadError }: GetIdProp<User>): Promise<User | null> {
+  async getDatoById(id: string): Promise<User | null> {
     try {
       const criterio: FindOneOptions = {
-        relations: relaciones as string[],
         where: {
           id: id,
-        } as any
-      }
-      if (qR) {
-        const target: EntityTarget<User> = this.usuarioRepository.target;
-        return await qR.manager.findOne<User>(target, criterio);
+        }
       }
 
       return await this.usuarioRepository.findOne(criterio);
     } catch (error) {
-      throw this.erroresService.handleExceptions(error, `Error al intentar leer el dato con id ${id} ${entidadError && `de ${entidadError}`}`)
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer el dato con id ${id} en usuario`)
     }
   }
 
@@ -63,4 +59,60 @@ export class UserService {
       throw this.erroresService.handleExceptions(error, `No se encontro el usuario ${email}`)
     }
   }
+
+  // Crea un nuevo usuario junto con sus datos por defecto asociados.
+  // Utiliza una transacción para asegurar la integridad de los datos.
+  // Crea por defecto bancos, clasificaciones y convenios para el nuevo usuario.
+  async createUsuario(datos: UsuarioCrear): Promise<User> {
+    const qR: QueryRunner = this.dataSource.createQueryRunner();
+    await qR.connect();
+    await qR.startTransaction();
+    try {
+      const usuario: User = new User();
+      usuario.nombre = datos.nombre;
+      usuario.email = datos.email;
+      usuario.password = datos.password;
+      usuario.role = 'admin';
+
+      const newUsuario: User = await qR.manager.save(User, usuario);
+      if (!newUsuario) throw new NotFoundException(`Error al intentar crear el dato ${datos.nombre} en usuario`)
+
+      await qR.commitTransaction();
+
+      return newUsuario;
+    } catch (error) {
+      await qR.rollbackTransaction();
+      throw this.erroresService.handleExceptions(error, `Error al intentar crear el dato ${datos.nombre} en usuario`)
+    } finally {
+      await qR.release();
+    }
+  }
+
+  // Actualiza los datos de un usuario existente.
+  // Lanza una excepción si el usuario no existe.
+  async updateUsuario(id: string, datos: UsuarioCrear): Promise<User> {
+    try {
+      const usuario: User = await this.getDatoByIdOrFail(id);
+      usuario.nombre = datos.nombre;
+      usuario.email = datos.email;
+      usuario.password = datos.password;
+
+      return await this.usuarioRepository.save(usuario);
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar actualizar el dato con ${id} de usuario`)
+    }
+  }
+
+  // Modifica el rol de un usuario.
+  async modifyUsuarioRole(id: string, role: Role): Promise<User> {
+    try {
+      const usuario: User = await this.getDatoByIdOrFail(id);
+      usuario.role = role;
+
+      return await this.usuarioRepository.save(usuario);
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar modificar el rol al usuario ${id}`)
+    }
+  }
+
 }

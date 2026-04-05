@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp } from '@src/base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Sede } from './entity/sede.entity';
@@ -13,7 +13,7 @@ import { DtoSedeEditar } from './dto/sedeEditar.dto';
 import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
 
 @Injectable()
-export class SedeService extends BaseService<Sede, DtoSedeCrear, DtoSedeEditar> {
+export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar> {
   constructor(
     @InjectRepository(Sede) private readonly sedeRepository: Repository<Sede>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -23,7 +23,7 @@ export class SedeService extends BaseService<Sede, DtoSedeCrear, DtoSedeEditar> 
     super(sedeRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoSedeCrear>): Promise<Sede> {
+  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoSedeCrear, typeof Entidad.SEDE>): Promise<Sede> {
     try {
       const sedeExistente: Sede | null = await this.getDatoByName({
         dato: dto.nombre,
@@ -47,8 +47,8 @@ export class SedeService extends BaseService<Sede, DtoSedeCrear, DtoSedeEditar> 
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
-          entidad: Entidad.SEDE,
-          id: newSede.id
+          entidad,
+          dato: newSede
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -61,7 +61,7 @@ export class SedeService extends BaseService<Sede, DtoSedeCrear, DtoSedeEditar> 
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<Sede, DtoSedeEditar>): Promise<Sede> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Sede, DtoSedeEditar, typeof Entidad.SEDE>): Promise<UpdateRetorno<Sede>> {
     try {
       const sede: Sede = await this.getDatoByIdOrFail({
         id,
@@ -81,14 +81,14 @@ export class SedeService extends BaseService<Sede, DtoSedeCrear, DtoSedeEditar> 
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.SEDE,
-          id: newSede.id
+          entidad,
+          dato: newSede
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return sede;
+      return {dato:newSede, isQr:true};
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de sedes`)

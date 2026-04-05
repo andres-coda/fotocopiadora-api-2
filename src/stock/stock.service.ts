@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp } from '@src/base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Stock } from './entity/stock.entity';
@@ -12,7 +12,7 @@ import { DtoStockCrear } from './dto/stockCrear.dto';
 import { DtoStockEditar } from './dto/stockEditar.dto';
 
 @Injectable()
-export class StockService extends BaseService<Stock, DtoStockCrear, DtoStockEditar> {
+export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoStockCrear, DtoStockEditar> {
   constructor(
     @InjectRepository(Stock) private readonly stockRepository: Repository<Stock>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -22,7 +22,7 @@ export class StockService extends BaseService<Stock, DtoStockCrear, DtoStockEdit
     super(stockRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, qR, dto }: CreateProp<DtoStockCrear>): Promise<Stock> {
+  async createDato({ usuario, qR, dto, entidad }: CreateProp<DtoStockCrear, typeof Entidad.STOCK>): Promise<Stock> {
     try {
       const stock: Stock = new Stock();
       stock.stock = dto.stock || 0;
@@ -35,21 +35,21 @@ export class StockService extends BaseService<Stock, DtoStockCrear, DtoStockEdit
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
-          entidad: Entidad.STOCK,
-          id: newStock.id
+          entidad,
+          dato: newStock
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return stock;
+      return newStock;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el stock`)
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<Stock, DtoStockEditar>): Promise<Stock> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Stock, DtoStockEditar,typeof Entidad.STOCK>): Promise<UpdateRetorno<Stock>> {
     try {
       const stockExistente: Stock = await this.getDatoByIdOrFail({
         id,
@@ -69,13 +69,13 @@ export class StockService extends BaseService<Stock, DtoStockCrear, DtoStockEdit
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.STOCK,
-          id: newStock.id
+          entidad,
+          dato:newStock
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
-      return stock;
+      return {dato:newStock, isQr:true};
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${ id} en el registro de stocks`)

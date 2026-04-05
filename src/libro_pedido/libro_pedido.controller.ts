@@ -14,11 +14,11 @@ import { UsuarioCompleto } from '@src/utils/usuarioActual.decorador';
 import { EditarElementoControllerProp } from '@src/base/interface/base.interface';
 
 @Controller('libro-pedido')
-export class LibroPedidoController extends BaseController<LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
+export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_PEDIDO,LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
   constructor(
     protected readonly libroPedidoService: LibroPedidoService,
   ) {
-    super(libroPedidoService, Entidad.LIBRO_PEDIDO, 'libro_pedido', [LIBRO_PEDIDO_RELATIONS], 'cantidad', SELECTED_LIBRO_PEDIDO)
+    super(libroPedidoService, Entidad.LIBRO_PEDIDO, Entidad.LIBRO_PEDIDO, [LIBRO_PEDIDO_RELATIONS], 'cantidad', SELECTED_LIBRO_PEDIDO)
   }
   @Patch(':id')
   @UseGuards(UsuarioGuard, AdminGuard)
@@ -27,7 +27,7 @@ export class LibroPedidoController extends BaseController<LibroPedido, DtoLibroP
     @UsuarioCompleto() user: User,
     @Body() datos: DtoCambiarEstado
   ): Promise<boolean> {
-    const dto: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado> = {
+    const dto: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO> = {
       dto: datos,
       usuario: user,
       entidad: this.entidad,

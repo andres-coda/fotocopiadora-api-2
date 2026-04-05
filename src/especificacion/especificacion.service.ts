@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, In, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetIdsProp } from '@src/base/interface/base.interface';
+import { CreateProp, EditarProp, GetIdsProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Especificacion } from './entity/especificacion.entity';
@@ -18,7 +18,7 @@ interface GetEspNombres extends Omit<GetIdsProp<Especificacion>, 'ids'> {
 }
 
 @Injectable()
-export class EspecificacionService extends BaseService<Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar> {
+export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar> {
   constructor(
     @InjectRepository(Especificacion) private readonly especificacionRepository: Repository<Especificacion>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -28,7 +28,7 @@ export class EspecificacionService extends BaseService<Especificacion, DtoEspeci
     super(especificacionRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoEspecificacionCrear>): Promise<Especificacion> {
+  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoEspecificacionCrear,typeof Entidad.ESP>): Promise<Especificacion> {
     try {
       const espExiste: Especificacion | null = await this.getDatoByName({
         dato: dto.nombre,
@@ -52,8 +52,8 @@ export class EspecificacionService extends BaseService<Especificacion, DtoEspeci
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
-          entidad: Entidad.ESPECIFICACIONES,
-          id: newEspecificacion.id
+          entidad: entidad,
+          dato: newEspecificacion
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -66,7 +66,7 @@ export class EspecificacionService extends BaseService<Especificacion, DtoEspeci
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<Especificacion, DtoEspecificacionEditar>): Promise<Especificacion> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Especificacion, DtoEspecificacionEditar, typeof Entidad.ESP>): Promise<UpdateRetorno<Especificacion>> {
     try {
       const especificacion: Especificacion = await this.getDatoByIdOrFail({
         id,
@@ -86,14 +86,14 @@ export class EspecificacionService extends BaseService<Especificacion, DtoEspeci
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.ESPECIFICACIONES,
-          id: newEspecificacion.id
+          entidad: entidad,
+          dato: newEspecificacion
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return especificacion;
+      return {dato: especificacion, isQr:true };
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre} en el registro de especificacions`)

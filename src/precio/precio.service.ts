@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp } from '@src/base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Precio } from './entity/precio.entity';
@@ -13,7 +13,7 @@ import { DtoPrecioEditar } from './dto/precioEditar.dto';
 import { PRECIO_RELATIONS, PRECIO_SELECTED } from './default/relacion';
 
 @Injectable()
-export class PrecioService extends BaseService<Precio, DtoPrecioCrear, DtoPrecioEditar> {
+export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar> {
   constructor(
     @InjectRepository(Precio) private readonly precioRepository: Repository<Precio>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -23,7 +23,7 @@ export class PrecioService extends BaseService<Precio, DtoPrecioCrear, DtoPrecio
     super(precioRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPrecioCrear>): Promise<Precio> {
+  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPrecioCrear, typeof Entidad.PRECIO>): Promise<Precio> {
     try {
       const precioExistente: Precio | null = await this.getDatoByName({
         dato: dto.tipo,
@@ -48,8 +48,8 @@ export class PrecioService extends BaseService<Precio, DtoPrecioCrear, DtoPrecio
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
-          entidad: Entidad.PRECIO,
-          id: newPrecio.id
+          entidad,
+          dato: newPrecio
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -62,7 +62,7 @@ export class PrecioService extends BaseService<Precio, DtoPrecioCrear, DtoPrecio
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<Precio, DtoPrecioEditar>): Promise<Precio> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Precio, DtoPrecioEditar, typeof Entidad.PRECIO>): Promise<UpdateRetorno<Precio>> {
     try {
       const precio: Precio = await this.getDatoByIdOrFail({
         id,
@@ -83,14 +83,14 @@ export class PrecioService extends BaseService<Precio, DtoPrecioCrear, DtoPrecio
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.PRECIO,
-          id: newPrecio.id
+          entidad,
+          dato: newPrecio
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return precio;
+      return { dato:precio, isQr:true}
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.tipo || id} en el registro de precios`)

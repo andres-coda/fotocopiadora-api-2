@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarElementoControllerProp, EditarProp } from '@src/base/interface/base.interface';
+import { CreateProp, EditarElementoControllerProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { LibroPedido } from './entity/libroPedido.entity';
@@ -30,7 +30,7 @@ import { Sede } from '@src/sede/entity/sede.entity';
 import { SedeService } from '@src/sede/sede.service';
 
 @Injectable()
-export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
+export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
   constructor(
     @InjectRepository(LibroPedido) private readonly libroPedidoRepository: Repository<LibroPedido>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -45,7 +45,7 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
     super(libroPedidoRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoLibroPedidoCrear>): Promise<LibroPedido> {
+  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoLibroPedidoCrear, typeof Entidad.LIBRO_PEDIDO>): Promise<LibroPedido> {
     try {
 
       const libro: Libro = await this.libroService.getDatoByIdOrFail({
@@ -98,8 +98,8 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
-          entidad: Entidad.LIBRO_PEDIDO,
-          id: newLibroPedido.id
+          entidad: entidad,
+          dato: newLibroPedido
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -112,7 +112,7 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<LibroPedido, DtoLibroPedidoEditar>): Promise<LibroPedido> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<LibroPedido, DtoLibroPedidoEditar, typeof Entidad.LIBRO_PEDIDO>): Promise<UpdateRetorno<LibroPedido>> {
     try {
       const libroPedido: LibroPedido = await this.getDatoByIdOrFail({
         id,
@@ -178,21 +178,21 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.LIBRO_PEDIDO,
-          id: newLibroPedido.id
+          entidad: entidad,
+          dato: newLibroPedido
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return newLibroPedido;
+      return { dato: newLibroPedido, isQr: true };
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar item de libro en pedidos`)
     }
   }
 
-  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected }: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado>): Promise<LibroPedido> {
+  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<LibroPedido> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
@@ -214,14 +214,15 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
         cantidad: libroPedido.cantidad
       }
 
-      const stock: Stock = await this.stockService.updateDato({
+      const stock: UpdateRetorno<Stock> = await this.stockService.updateDato({
         usuarioId: usuario.id,
         dto: dtoStock,
         qR,
         id: libroPedido.libro.stock.id,
         entidadError: 'stock',
         relaciones: [STOCK_RELATIONS],
-        selected: STOCK_SELECTED
+        selected: STOCK_SELECTED,
+        entidad: Entidad.STOCK
       });
 
       libroPedido.estado = dto.estado;
@@ -233,19 +234,21 @@ export class LibroPedidoService extends BaseService<LibroPedido, DtoLibroPedidoC
 
       const payload: Mensaje = {
         mensaje: Mens.EDITAR,
-        entidad: Entidad.LIBRO_PEDIDO,
-        id: newLibroPedido.id
+        entidad,
+        dato: newLibroPedido
       }
 
       this.gatewayGateway.actualizacionDato(payload);
 
-      const payloadStock: Mensaje = {
-        mensaje: Mens.EDITAR,
-        entidad: Entidad.STOCK,
-        id: stock.id
+      if (stock.isQr) {
+        const payloadStock: Mensaje = {
+          mensaje: Mens.EDITAR,
+          entidad: Entidad.STOCK,
+          dato: stock.dato
+        }
+        this.gatewayGateway.actualizacionDato(payloadStock);
       }
 
-      this.gatewayGateway.actualizacionDato(payloadStock);
 
       return newLibroPedido;
     } catch (er) {

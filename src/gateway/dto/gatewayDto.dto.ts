@@ -8,38 +8,50 @@ import { Stock } from "@src/stock/entity/stock.entity";
 import { Especificacion } from "@src/especificacion/entity/especificacion.entity";
 import { Propuesta } from "@src/propuesta_pedido/entity/propuesta_pedido.entity";
 import { LibroPedido } from "@src/libro_pedido/entity/libroPedido.entity";
+import { ClienteResumen } from "@src/cliente_resumen/entity/clienteResumen.entity";
+import { Materia } from "@src/materia/entity/materia.entity";
+import { Base } from "@src/base/entity/base.entity";
 
-export const Entidad = {
-  "CLIENTE":"cliente",
-  "ESPECIFICACIONES" : "esp",
-  "ESTADO": "estado",
-  "LIBRO":"libro",
-  "LIBRO_PEDIDO":"libro_pedido",
-  "MATERIA":"materia",
-  "PEDIDO":"pedido",
-  "PROPUESTA_PEDIDO":"propuesta_pedido",
-  "PRECIO":"precio",
-  "SEDE": "sede",
-  "STOCK": "stock",
-  "USER": "user"
-} as const;
+export const EntidadDatoMap = {
+  cliente: {} as Cliente,
+  esp: {} as Especificacion,
+  libro: {} as Libro,
+  libro_pedido: {} as LibroPedido,
+  materia: {} as Materia,
+  pedido: {} as Pedido,
+  precio: {} as Precio,
+  propuesta_pedido: {} as Propuesta,
+  sede: {} as Sede,
+  stock: {} as Stock,
+  resumen: {} as ClienteResumen,
+} satisfies Record<string, Base>;
 
-export type EntidadType =(typeof Entidad)[keyof typeof Entidad];
 
-interface retornoSocket{
-  libro?:Libro,
-  cliente?:Cliente,
-  pedido?:Pedido,
-  precio?:Precio,
-  sede?:Sede,
-  stock?:Stock,
-  propuesta?:Propuesta,
-  libroPedido?:LibroPedido,
-}
+export type EntidadDatoMapType = typeof EntidadDatoMap;
 
-export interface Mensaje{
-  mensaje:Mens;
-  entidad:EntidadType;
-  dato?:retornoSocket;
-  id?:string;
-}
+export const Entidad = Object.freeze(
+  Object.fromEntries(
+    Object.keys(EntidadDatoMap).map((key) => [key.toUpperCase(), key])
+  )
+) as {
+    [K in keyof typeof EntidadDatoMap as Uppercase<K & string>]: K;
+  };
+
+
+
+export type Mensaje<
+  K extends keyof EntidadDatoMapType = keyof EntidadDatoMapType
+> =
+  | {
+    mensaje: Mens.ELIMINAR;
+    entidad: K;
+    id: string;
+    dato?: never;
+  }
+  | {
+    mensaje: Exclude<Mens, Mens.ELIMINAR>;
+    entidad: K;
+    dato: EntidadDatoMapType[K];
+    id?: never;
+  };
+

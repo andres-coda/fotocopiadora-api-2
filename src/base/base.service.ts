@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityTarget, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Base } from './entity/base.entity';
-import { CreateElementoControllerProp, CreateProp, CriterioProp, DeletProp, EditarElementoControllerProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetProp, RelationsKey, SelectedDeep } from './interface/base.interface';
-import { Mensaje } from '@src/gateway/dto/gatewayDto.dto';
+import { CreateElementoControllerProp, CreateProp, CriterioProp, DeletProp, EditarElementoControllerProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetProp, RelationsKey, SelectedDeep, UpdateRetorno } from './interface/base.interface';
+import { EntidadDatoMapType, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
@@ -11,7 +11,12 @@ import { BASE_RELATIONS, mergeNestedRelations, mergeRelationsBase, mergeSimpleRe
 import { QueryRunner } from 'typeorm/browser';
 
 @Injectable()
-export abstract class BaseService<T extends Base, CrearDto extends BaseDto, EditarDto extends BaseDto> {
+export abstract class BaseService<
+  K extends keyof EntidadDatoMapType,
+  T extends Base & EntidadDatoMapType[K],
+  CrearDto extends BaseDto,
+  EditarDto extends BaseDto
+> {
   protected constructor(
     protected readonly baseRepository: Repository<T>,
     protected readonly dataSource: DataSource,
@@ -20,18 +25,31 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
   ) { }
 
 
-  // Crea un nuevo dato que extiende de Base.
-  // La implementación concreta queda a cargo del servicio que herede.
-  abstract createDato({ usuario, dto, qR, entidad }: CreateProp<CrearDto>): Promise<T>;
+  /**
+   * Crea un nuevo dato que extiende de Base.
+   * La implementación concreta queda a cargo del servicio que herede.
+   * @param params - Parámetros necesarios para crear el dato, incluyendo usuario, DTO, QueryRunner y entidad.
+   * @returns Una promesa que resuelve al dato creado.
+   */
+  abstract createDato({ usuario, dto, qR, entidad }: CreateProp<CrearDto,K>): Promise<T>;
 
-  // Actualiza un dato existente que extiende de Base.
-  // La implementación concreta queda a cargo del servicio que herede.
-  abstract updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<T, EditarDto>): Promise<T>;
+  /**
+   * Actualiza un dato existente que extiende de Base.
+   * La implementación concreta queda a cargo del servicio que herede.
+   * @param params - Parámetros necesarios para actualizar el dato, incluyendo usuarioId, DTO, QueryRunner, id, entidadError, relaciones y selected.
+   * @returns Una promesa que resuelve a un objeto UpdateRetorno con el dato actualizado.
+   */
+  abstract updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<T, EditarDto, K>): Promise<UpdateRetorno<T>>;
 
-  // Realiza un merge profundo de objetos SelectedDeep.
-  // Las propiedades definidas en override tienen prioridad sobre base.
-  // Se utiliza principalmente para garantizar selecciones mínimas requeridas
-  // (por ejemplo user.id) sin perder selecciones personalizadas.
+  /**
+   * Realiza un merge profundo de objetos SelectedDeep.
+   * Las propiedades definidas en override tienen prioridad sobre base.
+   * Se utiliza principalmente para garantizar selecciones mínimas requeridas
+   * (por ejemplo user.id) sin perder selecciones personalizadas.
+   * @param base - El objeto base de selección.
+   * @param override - El objeto override de selección.
+   * @returns El objeto merged resultante.
+   */
   protected mergeSelected<T>(
     base: SelectedDeep<T> | undefined,
     override: SelectedDeep<T>
@@ -61,18 +79,23 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     return result;
   }
 
-  // Combina relaciones base con relaciones adicionales proporcionadas por el llamador.
-  // Permite recibir una única definición de relaciones o un arreglo de ellas y
-  // devuelve una única estructura de relaciones unificada.
-  //
-  // - Si no se recibe ninguna relación ni base ni adicional, retorna las relaciones
-  //   base por defecto.
-  // - Si solo se recibe la relación base, la retorna sin modificaciones.
-  // - Si se reciben relaciones adicionales, estas se mergean con la relación base,
-  //   unificando tanto las relaciones simples como las relaciones anidadas.
-  //
-  // No realiza validaciones sobre la existencia de las relaciones en la entidad;
-  // asume que las relaciones recibidas son válidas.
+  /**
+   * Combina relaciones base con relaciones adicionales proporcionadas por el llamador.
+   * Permite recibir una única definición de relaciones o un arreglo de ellas y
+   * devuelve una única estructura de relaciones unificada.
+   *
+   * - Si no se recibe ninguna relación ni base ni adicional, retorna las relaciones
+   *   base por defecto.
+   * - Si solo se recibe la relación base, la retorna sin modificaciones.
+   * - Si se reciben relaciones adicionales, estas se mergean con la relación base,
+   *   unificando tanto las relaciones simples como las relaciones anidadas.
+   *
+   * No realiza validaciones sobre la existencia de las relaciones en la entidad;
+   * asume que las relaciones recibidas son válidas.
+   * @param input - Relaciones adicionales a mergear.
+   * @param relacionBase - Relación base opcional.
+   * @returns Un arreglo de relaciones merged.
+   */
   protected mergeRelations<T extends Base>(
     input?: RelationsKey<T> | readonly RelationsKey<T>[],
     relacionBase?: RelationsKey<T>
@@ -104,10 +127,12 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
   }
 
   /**
- * Construye un criterio base de búsqueda para entidades Observacion.
- * Permite definir relaciones, selección de campos, orden y filtrado por usuario.
- * Es reutilizado tanto para búsquedas simples como múltiples.
- */
+   * Construye un criterio base de búsqueda para entidades.
+   * Permite definir relaciones, selección de campos, orden y filtrado por usuario.
+   * Es reutilizado tanto para búsquedas simples como múltiples.
+   * @param params - Parámetros para construir el criterio.
+   * @returns El criterio construido para FindOneOptions o FindManyOptions.
+   */
   protected crearCriterio<TOptions extends FindOneOptions | FindManyOptions>(
     { relaciones, selected, orden, where, usuarioId, relacionBase, selectedBase }: CriterioProp<T>
   ): TOptions {
@@ -137,9 +162,13 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     } as TOptions;
   }
 
-  // Obtiene todos los datos activos (no eliminados) asociados a un usuario.
-  // Permite definir relaciones, orden y selección de campos.
-  // Si se recibe un QueryRunner, la consulta se ejecuta dentro de la transacción.
+  /**
+   * Obtiene todos los datos activos (no eliminados) asociados a un usuario.
+   * Permite definir relaciones, orden y selección de campos.
+   * Si se recibe un QueryRunner, la consulta se ejecuta dentro de la transacción.
+   * @param params - Parámetros para la consulta.
+   * @returns Una promesa que resuelve a un arreglo de datos.
+   */
   async getDato({ qR, relaciones = [], entidadError = undefined, usuarioId = '', orden = undefined, selected = undefined }: GetProp<T>): Promise<T[]> {
     try {
       const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
@@ -161,10 +190,14 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     }
   }
 
-  // Obtiene todos los datos asociados a un usuario, incluyendo los eliminados.
-  // No aplica el filtro deleted = false.
-  // Permite definir relaciones, orden y selección de campos.
-  // Soporta ejecución dentro de una transacción mediante QueryRunner.
+  /**
+   * Obtiene todos los datos asociados a un usuario, incluyendo los eliminados.
+   * No aplica el filtro deleted = false.
+   * Permite definir relaciones, orden y selección de campos.
+   * Soporta ejecución dentro de una transacción mediante QueryRunner.
+   * @param params - Parámetros para la consulta.
+   * @returns Una promesa que resuelve a un arreglo de datos.
+   */
   async getDatoTodos({ qR, relaciones = [], entidadError, usuarioId, orden = undefined, selected }: GetProp<T>): Promise<T[]> {
     try {
       const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
@@ -185,9 +218,13 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     }
   }
 
-  // Obtiene múltiples datos a partir de un arreglo de ids.
-  // Cada dato se valida individualmente utilizando getDatoByIdOrFail.
-  // Lanza excepción si alguno de los ids no existe o está eliminado.
+  /**
+   * Obtiene múltiples datos a partir de un arreglo de ids.
+   * Cada dato se valida individualmente utilizando getDatoByIdOrFail.
+   * Lanza excepción si alguno de los ids no existe o está eliminado.
+   * @param params - Parámetros incluyendo ids, entidadError, relaciones, qR, usuarioId y selected.
+   * @returns Una promesa que resuelve a un arreglo de datos.
+   */
   async getDatosByIds({ ids, entidadError, relaciones, qR, usuarioId, selected }: GetIdsProp<T>): Promise<T[]> {
     try {
       const datos: T[] = await Promise.all(
@@ -201,8 +238,12 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     }
   }
 
-  // Obtiene un dato por id.
-  // Si no existe o se encuentra eliminado, lanza una excepción.
+  /**
+   * Obtiene un dato por id.
+   * Si no existe o se encuentra eliminado, lanza una excepción.
+   * @param params - Parámetros incluyendo id, qR, relaciones, entidadError, usuarioId y selected.
+   * @returns Una promesa que resuelve al dato encontrado.
+   */
   async getDatoByIdOrFail({ id, qR, relaciones, entidadError, usuarioId, selected }: GetIdProp<T>): Promise<T> {
     try {
       const dato: T | null = await this.getDatoById({ id, qR, relaciones, entidadError, usuarioId, selected });
@@ -214,9 +255,13 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     }
   }
 
-  // Obtiene un dato por id sin validar su estado de eliminación.
-  // Devuelve null si el dato no existe.
-  // Permite definir relaciones, selección de campos y filtrado por usuario.
+  /**
+   * Obtiene un dato por id sin validar su estado de eliminación.
+   * Devuelve null si el dato no existe.
+   * Permite definir relaciones, selección de campos y filtrado por usuario.
+   * @param params - Parámetros incluyendo id, qR, relaciones, entidadError, usuarioId y selected.
+   * @returns Una promesa que resuelve al dato encontrado o null.
+   */
   async getDatoById({ id, qR, relaciones = [], entidadError, usuarioId, selected = undefined }: GetIdProp<T>): Promise<T | null> {
     try {
       const criterio: FindOneOptions = this.crearCriterio<FindOneOptions>({
@@ -237,15 +282,19 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     }
   }
 
-  // Obtiene un elemento a partir de su nombre.
-  // Permite incluir relaciones y selección parcial de campos mediante los
-  // parámetros recibidos.
-  // Si se proporciona un QueryRunner, la consulta se ejecuta dentro de una
-  // transacción activa; de lo contrario, se realiza directamente sobre
-  // el repositorio.
-  // Devuelve el elemento encontrado o null si no existe.
-  // No lanza excepción cuando el dato no existe, únicamente ante errores
-  // inesperados de acceso a datos.
+  /**
+   * Obtiene un elemento a partir de su nombre.
+   * Permite incluir relaciones y selección parcial de campos mediante los
+   * parámetros recibidos.
+   * Si se proporciona un QueryRunner, la consulta se ejecuta dentro de una
+   * transacción activa; de lo contrario, se realiza directamente sobre
+   * el repositorio.
+   * Devuelve el elemento encontrado o null si no existe.
+   * No lanza excepción cuando el dato no existe, únicamente ante errores
+   * inesperados de acceso a datos.
+   * @param params - Parámetros incluyendo dato (nombre), usuarioId, qR, relaciones, selected y entidadError.
+   * @returns Una promesa que resuelve al dato encontrado o null.
+   */
   async getDatoByName({ dato, usuarioId, qR, relaciones, selected, entidadError }: GetDatoProp<T>): Promise<T | null> {
     try {
       const criterio: FindOneOptions = this.crearCriterio<FindOneOptions>({
@@ -266,11 +315,15 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
     }
   }
 
-  // Realiza un borrado lógico del dato (deleted = true).
-  // Valida la existencia previa del dato.
-  // Emite un evento de actualización mediante gateway si no se ejecuta
-  // dentro de una transacción.
-  async softDelete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T>): Promise<boolean> {
+  /**
+   * Realiza un borrado lógico del dato (deleted = true).
+   * Valida la existencia previa del dato.
+   * Emite un evento de actualización mediante gateway si no se ejecuta
+   * dentro de una transacción.
+   * @param params - Parámetros incluyendo id, qR, entidadError, entidad y usuarioId.
+   * @returns Una promesa que resuelve a true si el borrado fue exitoso.
+   */
+  async softDelete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T, K>): Promise<boolean> {
     try {
       const dato: T = await this.getDatoByIdOrFail({ id, qR, entidadError, usuarioId });
       dato.deleted = true;
@@ -284,7 +337,7 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
       const payload: Mensaje = {
         mensaje: Mens.ELIMINAR,
         entidad: entidad,
-        id:id
+        id: id
       }
       this.gateway.actualizacionDato(payload);
 
@@ -298,7 +351,7 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
   // Valida la existencia del dato antes de restaurarlo.
   // Emite un evento de actualización mediante gateway si no se ejecuta
   // dentro de una transacción.
-  async undoDelete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T>): Promise<boolean> {
+  async undoDelete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T, K>): Promise<boolean> {
     try {
       const dato: T | null = await this.getDatoById({ id, qR, entidadError, usuarioId });
       if (!dato) throw new NotFoundException(`No existe dato con id ${id} en la base de datos`);
@@ -315,9 +368,7 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
         const payload: Mensaje = {
           mensaje: Mens.REHACER,
           entidad: entidad,
-          dato: {
-            [entidad]: saved
-          }
+          dato: saved
         }
         this.gateway.actualizacionDato(payload);
       }
@@ -332,7 +383,7 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
   // Esta operación es irreversible.
   // Emite un evento de actualización mediante gateway si no se ejecuta
   // dentro de una transacción.
-  async delete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T>): Promise<boolean> {
+  async delete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T, K>): Promise<boolean> {
     try {
       const dato: T = await this.getDatoByIdOrFail({ id, qR, entidadError, usuarioId });
 
@@ -360,7 +411,7 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
   // Método utilizado por los controladores para crear elementos.
   // Gestiona explícitamente la transacción mediante QueryRunner,
   // asegurando commit o rollback según el resultado de la operación.
-  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<CrearDto>): Promise<T> {
+  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<CrearDto, K>): Promise<T> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
@@ -372,9 +423,7 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
         entidad: entidad,
-        dato: {
-          [entidad]: newElemento
-        }
+        dato: newElemento
       }
       this.gateway.actualizacionDato(payload);
       return newElemento;
@@ -389,24 +438,26 @@ export abstract class BaseService<T extends Base, CrearDto extends BaseDto, Edit
   // Método utilizado por los controladores para editar elementos.
   // Gestiona explícitamente la transacción mediante QueryRunner
   // y asegura la consistencia del versionado.
-  async updateElementoController({ usuario, dto, entidad, id, relaciones, selected, entidadError }: EditarElementoControllerProp<T, EditarDto>): Promise<T> {
+  async updateElementoController({ usuario, dto, entidad, id, relaciones, selected, entidadError }: EditarElementoControllerProp<T, EditarDto, K>): Promise<T> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
     try {
-      const newElemento: T = await this.updateDato({ usuarioId: usuario.id, dto, qR, id, relaciones, selected, entidadError });
+      const newElemento: UpdateRetorno<T> = await this.updateDato({ usuarioId: usuario.id, dto, qR, id, relaciones, selected, entidadError, entidad });
 
       await qR.commitTransaction();
       if (!newElemento) throw new NotFoundException(`No se pudo actualizar el elemento ${id} en concepto`)
-      const payload: Mensaje = {
-        mensaje: Mens.EDITAR,
-        entidad: entidad,
-        dato: {
-          [entidad]: newElemento
+
+      if (newElemento.isQr) {
+        const payload: Mensaje = {
+          mensaje: Mens.EDITAR,
+          entidad: entidad,
+          dato: newElemento.dato
         }
+        this.gateway.actualizacionDato(payload);
       }
-      this.gateway.actualizacionDato(payload);
-      return newElemento;
+
+      return newElemento.dato;
     } catch (er) {
       await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar actualizar el elemento en la entidad ${entidad}`)

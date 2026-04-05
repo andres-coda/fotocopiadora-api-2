@@ -8,10 +8,10 @@ import { SedeService } from './sede.service';
 import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
 
 @Controller('sede')
-export class SedeController extends BaseController<Sede, DtoSedeCrear, DtoSedeEditar> {
+export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar> {
   constructor(
     protected readonly sedeService: SedeService,
   ) {
-    super(sedeService, Entidad.PRECIO, 'sede', [SEDE_RELATIONS], 'nombre', SEDE_SELECTED)
+    super(sedeService, Entidad.SEDE, 'sede', [SEDE_RELATIONS], 'nombre', SEDE_SELECTED)
   }
 }

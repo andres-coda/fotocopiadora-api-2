@@ -12,7 +12,7 @@ export class MateriaController {}
 
 
 @Controller('precio')
-export class PrecioController extends BaseController<Materia, DtoMateriaCrear, DtoMateriaEditar> {
+export class PrecioController extends BaseController<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar> {
   constructor(
     protected readonly materiaService: MateriaService,
   ) {

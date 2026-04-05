@@ -3,6 +3,7 @@ export interface ClienteRetorno {
   nombre?:string;
   telefono?: string;
   email?: string;
-  pendientes?: number;
+  pendiente?: number;
   listo?:number;
+  retirado?:number;
 }

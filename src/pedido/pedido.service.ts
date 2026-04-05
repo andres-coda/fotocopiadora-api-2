@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp } from '@src/base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
@@ -14,7 +14,7 @@ import { Cliente } from '@src/cliente/entity/cliente.entity';
 import { ClienteService } from '@src/cliente/cliente.service';
 
 @Injectable()
-export class PedidoService extends BaseService<Pedido, DtoPedidoCrear, DtoPedidoEditar> {
+export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
   constructor(
     @InjectRepository(Pedido) private readonly pedidoRepository: Repository<Pedido>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -25,7 +25,7 @@ export class PedidoService extends BaseService<Pedido, DtoPedidoCrear, DtoPedido
     super(pedidoRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPedidoCrear>): Promise<Pedido> {
+  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPedidoCrear, typeof Entidad.PEDIDO>): Promise<Pedido> {
     try {
       if(!dto.cliente && !dto.clienteDatos) throw new NotFoundException('Requiere datos del cliente');
       const cliente:Cliente = dto.cliente
@@ -48,8 +48,8 @@ export class PedidoService extends BaseService<Pedido, DtoPedidoCrear, DtoPedido
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
-          entidad: Entidad.PEDIDO,
-          id: newPedido.id
+          entidad,
+          dato: newPedido
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -62,7 +62,7 @@ export class PedidoService extends BaseService<Pedido, DtoPedidoCrear, DtoPedido
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<Pedido, DtoPedidoEditar>): Promise<Pedido> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Pedido, DtoPedidoEditar, typeof Entidad.PEDIDO>): Promise<UpdateRetorno<Pedido>> {
     try {
       const pedido: Pedido = await this.getDatoByIdOrFail({
         id,
@@ -86,14 +86,14 @@ export class PedidoService extends BaseService<Pedido, DtoPedidoCrear, DtoPedido
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
-          entidad: Entidad.PEDIDO,
-          id: newPedido.id
+          entidad,
+          dato: newPedido
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return pedido;
+      return {dato:pedido, isQr: true}
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.importeTotal || id} en el registro de pedidos`)
