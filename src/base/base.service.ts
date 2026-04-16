@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, EntityTarget, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DataSource, EntityTarget, FindManyOptions, FindOneOptions, In, Repository } from 'typeorm';
 import { Base } from './entity/base.entity';
-import { CreateElementoControllerProp, CreateProp, CriterioProp, DeletProp, EditarElementoControllerProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetProp, RelationsKey, SelectedDeep, UpdateRetorno } from './interface/base.interface';
-import { EntidadDatoMapType, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
-import { Mens } from '@src/gateway/enum/Mens.enum';
-import { ErroresService } from '@src/error/error.service';
-import { GatewayGateway } from '@src/gateway/gateway.gateway';
+import { CreateElementoControllerProp, CreateProp, CriterioProp, DeletProp, EditarElementoControllerProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetNombresProp, GetProp, RelationsKey, SelectedDeep, UpdateRetorno } from './interface/base.interface';
+import { EntidadDatoMapType, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { Mens } from '../gateway/enum/Mens.enum';
+import { ErroresService } from '../error/error.service';
+import { GatewayGateway } from '../gateway/gateway.gateway';
 import { BaseDto } from './dto/baseDto';
-import { BASE_RELATIONS, mergeNestedRelations, mergeRelationsBase, mergeSimpleRelations, relacionesAString } from '@src/utils/relacion';
+import { BASE_RELATIONS, mergeNestedRelations, mergeRelationsBase, mergeSimpleRelations, relacionesAString } from '../utils/relacion';
 import { QueryRunner } from 'typeorm/browser';
 
 @Injectable()
@@ -31,7 +31,7 @@ export abstract class BaseService<
    * @param params - Parámetros necesarios para crear el dato, incluyendo usuario, DTO, QueryRunner y entidad.
    * @returns Una promesa que resuelve al dato creado.
    */
-  abstract createDato({ usuario, dto, qR, entidad }: CreateProp<CrearDto,K>): Promise<T>;
+  abstract createDato({ usuario, dto, qR, entidad }: CreateProp<CrearDto, K>): Promise<T>;
 
   /**
    * Actualiza un dato existente que extiende de Base.
@@ -184,7 +184,8 @@ export abstract class BaseService<
         return await qR.manager.find<T>(target, criterio);
       }
 
-      return await this.baseRepository.find(criterio);
+      const dato: T[] = await this.baseRepository.find(criterio);
+      return dato;
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar leer los datos ${entidadError && `de ${entidadError}`}`)
     }
@@ -313,6 +314,30 @@ export abstract class BaseService<
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar leer el dato con nombre ${dato} ${entidadError && `de ${entidadError}`}`)
     }
+  }
+
+  async getDatosByNombres({ nombres, usuarioId, qR, relaciones, selected, entidadError }: GetNombresProp<T>): Promise<T[]> {
+    try {
+      if (nombres.length == 0) return [];
+      const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
+        relaciones,
+        selected,
+        where: { nombre: In(nombres) },
+        usuarioId,
+      });
+
+      const target = this.baseRepository.target;
+
+      const datos: T[] = qR
+        ? await qR.manager.find(target, criterio)
+        : await this.baseRepository.find(criterio)
+
+      return datos;
+
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer los nombres de ${entidadError && `de ${entidadError}`}`)
+    }
+
   }
 
   /**

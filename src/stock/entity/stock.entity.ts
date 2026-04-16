@@ -1,25 +1,25 @@
-import { Base } from "@src/base/entity/base.entity";
-import { Libro } from "@src/libro/entity/libro.entity";
+import { Base } from "../../base/entity/base.entity";
+import { Libro } from "../../libro/entity/libro.entity";
 import { Column, Entity, OneToOne } from "typeorm";
 import { DtoStockEditar } from "../dto/stockEditar.dto";
-import { Estado } from "@src/interface/estado.interface";
+import { Estado } from "../../interface/estado.interface";
 import { NotFoundException } from "@nestjs/common";
 
 @Entity('stock')
 export class Stock extends Base {
-  @Column({ type: 'int', length: 5, default: 0 })
+  @Column({ type: 'int', default: 0 })
   stock!: number;
 
-  @Column({ type: 'int', length: 5, default: 0 })
+  @Column({ type: 'int', default: 0 })
   pendiente!: number;
 
-  @Column({ type: 'int', length: 5, default: 0 })
+  @Column({ type: 'int', default: 0 })
   listo!: number;
 
-  @Column({ type: 'int', length: 6, default: 0 })
+  @Column({ type: 'int', default: 0 })
   retirado!: number;
 
-  @Column({ type: 'int', length: 5, default: 0 })
+  @Column({ type: 'int', default: 0 })
   cancelado!: number;
 
   @OneToOne(() => Libro, libro => libro.stock)

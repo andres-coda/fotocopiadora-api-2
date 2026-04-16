@@ -1,5 +1,5 @@
-import { BaseDto } from "@src/base/dto/baseDto";
-import { DtoLibroPedidoCrearParcial } from "@src/libro_pedido/dto/DtoCrearLibroPedido.dto";
+import { BaseDto } from "../../base/dto/baseDto";
+import { DtoLibroPedidoCrearParcial } from "../../libro_pedido/dto/DtoCrearLibroPedido.dto";
 import { Type } from "class-transformer";
 import { ArrayMinSize, IsArray, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 

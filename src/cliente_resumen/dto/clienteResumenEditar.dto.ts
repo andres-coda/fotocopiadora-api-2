@@ -1,5 +1,5 @@
-import { BaseDto } from "@src/base/dto/baseDto";
-import { Estado } from "@src/interface/estado.interface";
+import { BaseDto } from "../../base/dto/baseDto";
+import { Estado } from "../../interface/estado.interface";
 import { IsEnum, IsNotEmpty } from "class-validator";
 
 export class DtoResumenEditar extends BaseDto {

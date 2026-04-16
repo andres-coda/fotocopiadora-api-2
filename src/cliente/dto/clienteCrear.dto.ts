@@ -1,4 +1,4 @@
-import { BaseDto } from "@src/base/dto/baseDto";
+import { BaseDto } from "../../base/dto/baseDto";
 import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from "class-validator";
 
 export class DtoClienteCrear extends BaseDto {

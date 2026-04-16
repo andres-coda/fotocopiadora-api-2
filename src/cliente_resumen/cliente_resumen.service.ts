@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '@src/base/base.service';
+import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { ErroresService } from '@src/error/error.service';
-import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
-import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
-import { Mens } from '@src/gateway/enum/Mens.enum';
+import { ErroresService } from '../error/error.service';
+import { GatewayGateway } from '../gateway/gateway.gateway';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { Mens } from '../gateway/enum/Mens.enum';
 import { ClienteResumen } from './entity/clienteResumen.entity';
-import { Estado } from '@src/interface/estado.interface';
-import { estadosPendientes, estadosRetirados } from '@src/utils/estados';
+import { Estado } from '../interface/estado.interface';
+import { estadosPendientes, estadosRetirados } from '../utils/estados';
 import { DtoResumenCrear } from './dto/clienteResumenCrear.dto';
 import { DtoResumenEditar } from './dto/clienteResumenEditar.dto';
 
@@ -48,7 +48,7 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return resumen;
+      return newClienteResumen;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el resumen`)
@@ -66,7 +66,9 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
         entidadError,
       });
 
-      const iguales: boolean = estadosPendientes.has(dto.actual) === estadosPendientes.has(dto.anterior) || estadosRetirados.has(dto.actual) === estadosRetirados.has(dto.anterior);
+      const iguales =
+        (estadosPendientes.has(dto.actual) && estadosPendientes.has(dto.anterior)) ||
+        (estadosRetirados.has(dto.actual) && estadosRetirados.has(dto.anterior));
 
       if (iguales) return { dato: resumenExistente, isQr: false };
 
@@ -76,7 +78,7 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
         ? await qR.manager.save(ClienteResumen, resumen)
         : await this.resumenRepository.save(resumen);
 
-      if (!qR) {
+      if (!qR || !qR.manager) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
           entidad: entidad,
@@ -85,10 +87,10 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
 
         this.gatewayGateway.actualizacionDato(payload);
       }
-      return { dato: resumen, isQr: true };
+      return { dato: newClienteResumen, isQr: true };
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${id} en el registro de ${entidadError}`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${id} en el registro de resumen de cliente`)
     }
   }
 }

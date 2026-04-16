@@ -1,10 +1,10 @@
-import { Base } from "@src/base/entity/base.entity";
+import { Base } from "../../base/entity/base.entity";
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from "typeorm";
-import { Libro } from "@src/libro/entity/libro.entity";
-import { Pedido } from "@src/pedido/entity/pedido.entity";
-import { Especificacion } from "@src/especificacion/entity/especificacion.entity";
-import { Estado } from "@src/interface/estado.interface";
-import { Sede } from "@src/sede/entity/sede.entity";
+import { Libro } from "../../libro/entity/libro.entity";
+import { Pedido } from "../../pedido/entity/pedido.entity";
+import { Especificacion } from "../../especificacion/entity/especificacion.entity";
+import { Estado } from "../../interface/estado.interface";
+import { Sede } from "../../sede/entity/sede.entity";
 
 @Entity('libro_pedido')
 export class LibroPedido extends Base {

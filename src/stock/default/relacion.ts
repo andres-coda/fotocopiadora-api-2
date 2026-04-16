@@ -1,6 +1,6 @@
-import { RelationsKey, SelectedDeep } from "@src/base/interface/base.interface";
+import { RelationsKey, SelectedDeep } from "../../base/interface/base.interface";
 import { Stock } from "../entity/stock.entity";
-import { SELECTED_BASE } from "@src/utils/relacion";
+import { SELECTED_BASE } from "../../utils/relacion";
 
 export const STOCK_RELATIONS: RelationsKey<Stock> = {
   relations:[],

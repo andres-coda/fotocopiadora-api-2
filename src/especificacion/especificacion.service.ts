@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '@src/base/base.service';
+import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, In, Repository } from 'typeorm';
-import { ErroresService } from '@src/error/error.service';
-import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetIdsProp, UpdateRetorno } from '@src/base/interface/base.interface';
-import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
-import { Mens } from '@src/gateway/enum/Mens.enum';
+import { ErroresService } from '../error/error.service';
+import { GatewayGateway } from '../gateway/gateway.gateway';
+import { CreateProp, EditarProp, GetIdsProp, UpdateRetorno } from '../base/interface/base.interface';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { Mens } from '../gateway/enum/Mens.enum';
 import { Especificacion } from './entity/especificacion.entity';
 import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
 import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from './default/relacion.default';
-import { Especificaciones } from '@src/libro_pedido/interface/especificaciones.interface';
+import { Especificaciones } from '../libro_pedido/interface/especificaciones.interface';
 
-interface GetEspNombres extends Omit<GetIdsProp<Especificacion>, 'ids'> {
+export interface GetEspNombres extends Omit<GetIdsProp<Especificacion>, 'ids'> {
   nombres: Especificaciones[]
 }
 
@@ -59,7 +59,7 @@ export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especi
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return especificacion;
+      return newEspecificacion;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)

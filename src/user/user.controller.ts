@@ -1,16 +1,16 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AuthService } from '@src/auth/auth.service';
-import { UsuarioGuard } from '@src/auth/guard/user.guard';
-import { AuthParcialDto } from '@src/auth/dto/authParcial.dto';
+import { AuthService } from '../auth/auth.service';
+import { UsuarioGuard } from '../auth/guard/user.guard';
+import { AuthParcialDto } from '../auth/dto/authParcial.dto';
 import { User } from './entity/user.entity';
 import { UsuarioCrear } from './dto/userCrear.dto';
-import { AdminGuard } from '@src/auth/guard/admin.guard';
+import { AdminGuard } from '../auth/guard/admin.guard';
 
 @Controller('user')
 export class UserController {
-  protected constructor(
-    protected readonly userService: UserService,
+  public constructor(
+    private readonly userService: UserService,
     private readonly authService: AuthService,
   ) { }
 

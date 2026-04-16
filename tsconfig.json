@@ -7,15 +7,16 @@
     "moduleResolution": "NodeNext",
     "target": "ES2022",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
+    "baseUrl": "./",
     "paths": {
-      "@src/*": ["./src/*"]
+      "@src/*": ["src/*"]
     },
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true
   },
-  "include": ["src"]
+  "include": ["src",  "test"]
 }
-

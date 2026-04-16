@@ -1,5 +1,5 @@
-import { RelationsKey, SelectedDeep } from "@src/base/interface/base.interface";
-import { SELECTED_BASE } from "@src/utils/relacion";
+import { RelationsKey, SelectedDeep } from "../../base/interface/base.interface";
+import { SELECTED_BASE } from "../../utils/relacion";
 import { Materia } from "../entity/materia.entity";
 
 export const MATERIA_RELATIONS: RelationsKey<Materia> = {

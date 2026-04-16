@@ -1,8 +1,8 @@
-import { EntidadDatoMapType } from "@src/gateway/dto/gatewayDto.dto";
+import { EntidadDatoMapType } from "../../gateway/dto/gatewayDto.dto";
 import { QueryRunner } from "typeorm";
 import { Base } from "../entity/base.entity";
 import { BaseDto } from "../dto/baseDto";
-import { User } from "@src/user/entity/user.entity";
+import { User } from "../../user/entity/user.entity";
 
 export interface GenericoProp {
   usuarioId: string;
@@ -22,6 +22,10 @@ export interface GetIdProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
 
 export interface GetDatoProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
   dato: string;
+}
+
+export interface GetNombresProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+  nombres: string[];
 }
 
 export interface GetIdsProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
@@ -48,6 +52,9 @@ export interface CreateProp<P extends BaseDto, K extends keyof EntidadDatoMapTyp
   usuario: User;
   dto: P;
   entidad: K;
+}
+export interface CreateDefaultProp extends Pick<GenericoProp, 'qR'> {
+  usuario:User
 }
 
 

@@ -1,6 +1,7 @@
-import { BaseDto } from "@src/base/dto/baseDto";
+import { BaseDto } from "../../base/dto/baseDto";
+import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsString, Matches } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Matches } from "class-validator";
 
 export class DtoLibroEditar extends BaseDto {
   @IsOptional()
@@ -10,6 +11,15 @@ export class DtoLibroEditar extends BaseDto {
   @IsOptional()
   @IsString({ message: 'La descripción debe ser un texto' })
   descripcion?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'La edición debe ser un número' })
+  edicion?: number;
+
+  @IsOptional()
+  @IsString({ message: 'El nivel debe ser un texto' })
+  nivel?: string;
 
   @IsOptional()
   @IsString({ message: 'El autor debe ser un texto' })
@@ -25,20 +35,30 @@ export class DtoLibroEditar extends BaseDto {
   anio?: string;
 
   @IsOptional()
-  @IsString({ message: 'La imagen debe ser una url en texto' })
+  @IsString({ message: 'La imagen debe ser una URL válida' })
   img?: string;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({}, { message: 'La cantidad de páginas debe ser un número' })
+  @IsInt({ message: 'La cantidad de páginas debe ser un número entero' })
   cantidadPg?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({}, { message: 'La cantidad de adhesivos debe ser un número' })
+  @IsInt({ message: 'La cantidad de adhesivos debe ser un número entero' })
   adhesivos?: number;
 
   @IsOptional()
   @IsString({ message: 'La materia debe ser un texto' })
   materia?: string;
+
+  @IsOptional()
+  @IsArray({ message: 'El componente debe ser un array' })
+  @IsString({ each: true, message: 'Cada componente debe ser un texto' })
+  componentes?: string[];
+
+  @IsOptional()
+  @IsArray({ message: 'Las especificaciones deben ser un array' })
+  @IsEnum(Especificaciones, { each: true, message: 'Especificación inválida' })
+  especificacionesDefecto?: Especificaciones[];
 }

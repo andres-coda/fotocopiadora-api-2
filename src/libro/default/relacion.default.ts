@@ -1,9 +1,9 @@
-import { RelationsKey, SelectedDeep } from "@src/base/interface/base.interface";
+import { RelationsKey, SelectedDeep } from "../../base/interface/base.interface";
 import { Libro } from "../entity/libro.entity";
-import { SELECTED_BASE } from "@src/utils/relacion";
+import { SELECTED_BASE } from "../../utils/relacion";
 
 export const LIBRO_RELATIONS: RelationsKey<Libro> = {
-  relations: ['materia', 'stock'],
+  relations: ['materia', 'stock', 'componentes'],
   nestedRelations: {}
 };
 
@@ -20,5 +20,9 @@ export const SELECTED_LIBRO: SelectedDeep<Libro> = {
     listo: true,
     retirado: true,
     cancelado: true,
+  },
+  componentes:{
+    id:true,
+    nombre:true
   }
 }

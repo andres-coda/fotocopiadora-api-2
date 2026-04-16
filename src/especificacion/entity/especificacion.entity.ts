@@ -1,6 +1,6 @@
-import { Base } from "@src/base/entity/base.entity";
-import { LibroPedido } from "@src/libro_pedido/entity/libroPedido.entity";
-import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
+import { Base } from "../../base/entity/base.entity";
+import { LibroPedido } from "../../libro_pedido/entity/libroPedido.entity";
+import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
 import { Column, Entity, ManyToMany } from "typeorm";
 
 @Entity('especificacion')

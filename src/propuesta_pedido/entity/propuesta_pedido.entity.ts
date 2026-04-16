@@ -1,5 +1,5 @@
-import { Base } from "@src/base/entity/base.entity";
-import { Libro } from "@src/libro/entity/libro.entity";
+import { Base } from "../../base/entity/base.entity";
+import { Libro } from "../../libro/entity/libro.entity";
 import { Column, Entity, JoinTable, ManyToMany } from "typeorm";
 
 @Entity('propuesta')

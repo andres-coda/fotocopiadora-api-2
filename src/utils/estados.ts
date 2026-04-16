@@ -1,4 +1,4 @@
-import { Estado } from "@src/interface/estado.interface";
+import { Estado } from "../interface/estado.interface";
 
 export const estadosPendientes = new Set([
   Estado.PENDIENTE,

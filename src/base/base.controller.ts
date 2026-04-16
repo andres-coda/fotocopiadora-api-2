@@ -5,11 +5,12 @@ import { Get, Param, HttpCode, UseGuards } from '@nestjs/common';
 import { UsuarioGuard } from '../auth/guard/user.guard';
 import { AdminGuard } from '../auth/guard/admin.guard';
 import { BaseDto } from './dto/baseDto';
-import { EntidadDatoMapType } from '@src/gateway/dto/gatewayDto.dto';
-import { CreateProp, DeletProp, EditarElementoControllerProp, EditarElementoProp, RelationsKey, SelectedDeep, UpdateRetorno } from './interface/base.interface';
-import { UsuarioActual, UsuarioCompleto } from '@src/utils/usuarioActual.decorador';
-import { AuthParcialDto } from '@src/auth/dto/authParcial.dto';
-import { User } from '@src/user/entity/user.entity';
+import { EntidadDatoMapType } from '../gateway/dto/gatewayDto.dto';
+import type { SelectedDeep } from './interface/base.interface';
+import { CreateProp, DeletProp, EditarElementoControllerProp, RelationsKey, UpdateRetorno } from './interface/base.interface';
+import { UsuarioActual, UsuarioCompleto } from '../utils/usuarioActual.decorador';
+import { AuthParcialDto } from '../auth/dto/authParcial.dto';
+import { User } from '../user/entity/user.entity';
 
 @Controller('base')
 export abstract class BaseController<K extends keyof EntidadDatoMapType, T extends Base & EntidadDatoMapType[K], CrearDto extends BaseDto, EditarDto extends BaseDto> {
@@ -149,14 +150,14 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
   async createDato(
     @UsuarioCompleto() user: User,
     @Body() datos: CrearDto
-  ): Promise<boolean> {
+  ): Promise<T> {
     const dto: CreateProp<CrearDto,K> = {
       dto: datos,
       usuario:user,
       entidad:this.entidad
     }
     const retorno: T = await this.baseService.createDatoCx(dto);
-    return retorno ? true : false;
+    return retorno;
   }
 
   /**
@@ -173,7 +174,7 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
     @UsuarioCompleto() user: User,
     @Param('id') id: string,
     @Body() datos: EditarDto
-  ): Promise<boolean> {
+  ): Promise<T> {
     const dto: EditarElementoControllerProp<T, EditarDto,K> = {
       dto: datos,
       usuarioId: user.id,
@@ -183,8 +184,8 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
       relaciones:this.relaciones,
       selected: this.selected
     }
-    const retorno: UpdateRetorno<T>= await this.baseService.updateDato(dto);
-    return retorno.dato ? true : false;
+    const retorno: T= await this.baseService.updateElementoController(dto);
+    return retorno;
   }
 
 }

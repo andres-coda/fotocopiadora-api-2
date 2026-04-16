@@ -2,15 +2,15 @@ import { forwardRef, Module } from '@nestjs/common';
 import { PedidoController } from './pedido.controller';
 import { PedidoService } from './pedido.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '@src/user/entity/user.entity';
-import { AuthModule } from '@src/auth/auth.module';
-import { UserModule } from '@src/user/user.module';
-import { ErroresModule } from '@src/error/error.module';
-import { GateWayModule } from '@src/gateway/gateway.module';
-import { Cliente } from '@src/cliente/entity/cliente.entity';
-import { ClienteModule } from '@src/cliente/cliente.module';
+import { User } from '../user/entity/user.entity';
+import { AuthModule } from '../auth/auth.module';
+import { UserModule } from '../user/user.module';
+import { ErroresModule } from '../error/error.module';
+import { GateWayModule } from '../gateway/gateway.module';
+import { Cliente } from '../cliente/entity/cliente.entity';
+import { ClienteModule } from '../cliente/cliente.module';
 import { Pedido } from './entity/pedido.entity';
-import { LibroPedido } from '@src/libro_pedido/entity/libroPedido.entity';
+import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
 
 @Module({
   imports: [

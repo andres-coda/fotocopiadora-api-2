@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
-import { BaseController } from '@src/base/base.controller';
-import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
+import { BaseController } from '../base/base.controller';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { PedidoService } from './pedido.service';
 import { Pedido } from './entity/pedido.entity';
 import { DtoPedidoCrear } from './dto/pedidoCrear.dto';

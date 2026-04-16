@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '@src/base/base.service';
+import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { ErroresService } from '@src/error/error.service';
-import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
-import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
-import { Mens } from '@src/gateway/enum/Mens.enum';
+import { ErroresService } from '../error/error.service';
+import { GatewayGateway } from '../gateway/gateway.gateway';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { Mens } from '../gateway/enum/Mens.enum';
 import { Materia } from './entity/materia.entity';
 import { DtoMateriaCrear } from './dto/materiaCrear.dto';
 import { DtoMateriaEditar } from './dto/materiaEditar.dto';

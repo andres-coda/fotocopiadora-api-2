@@ -1,4 +1,4 @@
-import { Base } from "@src/base/entity/base.entity";
+import { Base } from "../base/entity/base.entity";
 import { NestedRelations, RelationKeys, RelationsKey, SelectedDeep } from "@src/base/interface/base.interface";
 
 export const BASE_RELATIONS: RelationsKey<any> = {

@@ -1,5 +1,5 @@
 import { ArrayMinSize, ArrayUnique, IsArray, IsOptional, IsString, IsUUID } from "class-validator";
-import { BaseDto } from "@src/base/dto/baseDto";
+import { BaseDto } from "../../base/dto/baseDto";
 
 export class DtoPropuestaEditar extends BaseDto {
   @IsOptional()

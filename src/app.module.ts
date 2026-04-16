@@ -27,6 +27,10 @@ import { LibroPedido } from './libro_pedido/entity/libroPedido.entity';
 import { Especificacion } from './especificacion/entity/especificacion.entity';
 import { PropuestaPedidoModule } from './propuesta_pedido/propuesta_pedido.module';
 import { ClienteResumenModule } from './cliente_resumen/cliente_resumen.module';
+import { Propuesta } from './propuesta_pedido/entity/propuesta_pedido.entity';
+import { ClienteResumen } from './cliente_resumen/entity/clienteResumen.entity';
+import { ComponenteModule } from './componente/componente.module';
+import { Componente } from './componente/entity/componente.entity';
 
 @Module({
    imports: [
@@ -44,18 +48,21 @@ import { ClienteResumenModule } from './cliente_resumen/cliente_resumen.module';
       ssl: false,
       entities: [
         Cliente,
+        ClienteResumen,
+        Componente,
         Especificacion,
         Materia,
         Libro,
         LibroPedido,
         Pedido,
         Precio,
+        Propuesta,
         Sede,
         Stock,
         User,
       ],
-      synchronize: false,
-      logging: false,
+      synchronize: true,
+      logging: true,
     }),
     ErroresModule,
     GateWayModule,
@@ -71,6 +78,7 @@ import { ClienteResumenModule } from './cliente_resumen/cliente_resumen.module';
     EspecificacionModule,
     PropuestaPedidoModule,
     ClienteResumenModule,
+    ComponenteModule,
   ],
   controllers: [],
   providers: [],

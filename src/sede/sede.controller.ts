@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
-import { BaseController } from '@src/base/base.controller';
-import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
+import { BaseController } from '../base/base.controller';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Sede } from './entity/sede.entity';
 import { DtoSedeCrear } from './dto/sedeCrear.dto';
 import { DtoSedeEditar } from './dto/sedeEditar.dto';

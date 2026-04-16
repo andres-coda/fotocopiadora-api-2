@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext, NotFoundException } from '@nestjs/common';
-import { AuthParcialDto } from '@src/auth/dto/authParcial.dto';
-import { User } from '@src/user/entity/user.entity';
+import { AuthParcialDto } from '../auth/dto/authParcial.dto';
+import { User } from '../user/entity/user.entity';
 
 
 export const UsuarioActual = createParamDecorator(

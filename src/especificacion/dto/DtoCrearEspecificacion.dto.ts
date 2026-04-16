@@ -1,5 +1,5 @@
-import { BaseDto } from "@src/base/dto/baseDto";
-import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
+import { BaseDto } from "../../base/dto/baseDto";
+import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
 import { IsEnum, IsNotEmpty } from "class-validator";
 
 export class DtoEspecificacionCrear extends BaseDto {

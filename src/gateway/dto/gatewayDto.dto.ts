@@ -1,19 +1,22 @@
-import { Libro } from "@src/libro/entity/libro.entity";
+import { Libro } from "../../libro/entity/libro.entity";
 import { Mens } from "../enum/Mens.enum";
-import { Cliente } from "@src/cliente/entity/cliente.entity";
-import { Pedido } from "@src/pedido/entity/pedido.entity";
-import { Precio } from "@src/precio/entity/precio.entity";
-import { Sede } from "@src/sede/entity/sede.entity";
-import { Stock } from "@src/stock/entity/stock.entity";
-import { Especificacion } from "@src/especificacion/entity/especificacion.entity";
-import { Propuesta } from "@src/propuesta_pedido/entity/propuesta_pedido.entity";
-import { LibroPedido } from "@src/libro_pedido/entity/libroPedido.entity";
-import { ClienteResumen } from "@src/cliente_resumen/entity/clienteResumen.entity";
-import { Materia } from "@src/materia/entity/materia.entity";
-import { Base } from "@src/base/entity/base.entity";
+import { Cliente } from "../../cliente/entity/cliente.entity";
+import { Pedido } from "../../pedido/entity/pedido.entity";
+import { Precio } from "../../precio/entity/precio.entity";
+import { Sede } from "../../sede/entity/sede.entity";
+import { Stock } from "../../stock/entity/stock.entity";
+import { Especificacion } from "../../especificacion/entity/especificacion.entity";
+import { Propuesta } from "../../propuesta_pedido/entity/propuesta_pedido.entity";
+import { LibroPedido } from "../../libro_pedido/entity/libroPedido.entity";
+import { ClienteResumen } from "../../cliente_resumen/entity/clienteResumen.entity";
+import { Materia } from "../../materia/entity/materia.entity";
+import { Base } from "../../base/entity/base.entity";
+import { TestEntity } from "../../base/__test__/base.service.spec";
+import { Componente } from "../../componente/entity/componente.entity";
 
 export const EntidadDatoMap = {
   cliente: {} as Cliente,
+  componente: {} as Componente,
   esp: {} as Especificacion,
   libro: {} as Libro,
   libro_pedido: {} as LibroPedido,
@@ -24,6 +27,7 @@ export const EntidadDatoMap = {
   sede: {} as Sede,
   stock: {} as Stock,
   resumen: {} as ClienteResumen,
+  testEntity: {} as TestEntity
 } satisfies Record<string, Base>;
 
 

@@ -1,7 +1,7 @@
-import { BaseDto } from "@src/base/dto/baseDto";
+import { BaseDto } from "../../base/dto/baseDto";
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
 import { Especificaciones } from "../interface/especificaciones.interface";
-import { Estado } from "@src/interface/estado.interface";
+import { Estado } from "../../interface/estado.interface";
 
 export class DtoLibroPedidoEditar extends BaseDto {
   @IsOptional()

@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request } from "@nes
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/auth.dto";
 import { AuthParcialDto } from "./dto/authParcial.dto";
-import { RequestWithUser } from "./dto/RequestWhitUser.interface";
+import type { RequestWithUser } from "./dto/RequestWhitUser.interface";
 
 @Controller('auth')
 export class AuthController {

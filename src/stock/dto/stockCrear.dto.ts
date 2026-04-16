@@ -1,4 +1,4 @@
-import { BaseDto } from "@src/base/dto/baseDto";
+import { BaseDto } from "../../base/dto/baseDto";
 import { IsNotEmpty, IsNumber } from "class-validator";
 
 export class DtoStockCrear extends BaseDto {

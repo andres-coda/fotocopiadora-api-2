@@ -1,4 +1,4 @@
-import { BaseDto } from "@src/base/dto/baseDto";
+import { BaseDto } from "../../base/dto/baseDto";
 import { IsArray, ArrayMinSize, IsNotEmpty, IsString, IsUUID, ArrayUnique } from "class-validator";
 
 export class DtoPropuestaCrear extends BaseDto {

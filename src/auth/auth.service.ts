@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthParcialDto } from './dto/authParcial.dto';
 import { Request } from 'express';
-import { UserService } from '@src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {

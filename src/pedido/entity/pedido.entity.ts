@@ -1,6 +1,6 @@
-import { Base } from "@src/base/entity/base.entity";
-import { Cliente } from "@src/cliente/entity/cliente.entity";
-import { LibroPedido } from "@src/libro_pedido/entity/libroPedido.entity";
+import { Base } from "../../base/entity/base.entity";
+import { Cliente } from "../../cliente/entity/cliente.entity";
+import { LibroPedido } from "../../libro_pedido/entity/libroPedido.entity";
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 
 @Entity('pedido')
@@ -12,10 +12,10 @@ export class Pedido extends Base {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   importeTotal!: number;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'int', nullable: true })
   archivos!: number;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'int', nullable: true })
   anillados!: number
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })

@@ -9,6 +9,7 @@ import { UserModule } from '@src/user/user.module';
 import { ErroresModule } from '@src/error/error.module';
 import { GateWayModule } from '@src/gateway/gateway.module';
 import { Pedido } from '@src/pedido/entity/pedido.entity';
+import { ClienteResumenModule } from '@src/cliente_resumen/cliente_resumen.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { Pedido } from '@src/pedido/entity/pedido.entity';
     forwardRef(() => UserModule),
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
+    forwardRef(() => ClienteResumenModule),
   ],
   controllers: [ClienteController],
   providers: [ClienteService],

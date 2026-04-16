@@ -2,10 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOneOptions, QueryRunner, Repository } from 'typeorm';
-import { ErroresService } from '@src/error/error.service';
-import { GatewayGateway } from '@src/gateway/gateway.gateway';
+import { ErroresService } from '../error/error.service';
+import { GatewayGateway } from '../gateway/gateway.gateway';
 import { UsuarioCrear } from './dto/userCrear.dto';
-import { Role } from '@src/auth/rol/rol.enum';
+import { Role } from '../auth/rol/rol.enum';
 
 @Injectable()
 export class UserService {

@@ -1,6 +1,6 @@
-import { BaseDto } from "@src/base/dto/baseDto";
-import { DtoClienteCrear } from "@src/cliente/dto/clienteCrear.dto";
-import { DtoLibroPedidoCrearParcial } from "@src/libro_pedido/dto/DtoCrearLibroPedido.dto";
+import { BaseDto } from "../../base/dto/baseDto";
+import { DtoClienteCrear } from "../../cliente/dto/clienteCrear.dto";
+import { DtoLibroPedidoCrearParcial } from "../../libro_pedido/dto/DtoCrearLibroPedido.dto";
 import { Type } from "class-transformer";
 import { ArrayMinSize, IsArray, IsNotEmpty, IsNumber, IsString, IsUUID, ValidateIf, ValidateNested } from "class-validator";
 

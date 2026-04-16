@@ -1,6 +1,6 @@
-import { Base } from "@src/base/entity/base.entity";
-import { ClienteResumen } from "@src/cliente_resumen/entity/clienteResumen.entity";
-import { Pedido } from "@src/pedido/entity/pedido.entity";
+import { Base } from "../../base/entity/base.entity";
+import { ClienteResumen } from "../../cliente_resumen/entity/clienteResumen.entity";
+import { Pedido } from "../../pedido/entity/pedido.entity";
 import { Column, Entity, OneToMany, OneToOne, Unique } from "typeorm";
 
 @Entity('cliente')

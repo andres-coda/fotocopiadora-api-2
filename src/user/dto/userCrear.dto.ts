@@ -1,4 +1,4 @@
-import { Role } from "@src/auth/rol/rol.enum";
+import { Role } from "../../auth/rol/rol.enum";
 import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from "class-validator";
 
 export class UsuarioCrear{

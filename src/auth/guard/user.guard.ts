@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "../auth.service";
 import { AuthParcialDto } from "../dto/authParcial.dto";
-import { UserService } from "@src/user/user.service";
-import { User } from "@src/user/entity/user.entity";
+import { UserService } from "../../user/user.service";
+import { User } from "../../user/entity/user.entity";
 
 @Injectable()
 export class UsuarioGuard implements CanActivate {
@@ -19,7 +19,7 @@ export class UsuarioGuard implements CanActivate {
       const usuarioParcial: AuthParcialDto = await this.authService.getUserFromRequest(request);
       
       // Obtener el usuario completo de la base de datos
-      const usuarioCompleto:User = await this.usuarioService.getDatoByIdOrFail({id:usuarioParcial.sub, entidadError:'usuario'});
+      const usuarioCompleto:User = await this.usuarioService.getDatoByIdOrFail(usuarioParcial.sub);
       
       // Agregar tanto los datos parciales como el usuario completo al request
       request.user = usuarioParcial; // Para compatibilidad hacia atrás

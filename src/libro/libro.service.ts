@@ -1,23 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '@src/base/base.service';
+import { BaseService } from '../base/base.service';
 import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { DtoLibroEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
-import { ErroresService } from '@src/error/error.service';
-import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
+import { ErroresService } from '../error/error.service';
+import { GatewayGateway } from '../gateway/gateway.gateway';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { LIBRO_RELATIONS, SELECTED_LIBRO } from './default/relacion.default';
-import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
-import { Mens } from '@src/gateway/enum/Mens.enum';
-import { MateriaService } from '@src/materia/materia.service';
-import { Materia } from '@src/materia/entity/materia.entity';
-import { StockService } from '@src/stock/stock.service';
-import { DtoStockCrear } from '@src/stock/dto/stockCrear.dto';
-import { Stock } from '@src/stock/entity/stock.entity';
-import { DtoStockEditar } from '@src/stock/dto/stockEditar.dto';
-import { Estado } from '@src/interface/estado.interface';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { Mens } from '../gateway/enum/Mens.enum';
+import { MateriaService } from '../materia/materia.service';
+import { Materia } from '../materia/entity/materia.entity';
+import { StockService } from '../stock/stock.service';
+import { DtoStockCrear } from '../stock/dto/stockCrear.dto';
+import { Stock } from '../stock/entity/stock.entity';
+import { DtoStockEditar } from '../stock/dto/stockEditar.dto';
+import { Estado } from '../interface/estado.interface';
+import { Componente } from '../componente/entity/componente.entity';
+import { ComponenteService } from '../componente/componente.service';
+import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from '../componente/default/relacion.default';
 
 @Injectable()
 export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar> {
@@ -28,6 +31,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
     protected readonly gatewayGateway: GatewayGateway,
     private readonly materiaService: MateriaService,
     private readonly stockService: StockService,
+    private readonly componenteService: ComponenteService,
   ) {
     super(libroRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -45,6 +49,15 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
 
       if (libroExiste) return libroExiste;
 
+      const componentes: Componente[] = await this.componenteService.getDatosByNombres({
+        nombres: dto.componentes ?? [],
+        usuarioId: usuario.id,
+        qR,
+        entidadError: 'componente',
+        relaciones: [COMPONENTE_RELATIONS],
+        selected: SELECTED_COMPONENTE
+      });
+
       const materia: Materia = await this.materiaService.createDato({
         usuario,
         dto: { nombre: dto.materia },
@@ -58,14 +71,19 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
 
       const libro: Libro = new Libro();
       libro.nombre = dto.nombre;
-      libro.autor = dto.autor || undefined;
-      libro.cantidadPg = dto.cantidadPg || 0;
-      libro.descripcion = dto.descripcion || undefined;
-      libro.editorial = dto.editorial || undefined;
-      libro.anio = dto.anio || undefined;
-      libro.img = dto.img || undefined;
+      libro.descripcion = dto.descripcion ?? undefined;
+      libro.editorial = dto.editorial ?? undefined;
+      libro.edicion = dto.edicion ?? undefined;
+      libro.nivel = dto.nivel ?? undefined;
+      libro.cantidadPg = dto.cantidadPg ?? 0;
+      libro.anio = dto.anio ?? undefined;
+      libro.adhesivo = dto.adhesivos ?? undefined;
+      libro.autor = dto.autor ?? undefined;
+      libro.img = dto.img ?? undefined;
+      libro.especificacionesDefecto = dto.especificacionesDefecto ?? undefined;
       libro.materia = materia;
       libro.stock = stock;
+      libro.componentes = componentes;
       libro.user = usuario;
 
       const newLibro: Libro = qR
@@ -109,13 +127,17 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
         })
         : libro.materia;
 
-      libro.nombre = dto.nombre || libro.nombre;
-      libro.autor = dto.autor || libro.autor;
-      libro.cantidadPg = dto.cantidadPg || libro.cantidadPg;
-      libro.descripcion = dto.descripcion || libro.descripcion;
-      libro.editorial = dto.editorial || libro.editorial;
-      libro.anio = dto.anio || libro.anio;
-      libro.img = dto.img || libro.img;
+      libro.nombre = dto.nombre ?? libro.nombre;
+      libro.descripcion = dto.descripcion ?? libro.descripcion;
+      libro.editorial = dto.editorial ?? libro.editorial;
+      libro.edicion = dto.edicion ?? libro.edicion;
+      libro.nivel = dto.nivel ?? libro.nivel;
+      libro.cantidadPg = dto.cantidadPg ?? libro.cantidadPg;
+      libro.anio = dto.anio ?? libro.anio;
+      libro.adhesivo = dto.adhesivos ?? libro.adhesivo;
+      libro.autor = dto.autor ?? libro.autor;      
+      libro.img = dto.img ?? libro.img;
+      libro.especificacionesDefecto = dto.especificacionesDefecto ?? libro.especificacionesDefecto;
       libro.materia = materia;
 
       const newLibro: Libro = qR
@@ -147,10 +169,10 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
         actual: Estado.STOCK,
         cantidad: dto.stock
       }
-      const stock: Stock = await this.stockService.updateDato({ usuarioId, dto: dtoStock, qR, id: libro.stock.id, entidadError: 'stock', entidad });
+      const stock: UpdateRetorno<Stock> = await this.stockService.updateDato({ usuarioId, dto: dtoStock, qR, id: libro.stock.id, entidadError: 'stock', entidad });
 
       if (!stock) throw new NotFoundException('No se pudo agregar libros al stock');
-      return stock;
+      return stock.dato;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el stok del libro id ${id}`)
     }

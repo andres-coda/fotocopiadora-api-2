@@ -1,5 +1,15 @@
-import { Role } from "@src/auth/rol/rol.enum";
-import { Base } from "@src/base/entity/base.entity";
+import { Role } from "../../auth/rol/rol.enum";
+import { Cliente } from "../../cliente/entity/cliente.entity";
+import { ClienteResumen } from "../../cliente_resumen/entity/clienteResumen.entity";
+import { Especificacion } from "../../especificacion/entity/especificacion.entity";
+import { Libro } from "../../libro/entity/libro.entity";
+import { LibroPedido } from "../../libro_pedido/entity/libroPedido.entity";
+import { Materia } from "../../materia/entity/materia.entity";
+import { Pedido } from "../../pedido/entity/pedido.entity";
+import { Precio } from "../../precio/entity/precio.entity";
+import { Propuesta } from "../../propuesta_pedido/entity/propuesta_pedido.entity";
+import { Sede } from "../../sede/entity/sede.entity";
+import { Stock } from "../../stock/entity/stock.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 
 @Entity('user')
@@ -26,8 +36,38 @@ export class User {
   @Column({ type: 'varchar', length: 255 })
   email!: string;
 
-  @OneToMany(() => Base, base => base.user, { cascade: true })
-  base!: Base[];
+  @OneToMany(() => Cliente, cliente => cliente.user, { cascade: true })
+  clientes!: Cliente[];
+
+  @OneToMany(() => ClienteResumen, cl => cl.user, { cascade: true })
+  resumenes!: ClienteResumen[];
+
+  @OneToMany(() => Especificacion, esp => esp.user, { cascade: true })
+  especificaciones!: Especificacion[];
+
+  @OneToMany(() => Libro, l => l.user, { cascade: true })
+  libros!: Libro[];
+
+  @OneToMany(() => LibroPedido, lp => lp.user, { cascade: true })
+  librosPedidos!: LibroPedido[];
+
+  @OneToMany(() => Materia, materia => materia.user, { cascade: true })
+  materias!: Materia[];
+
+  @OneToMany(() => Pedido, pedido => pedido.user, { cascade: true })
+  pedidos!: Pedido[];
+
+  @OneToMany(() => Precio, precio => precio.user, { cascade: true })
+  precios!: Precio[];
+
+  @OneToMany(() => Propuesta, propuesta => propuesta.user, { cascade: true })
+  propuestas!: Propuesta[];
+
+  @OneToMany(() => Sede, sede => sede.user, { cascade: true })
+  sedes!: Sede[];
+
+  @OneToMany(() => Stock, stock => stock.user, { cascade: true })
+  stocks!: Stock[];
 
   @Column({ type: 'enum', enum: Role, default: Role.User })
   role!: string;
