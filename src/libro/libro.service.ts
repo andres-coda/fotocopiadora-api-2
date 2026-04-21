@@ -171,7 +171,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
       }
       const stock: UpdateRetorno<Stock> = await this.stockService.updateDato({ usuarioId, dto: dtoStock, qR, id: libro.stock.id, entidadError: 'stock', entidad });
 
-      if (!stock) throw new NotFoundException('No se pudo agregar libros al stock');
+      if (!stock?.dato) throw new NotFoundException('No se pudo agregar libros al stock');
       return stock.dato;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el stok del libro id ${id}`)

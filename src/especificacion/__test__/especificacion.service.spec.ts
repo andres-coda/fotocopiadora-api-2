@@ -13,7 +13,6 @@ import { mockGateway } from 'test/mock/gateway.mocks';
 import { mockEsp } from 'test/mock/esp.mock';
 import { mockUser } from 'test/mock/user.mock';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
-import { mock } from 'node:test';
 import { DtoEspecificacionEditar } from '../dto/DtoEditarEspecificacion.dto';
 import { Especificaciones } from '@src/libro_pedido/interface/especificaciones.interface';
 
@@ -256,7 +255,7 @@ describe('EspecificacionService', () => {
 
       jest.spyOn(service as any, 'crearCriterio').mockReturnValue({});
       const dto: GetEspNombres = {
-        nombres: [],
+        nombres: [mockEsp.nombre],
         usuarioId: mockUser.id,
         entidadError: 'especificaciones',
         qR: qr

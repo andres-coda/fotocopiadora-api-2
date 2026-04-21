@@ -1,4 +1,4 @@
-import { QueryRunner, FindManyOptions, FindOneOptions, EntityTarget, DeleteResult, EntityManager } from 'typeorm';
+import { QueryRunner, FindManyOptions, FindOneOptions, EntityTarget, DeleteResult, EntityManager, DataSource } from 'typeorm';
 import { jest } from '@jest/globals';
 import { DeepPartial } from 'typeorm/browser';
 
@@ -21,24 +21,29 @@ type MockManager<T> = {
 };
 
 export function createMockQueryRunner<T>() {
-  const manager: jest.Mocked<EntityManager> = {
+  const manager = {
     find: jest.fn(),
     findOne: jest.fn(),
     save: jest.fn(),
     remove: jest.fn(),
-  } as any;
+  } as unknown as jest.Mocked<EntityManager>;
 
-  const qr: QueryRunner = {
+  const qr = {
     manager,
     connect: jest.fn(),
     startTransaction: jest.fn(),
     commitTransaction: jest.fn(),
     rollbackTransaction: jest.fn(),
     release: jest.fn(),
-  } as unknown as QueryRunner;
+  } as unknown as jest.Mocked<QueryRunner>;
 
   return { qr, manager };
 }
+
+export const createMockDataSource = (qr: QueryRunner) =>
+  ({
+    createQueryRunner: jest.fn().mockReturnValue(qr),
+  } as unknown as jest.Mocked<DataSource>);
 
 
 export const mockDataSource = {
@@ -51,3 +56,10 @@ export const mockDataSource = {
     },
   })),
 };
+
+export const manager = {
+  find: jest.fn(),
+  findOne: jest.fn(),
+  save: jest.fn(),
+  remove: jest.fn(),
+} as unknown as jest.Mocked<EntityManager>;

@@ -10,7 +10,7 @@ import { Mens } from '../gateway/enum/Mens.enum';
 import { LibroPedido } from './entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from './dto/DtoCrearLibroPedido.dto';
 import { DtoLibroPedidoEditar } from './dto/DtoEditarLibroPedido.dto';
-import { LIBRO_PEDIDO_ESTADO_RELATIONS, LIBRO_PEDIDO_RELATIONS, SELECTED_LIBRO_PEDIDO, SELECTED_LIBRO_PEDIDO_ESTADO } from './default/relacion.default';
+import { LIBRO_PEDIDO_ESTADO_RELATIONS, SELECTED_LIBRO_PEDIDO_ESTADO } from './default/relacion.default';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
 import { LIBRO_RELATIONS, SELECTED_LIBRO } from '../libro/default/relacion.default';
