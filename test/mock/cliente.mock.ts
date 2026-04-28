@@ -2,6 +2,10 @@ import { Cliente } from "@src/cliente/entity/cliente.entity";
 import { mockResumen } from "./resumen.mock";
 import { mockUser } from "./user.mock";
 import { jest } from '@jest/globals';
+import { createMockBaseService } from "./base.mock";
+import { DtoClienteCrear } from "@src/cliente/dto/clienteCrear.dto";
+import { DtoClienteEditar } from "@src/cliente/dto/clienteEditar.dto";
+import { CreateProp, EditarProp } from "@src/base/interface/base.interface";
 
 export const mockCliente: Cliente = {
   id: '123e4567-e89b-12d3-a456-426614174000',
@@ -17,10 +21,7 @@ export const mockCliente: Cliente = {
 }
 
 export const mockClienteService = {
-  getDatoByTelefono: jest.fn(),
-  getDatoByEmail: jest.fn(),
-  clienteExistente: jest.fn(),
-  getDatoCx: jest.fn(),
-  createDato: jest.fn(),
-  updateDato: jest.fn(),
-};
+  ...createMockBaseService<Cliente, 'cliente', DtoClienteCrear, DtoClienteEditar>(),
+  createDato: jest.fn<(params: CreateProp<DtoClienteCrear, 'cliente'>) => Promise<Cliente>>(),
+  updateDato: jest.fn<(params: EditarProp<Cliente, DtoClienteEditar, 'cliente'>) => Promise<Cliente>>()
+}

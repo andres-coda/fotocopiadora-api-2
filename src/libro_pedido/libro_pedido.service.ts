@@ -123,7 +123,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         entidadError
       });
 
-      const libro: Libro = dto.libro_id != libroPedido.libro.id
+      const libro: Libro = dto.libro_id && dto.libro_id != libroPedido.libro.id
         ? await this.libroService.getDatoByIdOrFail({
           id: dto.libro_id,
           qR,

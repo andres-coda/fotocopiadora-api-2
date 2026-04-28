@@ -16,6 +16,10 @@ export const mockMateria:Materia ={
   libros:[]
 }
 
+export const mockDtoCrearMateria:DtoMateriaCrear = {
+  nombre: 'Test Materia'
+}
+
 export const mockMateriaService = {
   ...createMockBaseService<Materia, 'materia', DtoMateriaCrear, DtoMateriaEditar>(),
   createDato: jest.fn<(params: CreateProp<DtoMateriaCrear, 'materia'>) => Promise<Materia>>(),

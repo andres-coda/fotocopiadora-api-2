@@ -5,7 +5,7 @@ export class DtoClienteCrear extends BaseDto {
   @IsOptional()
   @IsString({ message: 'El nombre debe ser un texto' })
   @Length(1, 100, { message: 'El nombre no debe tener mas de 100 caracteres' })
-  nombre!: string;
+  nombre?: string;
   
   @ValidateIf(o => !o.telefono)
   @IsNotEmpty({ message: 'Debe proporcionar email o teléfono' })

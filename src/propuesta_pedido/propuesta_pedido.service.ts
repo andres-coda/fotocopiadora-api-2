@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -12,6 +12,8 @@ import { DtoPropuestaCrear } from './dto/propuesta_pedidoCrear.dto';
 import { DtoPropuestaEditar } from './dto/propuesta_pedidoEditar.dto';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
+import { PROPUESTA_RELATIONS } from './default/relacion';
+import { PRECIO_SELECTED } from '@src/precio/default/relacion';
 
 
 @Injectable()
@@ -28,6 +30,17 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
   async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPropuestaCrear, typeof Entidad.PROPUESTA_PEDIDO>): Promise<Propuesta> {
     try {
+      const existe: Propuesta | null = await this.getDatoByName({
+        dato: dto.nombre,
+        usuarioId: usuario.id,
+        qR,
+        relaciones: [PROPUESTA_RELATIONS],
+        selected: PRECIO_SELECTED,
+        entidadError: 'propuesta de pedido'
+      });
+
+      if(existe) throw new NotFoundException(`El nombre ${dto.nombre} de la propuesta del pedido ya existe en la base de datos, elija otro nombre`);
+
       const libros: Libro[] = await this.libroService.getDatosByIds({
         ids: dto.libros,
         entidadError: 'libro',
@@ -54,7 +67,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return propuesta;
+      return newPropuesta;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
@@ -108,7 +121,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return {dato:newPropuesta, isQr:true}
+      return { dato: newPropuesta, isQr: true }
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de propuestas`)

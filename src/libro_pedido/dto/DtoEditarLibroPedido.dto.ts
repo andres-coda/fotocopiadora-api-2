@@ -6,11 +6,11 @@ import { Estado } from "../../interface/estado.interface";
 export class DtoLibroPedidoEditar extends BaseDto {
   @IsOptional()
   @IsNumber()
-  cantidad!: number;
+  cantidad?: number;
 
   @IsOptional()
   @IsEnum(Estado)
-  estado!: Estado;
+  estado?: Estado;
 
   @IsOptional()
   @IsString({ message: 'Los detalles del libro pedido deben estar en formato string' })
@@ -18,11 +18,11 @@ export class DtoLibroPedidoEditar extends BaseDto {
 
   @IsOptional()
   @IsUUID()
-  libro_id!: string;
+  libro_id?: string;
 
   @IsOptional()
   @IsUUID()
-  sede_id!: string;
+  sede_id?: string;
 
   @IsOptional()
   @IsArray({ message: 'Debe enviar un arreglo de especificaciones' })

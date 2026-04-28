@@ -2,15 +2,29 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource, QueryRunner, EntityManager } from 'typeorm';
 import { LibroPedido } from '../entity/libroPedido.entity';
-import { mockLibro } from 'test/mock/libro.mock';
-import { mockPedido } from 'test/mock/pedido.mock';
-import { mockSede } from 'test/mock/sede.mock';
+import { mockLibro, mockLibroService } from 'test/mock/libro.mock';
+import { mockPedido, mockPedidoService } from 'test/mock/pedido.mock';
+import { mockSede, mockSedeService } from 'test/mock/sede.mock';
 import { mockUser } from 'test/mock/user.mock';
 import { mockErrores } from 'test/mock/error.mocks';
 import { mockGateway } from 'test/mock/gateway.mocks';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
-import { jest, describe, beforeEach, afterEach, it } from '@jest/globals';
+import { jest, describe, beforeEach, afterEach, it, expect } from '@jest/globals';
 import { LibroPedidoService } from '../libro_pedido.service';
+import { createMockRepository } from 'test/mock/repo.mocks';
+import { ErroresService } from '@src/error/error.service';
+import { GatewayGateway } from '@src/gateway/gateway.gateway';
+import { createMockDataSource, createMockQueryRunner } from 'test/mock/qR.mock';
+import { LibroService } from '@src/libro/libro.service';
+import { PedidoService } from '@src/pedido/pedido.service';
+import { EspecificacionService } from '@src/especificacion/especificacion.service';
+import { StockService } from '@src/stock/stock.service';
+import { SedeService } from '@src/sede/sede.service';
+import { mockEspService } from 'test/mock/esp.mock';
+import { mockStockService } from 'test/mock/stock.mock';
+import { mockDtoLibroPedidoCrear, mockLibroPedido } from 'test/mock/libro_pedido.mock';
+import { DtoLibroPedidoEditar } from '../dto/DtoEditarLibroPedido.dto';
+import { Estado } from '@src/interface/estado.interface';
 
 jest.mock('@src/libro/entity/libro.entity', () => ({
   Libro: class { },
@@ -40,110 +54,191 @@ jest.mock('@src/user/entity/user.entity', () => ({
   User: class { },
 }));
 
+const mockRepo = createMockRepository<LibroPedido>();
+let qr: jest.Mocked<QueryRunner>;
+let manager: jest.Mocked<EntityManager>;
+
 describe('LibroPedidoService', () => {
   let service: LibroPedidoService;
-  let repo: jest.Mocked<Repository<LibroPedido>>;
-  let qr: jest.Mocked<QueryRunner>;
-  let manager: jest.Mocked<EntityManager>;
-
-  const libroService = { getDatoByIdOrFail: jest.fn() };
-  const pedidoService = { getDatoByIdOrFail: jest.fn() };
-  const sedeService = { getDatoByIdOrFail: jest.fn() };
-  const espService = { getDatosByNombres: jest.fn() };
-  const stockService = { updateDato: jest.fn() };
+  let repo: Repository<LibroPedido>;
+  let erroresService: ErroresService;
+  let gateway: GatewayGateway;
 
   beforeEach(async () => {
-    manager = {
-      save: jest.fn(),
-    } as any;
-
-    qr = {
-      manager,
-      connect: jest.fn(),
-      startTransaction: jest.fn(),
-      commitTransaction: jest.fn(),
-      rollbackTransaction: jest.fn(),
-      release: jest.fn(),
-    } as any;
+    const qrMock = createMockQueryRunner<LibroPedido>();
+    qr = qrMock.qr;
+    manager = qrMock.manager;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LibroPedidoService,
         {
           provide: getRepositoryToken(LibroPedido),
-          useValue: {
-            save: jest.fn(),
-          },
+          useValue: mockRepo,
         },
         {
           provide: DataSource,
-          useValue: {
-            createQueryRunner: jest.fn(() => qr),
-          },
+          useValue: createMockDataSource(qr),
         },
-        { provide: 'ErroresService', useValue: mockErrores },
-        { provide: 'GatewayGateway', useValue: mockGateway },
-        { provide: 'LibroService', useValue: libroService },
-        { provide: 'PedidoService', useValue: pedidoService },
-        { provide: 'EspecificacionService', useValue: espService },
-        { provide: 'StockService', useValue: stockService },
-        { provide: 'SedeService', useValue: sedeService },
+        {
+          provide: ErroresService,
+          useValue: mockErrores,
+        },
+        {
+          provide: GatewayGateway,
+          useValue: mockGateway,
+        },
+        { provide: LibroService, useValue: mockLibroService },
+        { provide: PedidoService, useValue: mockPedidoService },
+        { provide: EspecificacionService, useValue: mockEspService },
+        { provide: StockService, useValue: mockStockService },
+        { provide: SedeService, useValue: mockSedeService },
       ],
     }).compile();
 
-    service = module.get(LibroPedidoService);
+    service = module.get<LibroPedidoService>(LibroPedidoService);
     repo = module.get(getRepositoryToken(LibroPedido));
+    erroresService = module.get(ErroresService);
+    gateway = module.get(GatewayGateway);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.restoreAllMocks();
+    jest.resetAllMocks();
   });
 
   // ---------------- CREATE ----------------
 
   describe('createDato', () => {
-    it('✅ debería crear correctamente', async () => {
-      libroService.getDatoByIdOrFail.mockResolvedValue(mockLibro);
-      pedidoService.getDatoByIdOrFail.mockResolvedValue(mockPedido);
-      sedeService.getDatoByIdOrFail.mockResolvedValue(mockSede);
-      espService.getDatosByNombres.mockResolvedValue([]);
+    it('✅ debería crear un pedido libro correctamente', async () => {
+      mockLibroService.getDatoByIdOrFail.mockResolvedValue(mockLibro);
+      mockPedidoService.getDatoByIdOrFail.mockResolvedValue(mockPedido);
+      mockSedeService.getDatoByIdOrFail.mockResolvedValue(mockSede);
+      mockEspService.getDatosByNombres.mockResolvedValue([]);
 
-      repo.save.mockResolvedValue(mockLibroPedido);
+      mockRepo.save.mockResolvedValue(mockLibroPedido);
 
       const result = await service.createDato({
         usuario: mockUser,
-        dto: {
-          libro_id: mockLibro.id,
-          pedido_id: mockPedido.id,
-          sede_id: mockSede.id,
-          cantidad: 2,
-        },
+        dto: mockDtoLibroPedidoCrear,
         entidad: Entidad.LIBRO_PEDIDO,
-      } as any);
+      });
 
-      expect(repo.save).toHaveBeenCalled();
-      expect(mockGateway.actualizacionDato).toHaveBeenCalled();
+      expect(mockRepo.save).toHaveBeenCalled();
+      expect(gateway.actualizacionDato).toHaveBeenCalled();
       expect(result).toEqual(mockLibroPedido);
+    });
+
+    it('🔁 debería usar QueryRunner si existe', async () => {
+      mockLibroService.getDatoByIdOrFail.mockResolvedValue(mockLibro);
+      mockPedidoService.getDatoByIdOrFail.mockResolvedValue(mockPedido);
+      mockSedeService.getDatoByIdOrFail.mockResolvedValue(mockSede);
+      mockEspService.getDatosByNombres.mockResolvedValue([]);
+
+      manager.save.mockResolvedValue(mockLibroPedido);
+
+      const result = await service.createDato({
+        usuario: mockUser,
+        dto: mockDtoLibroPedidoCrear,
+        entidad: Entidad.LIBRO_PEDIDO,
+        qR: qr
+      });
+
+      expect(result).toEqual(mockLibroPedido);
+      expect(manager.save).toHaveBeenCalled();
+      expect(mockGateway.actualizacionDato).not.toHaveBeenCalled();
+    });
+
+    it('❌ debería manejar errores con erroresService', async () => {
+      const dbError = new Error('DB error');
+      const handledError = new Error('Handled error');
+
+      mockRepo.save.mockRejectedValue(dbError);
+
+      jest.spyOn(erroresService, 'handleExceptions')
+        .mockImplementation(() => { throw handledError });
+
+      await expect(
+        service.createDato({
+          usuario: mockUser,
+          dto: mockDtoLibroPedidoCrear,
+          entidad: Entidad.LIBRO_PEDIDO,
+        })
+      ).rejects.toThrow(handledError);
+
+      expect(erroresService.handleExceptions).toHaveBeenCalledWith(
+        dbError,
+        expect.any(String)
+      );
     });
   });
 
   // ---------------- UPDATE ----------------
-
   describe('updateDato', () => {
-    it('✅ debería actualizar correctamente', async () => {
+    it('✅ debería actualizar el pedido libro correctamente', async () => {
       jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(mockLibroPedido);
 
-      repo.save.mockResolvedValue(mockLibroPedido);
+      mockRepo.save.mockResolvedValue(mockLibroPedido);
 
       const result = await service.updateDato({
         id: mockLibroPedido.id,
         usuarioId: mockUser.id,
         dto: { cantidad: 5 },
         entidad: Entidad.LIBRO_PEDIDO,
-      } as any);
+      });
 
-      expect(repo.save).toHaveBeenCalled();
-      expect(result.dato).toEqual(mockLibroPedido);
+      expect(result).toEqual({
+        dato: mockLibroPedido,
+        isQr: true
+      });
+
+      expect(mockRepo.save).toHaveBeenCalled();
+      expect(mockGateway.actualizacionDato).toHaveBeenCalled();
+    });
+
+    it('🔁 debería usar QueryRunner en update', async () => {
+
+      jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(mockLibroPedido);
+      manager.save.mockResolvedValue(mockLibroPedido);
+
+      const result = await service.updateDato({
+        id: mockLibroPedido.id,
+        usuarioId: mockUser.id,
+        dto: { cantidad: 5 },
+        entidad: Entidad.LIBRO_PEDIDO,
+        qR: qr
+      });
+
+      expect(result).toEqual({
+        dato: mockLibroPedido,
+        isQr: true
+      });
+
+      expect(manager.save).toHaveBeenCalled();
+      expect(mockGateway.actualizacionDato).not.toHaveBeenCalled();
+    });
+
+    it('❌ debería manejar errores en update', async () => {
+
+      const dbError = new Error('DB error');
+      const handledError = new Error('Handled error');
+
+      jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(mockLibroPedido);
+      mockRepo.save.mockRejectedValue(dbError);
+
+      jest.spyOn(erroresService, 'handleExceptions')
+        .mockImplementation(() => { throw handledError });
+
+      await expect(
+        service.updateDato({
+          id: mockLibroPedido.id,
+          usuarioId: mockUser.id,
+          dto: { cantidad: 5 },
+          entidad: Entidad.LIBRO_PEDIDO
+        })
+      ).rejects.toThrow(handledError);
+
+      expect(erroresService.handleExceptions).toHaveBeenCalled();
     });
   });
 
@@ -153,7 +248,7 @@ describe('LibroPedidoService', () => {
     it('✅ debería hacer commit y actualizar estado', async () => {
       jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(mockLibroPedido);
 
-      stockService.updateDato.mockResolvedValue({
+      mockStockService.updateDato.mockResolvedValue({
         dato: mockLibro.stock,
         isQr: true,
       });
@@ -164,12 +259,12 @@ describe('LibroPedidoService', () => {
       });
 
       const result = await service.cambiarEstadoCx({
+        id: mockLibroPedido.id,
+        usuarioId: mockUser.id,
         usuario: mockUser,
         dto: { estado: Estado.LISTO },
-        id: mockLibroPedido.id,
-        entidadError: 'libroPedido',
         entidad: Entidad.LIBRO_PEDIDO,
-      } as any);
+      });
 
       expect(qr.commitTransaction).toHaveBeenCalled();
       expect(mockGateway.actualizacionDato).toHaveBeenCalled();
@@ -188,12 +283,12 @@ describe('LibroPedidoService', () => {
 
       await expect(
         service.cambiarEstadoCx({
+          id: mockLibroPedido.id,
+          usuarioId: mockUser.id,
           usuario: mockUser,
           dto: { estado: Estado.LISTO },
-          id: mockLibroPedido.id,
-          entidadError: 'libroPedido',
           entidad: Entidad.LIBRO_PEDIDO,
-        } as any)
+        })
       ).rejects.toThrow(handled);
 
       expect(qr.rollbackTransaction).toHaveBeenCalled();
@@ -202,7 +297,7 @@ describe('LibroPedidoService', () => {
     it('🧹 siempre libera QueryRunner', async () => {
       jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(mockLibroPedido);
 
-      stockService.updateDato.mockResolvedValue({
+      mockStockService.updateDato.mockResolvedValue({
         dato: mockLibro.stock,
         isQr: true,
       });
@@ -210,12 +305,12 @@ describe('LibroPedidoService', () => {
       manager.save.mockResolvedValue(mockLibroPedido);
 
       await service.cambiarEstadoCx({
+        id: mockLibroPedido.id,
+        usuarioId: mockUser.id,
         usuario: mockUser,
         dto: { estado: Estado.LISTO },
-        id: mockLibroPedido.id,
-        entidadError: 'libroPedido',
         entidad: Entidad.LIBRO_PEDIDO,
-      } as any);
+      });
 
       expect(qr.release).toHaveBeenCalled();
     });

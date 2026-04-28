@@ -55,7 +55,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return precio;
+      return newPrecio;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.tipo} en el registro de ${entidad}`)
@@ -90,7 +90,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return { dato:precio, isQr:true}
+      return { dato:newPrecio, isQr:true}
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.tipo || id} en el registro de precios`)

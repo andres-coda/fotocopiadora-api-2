@@ -55,7 +55,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return pedido;
+      return newPedido;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.importeTotal} en el registro de ${entidad}`)
@@ -93,7 +93,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return {dato:pedido, isQr: true}
+      return {dato:newPedido, isQr: true}
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.importeTotal || id} en el registro de pedidos`)

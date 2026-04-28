@@ -67,6 +67,7 @@ describe('LibroService', () => {
     const qrMock = createMockQueryRunner<Libro>();
     qr = qrMock.qr;
     manager = qrMock.manager;
+    
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LibroService,
