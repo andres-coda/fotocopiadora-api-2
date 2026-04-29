@@ -16,6 +16,10 @@ export const mockComponente:Componente ={
   libros:[]
 }
 
+export const mockDtoCrearComponente: DtoComponenteCrear = {
+  nombre: 'Test Componente',
+}
+
 export const mockComponenteService = {
   ...createMockBaseService<Componente, 'componente', DtoComponenteCrear, DtoComponenteEditar>(),
   createDato: jest.fn<(params: CreateProp<DtoComponenteCrear, 'componente'>) => Promise<Componente>>(),

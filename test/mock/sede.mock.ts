@@ -16,6 +16,10 @@ export const mockSede:Sede = {
   user:mockUser,
 }
 
+export const mockDtoCrearSede: DtoSedeCrear = {
+  nombre: 'Sede Principal',
+}
+
 export const mockSedeService = {
   ...createMockBaseService<Sede, 'sede', DtoSedeCrear, DtoSedeEditar>(),
   createDato: jest.fn<(params: CreateProp<DtoSedeCrear, 'sede'>) => Promise<Sede>>(),

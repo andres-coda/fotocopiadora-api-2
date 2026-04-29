@@ -72,7 +72,7 @@ export class Stock extends Base {
         if (dto.actual === Estado.STOCK) break;
         this.cancelado = this.cancelado - dto.cantidad;
         break;
-      default: throw new NotFoundException('No esta desarrollado ese estado');
+      default: break;
     }
 
     switch (dto.actual) {
@@ -90,6 +90,7 @@ export class Stock extends Base {
         break
       case Estado.STOCK:
         this.stock += dto.cantidad;
+        break;
       default: throw new NotFoundException('No esta desarrollado ese estado');
     }
     return this;

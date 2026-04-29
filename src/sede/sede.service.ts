@@ -54,7 +54,7 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return sede;
+      return newSede;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
