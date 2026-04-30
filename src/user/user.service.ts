@@ -6,6 +6,7 @@ import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { UsuarioCrear } from './dto/userCrear.dto';
 import { Role } from '../auth/rol/rol.enum';
+import { EditarUsuario, ModificarRole } from './interface/usuario.interface';
 
 @Injectable()
 export class UserService {
@@ -90,28 +91,28 @@ export class UserService {
 
   // Actualiza los datos de un usuario existente.
   // Lanza una excepción si el usuario no existe.
-  async updateUsuario(id: string, datos: UsuarioCrear): Promise<User> {
+  async updateUsuario(dto:EditarUsuario): Promise<User> {
     try {
-      const usuario: User = await this.getDatoByIdOrFail(id);
-      usuario.nombre = datos.nombre;
-      usuario.email = datos.email;
-      usuario.password = datos.password;
+      const usuario: User = await this.getDatoByIdOrFail(dto.id);
+      usuario.nombre = dto.datos.nombre;
+      usuario.email = dto.datos.email;
+      usuario.password = dto.datos.password;
 
       return await this.usuarioRepository.save(usuario);
     } catch (error) {
-      throw this.erroresService.handleExceptions(error, `Error al intentar actualizar el dato con ${id} de usuario`)
+      throw this.erroresService.handleExceptions(error, `Error al intentar actualizar el dato con ${dto.id} de usuario`)
     }
   }
 
   // Modifica el rol de un usuario.
-  async modifyUsuarioRole(id: string, role: Role): Promise<User> {
+  async modifyUsuarioRole(dto:ModificarRole): Promise<User> {
     try {
-      const usuario: User = await this.getDatoByIdOrFail(id);
-      usuario.role = role;
+      const usuario: User = await this.getDatoByIdOrFail(dto.id);
+      usuario.role = dto.role;
 
       return await this.usuarioRepository.save(usuario);
     } catch (error) {
-      throw this.erroresService.handleExceptions(error, `Error al intentar modificar el rol al usuario ${id}`)
+      throw this.erroresService.handleExceptions(error, `Error al intentar modificar el rol al usuario ${dto.id}`)
     }
   }
 
