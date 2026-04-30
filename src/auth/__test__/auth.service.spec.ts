@@ -7,16 +7,12 @@ import { AuthParcialDto } from "../dto/authParcial.dto";
 import { Role } from "../rol/rol.enum";
 import { UserService } from "@src/user/user.service";
 import { mockUser, mockUserService } from "test/mock/user.mock";
+import { mockJwtService } from "test/mock/auth.mock";
 
 describe('AuthService', () => {
   let service: AuthService;
   let usuarioService: UserService;
-  let jwtService: JwtService;  
-
-  const mockJwtService = {
-    signAsync: jest.fn(),
-    verify: jest.fn(),
-  };
+  let jwtService: JwtService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -63,7 +59,7 @@ describe('AuthService', () => {
     });
   });
 
-   describe('getUserFromRequest', () => {
+  describe('getUserFromRequest', () => {
     it('debería retornar el usuario decodificado del token si es válido', async () => {
       const token = 'valid.token.here';
       const expectedUser: AuthParcialDto = {
@@ -76,7 +72,7 @@ describe('AuthService', () => {
         headers: {
           authorization: `Bearer ${token}`,
         },
-      } as unknown as Request;
+      } as any;
 
       mockJwtService.verify.mockReturnValue(expectedUser);
       const result = await service.getUserFromRequest(mockRequest);
@@ -86,7 +82,7 @@ describe('AuthService', () => {
     it('debería lanzar UnauthorizedException si no hay header de autorización', async () => {
       const mockRequest = {
         headers: {},
-      } as unknown as Request;
+      } as any;
       await expect(service.getUserFromRequest(mockRequest)).rejects.toThrow(UnauthorizedException);
     });
 
@@ -95,7 +91,7 @@ describe('AuthService', () => {
         headers: {
           authorization: 'InvalidTokenFormat',
         },
-      } as unknown as Request;
+      } as any;
 
       await expect(service.getUserFromRequest(mockRequest)).rejects.toThrow('Formato de token no válido');
     });
@@ -105,7 +101,7 @@ describe('AuthService', () => {
         headers: {
           authorization: 'Bearer invalid.token',
         },
-      } as unknown as Request;
+      } as any;
       mockJwtService.verify.mockImplementation(() => {
         throw new Error('Invalid token');
       });

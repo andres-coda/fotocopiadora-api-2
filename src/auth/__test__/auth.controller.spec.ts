@@ -5,15 +5,14 @@ import { UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from '../dto/auth.dto';
 import { AuthParcialDto } from '../dto/authParcial.dto';
 import { Role } from '../rol/rol.enum';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { mockAuthService } from 'test/mock/auth.mock';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
 
-  const mockAuthService = {
-    signIn: jest.fn(),
-    getUserFromRequest: jest.fn(),
-  };
+  
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
