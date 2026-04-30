@@ -1,18 +1,17 @@
 import { AuthService } from "../auth.service";
-import { ErroresService } from "@/errores/errores.service";
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test, TestingModule } from "@nestjs/testing";
-import { mockErrores } from "test/mock/error.mocks";
-import { UsuarioService } from "@/usuario/usuario.service";
 import { JwtService } from "@nestjs/jwt";
-import { mockUsuario, mockUsuarioService } from "test/mock/usuario.mocks";
 import { UnauthorizedException } from "@nestjs/common";
 import { AuthParcialDto } from "../dto/authParcial.dto";
 import { Role } from "../rol/rol.enum";
 import { verify } from "crypto";
+import { UserService } from "@src/user/user.service";
+import { mockUser } from "test/mock/user.mock";
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usuarioService: UsuarioService;
+  let usuarioService: UserService;
   let jwtService: JwtService;  
 
   const mockJwtService = {
@@ -24,13 +23,13 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: UsuarioService, useValue: mockUsuarioService },
+        { provide: UserService, useValue: mockUserService },
         { provide: JwtService, useValue: mockJwtService },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    usuarioService = module.get<UsuarioService>(UsuarioService);
+    usuarioService = module.get<UserService>(UserService);
     jwtService = module.get<JwtService>(JwtService);
   });
 
@@ -38,27 +37,27 @@ describe('AuthService', () => {
 
   describe('signIn', () => {
     it('debería retornar el token si el email y password son correctos', async () => {
-      mockUsuarioService.getUsuarioByEmail.mockResolvedValue(mockUsuario);
+      mockUserService.getUsuarioByEmail.mockResolvedValue(mockUser);
       mockJwtService.signAsync.mockResolvedValue('fake-jwt-token');
-      const result = await service.signIn(mockUsuario.email, mockUsuario.password);
+      const result = await service.signIn(mockUser.email, mockUser.password);
       expect(result).toEqual({ access_token: 'fake-jwt-token' });
-      expect(mockUsuarioService.getUsuarioByEmail).toHaveBeenCalledWith(mockUsuario.email);
+      expect(mockUserService.getUsuarioByEmail).toHaveBeenCalledWith(mockUser.email);
       expect(mockJwtService.signAsync).toHaveBeenCalledWith({
-        sub: mockUsuario.id,
-        email: mockUsuario.email,
-        role: mockUsuario.role,
+        sub: mockUser.id,
+        email: mockUser.email,
+        role: mockUser.role,
       });
     });
 
     it('debería lanzar UnauthorizedException si el usuario no existe', async () => {
-      mockUsuarioService.getUsuarioByEmail.mockResolvedValue(null);
+      mockUserService.getUsuarioByEmail.mockResolvedValue(null);
       await expect(service.signIn('nonexistent@example.com', '123456')).rejects.toThrow(UnauthorizedException);
     });
 
     it('debería lanzar UnauthorizedException si la contraseña es incorrecta', async () => {
-      const usuarioIncorrecto = { ...mockUsuario, password: 'diferente' };
-      mockUsuarioService.getUsuarioByEmail.mockResolvedValue(usuarioIncorrecto);
-      await expect(service.signIn(mockUsuario.email, '123456')).rejects.toThrow(UnauthorizedException);
+      const usuarioIncorrecto = { ...mockUser, password: 'diferente' };
+      mockUserService.getUsuarioByEmail.mockResolvedValue(usuarioIncorrecto);
+      await expect(service.signIn(mockUser.email, '123456')).rejects.toThrow(UnauthorizedException);
     });
   });
 
