@@ -39,6 +39,8 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         entidadError: 'propuesta de pedido'
       });
 
+      console.log('Existe: ', existe)
+
       if(existe) throw new NotFoundException(`El nombre ${dto.nombre} de la propuesta del pedido ya existe en la base de datos, elija otro nombre`);
 
       const libros: Libro[] = await this.libroService.getDatosByIds({
@@ -70,7 +72,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
       return newPropuesta;
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
+      this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
     }
   }
 
@@ -124,7 +126,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
       return { dato: newPropuesta, isQr: true }
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de propuestas`)
+      this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de propuestas`)
     }
   }
 }

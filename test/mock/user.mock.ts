@@ -1,3 +1,4 @@
+import { UsuarioCrear } from "@src/user/dto/userCrear.dto";
 import { User } from "@src/user/entity/user.entity";
 
 export const mockUser:User = {
@@ -21,3 +22,9 @@ export const mockUser:User = {
   stocks: [],
   role: 'user',
 } 
+
+export const mockUsuarioCrear: UsuarioCrear = {
+  nombre: mockUser.nombre,
+  email: mockUser.email,
+  password: mockUser.password,
+};
