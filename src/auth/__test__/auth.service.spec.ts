@@ -5,9 +5,8 @@ import { JwtService } from "@nestjs/jwt";
 import { UnauthorizedException } from "@nestjs/common";
 import { AuthParcialDto } from "../dto/authParcial.dto";
 import { Role } from "../rol/rol.enum";
-import { verify } from "crypto";
 import { UserService } from "@src/user/user.service";
-import { mockUser } from "test/mock/user.mock";
+import { mockUser, mockUserService } from "test/mock/user.mock";
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -33,15 +32,18 @@ describe('AuthService', () => {
     jwtService = module.get<JwtService>(JwtService);
   });
 
-  afterEach(() => jest.clearAllMocks());
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.resetAllMocks();
+  });
 
   describe('signIn', () => {
     it('debería retornar el token si el email y password son correctos', async () => {
-      mockUserService.getUsuarioByEmail.mockResolvedValue(mockUser);
+      mockUserService.getUserByEmail.mockResolvedValue(mockUser);
       mockJwtService.signAsync.mockResolvedValue('fake-jwt-token');
       const result = await service.signIn(mockUser.email, mockUser.password);
       expect(result).toEqual({ access_token: 'fake-jwt-token' });
-      expect(mockUserService.getUsuarioByEmail).toHaveBeenCalledWith(mockUser.email);
+      expect(mockUserService.getUserByEmail).toHaveBeenCalledWith(mockUser.email);
       expect(mockJwtService.signAsync).toHaveBeenCalledWith({
         sub: mockUser.id,
         email: mockUser.email,
@@ -50,13 +52,13 @@ describe('AuthService', () => {
     });
 
     it('debería lanzar UnauthorizedException si el usuario no existe', async () => {
-      mockUserService.getUsuarioByEmail.mockResolvedValue(null);
+      mockUserService.getUserByEmail.mockResolvedValue(null);
       await expect(service.signIn('nonexistent@example.com', '123456')).rejects.toThrow(UnauthorizedException);
     });
 
     it('debería lanzar UnauthorizedException si la contraseña es incorrecta', async () => {
       const usuarioIncorrecto = { ...mockUser, password: 'diferente' };
-      mockUserService.getUsuarioByEmail.mockResolvedValue(usuarioIncorrecto);
+      mockUserService.getUserByEmail.mockResolvedValue(usuarioIncorrecto);
       await expect(service.signIn(mockUser.email, '123456')).rejects.toThrow(UnauthorizedException);
     });
   });
