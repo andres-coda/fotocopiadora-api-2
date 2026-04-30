@@ -14,6 +14,224 @@ import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { mockGateway } from 'test/mock/gateway.mocks';
 import { Role } from '@src/auth/rol/rol.enum';
 
+describe('UserService', () => {
+  let service: UserService;
+  let repository: jest.Mocked<Repository<User>>;
+  let erroresService: jest.Mocked<ErroresService>;
+  let dataSource: jest.Mocked<DataSource>;
+
+  const mockUser: User = {
+    id: '1',
+    nombre: 'Test',
+    email: 'test@mail.com',
+    password: '123',
+    role: 'admin',
+    deleted: false,
+  } as User;
+
+  const mockDto = {
+    nombre: 'Test',
+    email: 'test@mail.com',
+    password: '123',
+  };
+
+  const mockQueryRunner: jest.Mocked<QueryRunner> = {
+    connect: jest.fn(),
+    startTransaction: jest.fn(),
+    commitTransaction: jest.fn(),
+    rollbackTransaction: jest.fn(),
+    release: jest.fn(),
+    manager: {
+      save: jest.fn(),
+    },
+  } as any;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UserService,
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOne: jest.fn(),
+            save: jest.fn(),
+          },
+        },
+        {
+          provide: DataSource,
+          useValue: {
+            createQueryRunner: jest.fn(),
+          },
+        },
+        {
+          provide: ErroresService,
+          useValue: {
+            handleExceptions: jest.fn((e) => {
+              throw e;
+            }),
+          },
+        },
+        {
+          provide: GatewayGateway,
+          useValue: {},
+        },
+      ],
+    }).compile();
+
+    service = module.get(UserService);
+    repository = module.get(getRepositoryToken(User));
+    erroresService = module.get(ErroresService);
+    dataSource = module.get(DataSource);
+
+    dataSource.createQueryRunner.mockReturnValue(mockQueryRunner);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // ===========================
+  // getDatoById
+  // ===========================
+  describe('getDatoById', () => {
+    it('✔️ debería devolver usuario', async () => {
+      repository.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.getDatoById('1');
+
+      expect(result).toEqual(mockUser);
+      expect(repository.findOne).toHaveBeenCalled();
+    });
+
+    it('❌ debería manejar error', async () => {
+      repository.findOne.mockRejectedValue(new Error('DB error'));
+
+      await expect(service.getDatoById('1')).rejects.toThrow();
+      expect(erroresService.handleExceptions).toHaveBeenCalled();
+    });
+  });
+
+  // ===========================
+  // getDatoByIdOrFail
+  // ===========================
+  describe('getDatoByIdOrFail', () => {
+    it('✔️ debería devolver usuario válido', async () => {
+      jest.spyOn(service, 'getDatoById').mockResolvedValue(mockUser);
+
+      const result = await service.getDatoByIdOrFail('1');
+
+      expect(result).toEqual(mockUser);
+    });
+
+    it('❌ debería lanzar error si no existe', async () => {
+      jest.spyOn(service, 'getDatoById').mockResolvedValue(null);
+
+      await expect(service.getDatoByIdOrFail('1')).rejects.toThrow(NotFoundException);
+    });
+
+    it('❌ debería lanzar error si está eliminado', async () => {
+      jest.spyOn(service, 'getDatoById').mockResolvedValue({
+        ...mockUser,
+        deleted: true,
+      });
+
+      await expect(service.getDatoByIdOrFail('1')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ===========================
+  // getUserByEmail
+  // ===========================
+  describe('getUserByEmail', () => {
+    it('✔️ debería devolver usuario', async () => {
+      repository.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.getUserByEmail('test@mail.com');
+
+      expect(result).toEqual(mockUser);
+    });
+
+    it('❌ debería lanzar error si no existe', async () => {
+      repository.findOne.mockResolvedValue(null);
+
+      await expect(service.getUserByEmail('test@mail.com')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ===========================
+  // createUsuario
+  // ===========================
+  describe('createUsuario', () => {
+    it('✔️ debería crear usuario correctamente', async () => {
+      mockQueryRunner.manager.save.mockResolvedValue(mockUser);
+
+      const result = await service.createUsuario(mockDto);
+
+      expect(result).toEqual(mockUser);
+      expect(mockQueryRunner.connect).toHaveBeenCalled();
+      expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.release).toHaveBeenCalled();
+    });
+
+    it('❌ debería hacer rollback si falla', async () => {
+      mockQueryRunner.manager.save.mockRejectedValue(new Error('fail'));
+
+      await expect(service.createUsuario(mockDto)).rejects.toThrow();
+
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(erroresService.handleExceptions).toHaveBeenCalled();
+    });
+  });
+
+  // ===========================
+  // updateUsuario
+  // ===========================
+  describe('updateUsuario', () => {
+    it('✔️ debería actualizar usuario', async () => {
+      jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(mockUser);
+      repository.save.mockResolvedValue(mockUser);
+
+      const result = await service.updateUsuario('1', mockDto);
+
+      expect(result).toEqual(mockUser);
+      expect(repository.save).toHaveBeenCalled();
+    });
+
+    it('❌ debería manejar error', async () => {
+      jest.spyOn(service, 'getDatoByIdOrFail').mockRejectedValue(new Error());
+
+      await expect(service.updateUsuario('1', mockDto)).rejects.toThrow();
+      expect(erroresService.handleExceptions).toHaveBeenCalled();
+    });
+  });
+
+  // ===========================
+  // modifyUsuarioRole
+  // ===========================
+  describe('modifyUsuarioRole', () => {
+    it('✔️ debería modificar rol', async () => {
+      jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(mockUser);
+      repository.save.mockResolvedValue({
+        ...mockUser,
+        role: Role.Admin,
+      });
+
+      const result = await service.modifyUsuarioRole('1', Role.Admin);
+
+      expect(result.role).toBe(Role.Admin);
+    });
+
+    it('❌ debería manejar error', async () => {
+      jest.spyOn(service, 'getDatoByIdOrFail').mockRejectedValue(new Error());
+
+      await expect(service.modifyUsuarioRole('1', Role.Admin)).rejects.toThrow();
+      expect(erroresService.handleExceptions).toHaveBeenCalled();
+    });
+  });
+});
+
+/* 
 // ─── Mocks de módulos externos ───────────────────────────────────────────────
 
 jest.mock('@src/base/entity/base.entity', () => ({ Base: class {} }));
@@ -349,4 +567,4 @@ describe('UserService', () => {
       );
     });
   });
-});
+}); */
