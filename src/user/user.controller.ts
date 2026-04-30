@@ -29,6 +29,7 @@ export class UserController {
 
   @Post()
   async createUsuario(@Body() datos: UsuarioCrear): Promise<{ access_token: string }> {
+    console.log('controller crear usuario')
     const user: User = await this.userService.createUsuario(datos);
     if (!user) throw new BadRequestException('No se pudo crear el usuario');
     const token = await this.authService.signIn(user.email, user.password);
@@ -44,8 +45,8 @@ export class UserController {
   ): Promise<User> {
     const usuario = req.user;
     if (!usuario || id != usuario.sub) throw new NotFoundException("Acción prohibida. Solo puedes acceder a tus datos");
-    if (datos.role) return await this.userService.modifyUsuarioRole(id, datos.role);
-    return await this.userService.updateUsuario(id, datos);
+    if (datos.role) return await this.userService.modifyUsuarioRole({id, role:datos.role});
+    return await this.userService.updateUsuario({id, datos});
   }
 
   @Put(':id/role')
@@ -55,7 +56,7 @@ export class UserController {
     @Body() datos: UsuarioCrear
   ): Promise<User> {
     if (!datos.role) throw new NotFoundException('Debe incluir el nuevo rol para modificarlo')
-    return await this.userService.modifyUsuarioRole(id, datos.role);
+    return await this.userService.modifyUsuarioRole({id, role:datos.role});
   }
 
 }
