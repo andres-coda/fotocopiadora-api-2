@@ -9,6 +9,8 @@ import { Role } from '../auth/rol/rol.enum';
 import { EditarUsuario, ModificarRole } from './interface/usuario.interface';
 import { Materia } from '@src/materia/entity/materia.entity';
 import { MateriaService } from '@src/materia/materia.service';
+import { Precio } from '@src/precio/entity/precio.entity';
+import { PrecioService } from '@src/precio/precio.service';
 
 @Injectable()
 export class UserService {
@@ -19,6 +21,7 @@ export class UserService {
     protected readonly erroresService: ErroresService,
     protected readonly gateway: GatewayGateway,
     private readonly materiaService: MateriaService,
+    private readonly precioService: PrecioService,
   ) {
   }
 
@@ -81,7 +84,9 @@ export class UserService {
       const newUsuario: User = await qR.manager.save(User, usuario);
       if (!newUsuario) throw new NotFoundException(`Error al intentar crear el dato ${datos.nombre} en usuario`)
 
-      const materias:Materia[] = await this.materiaService.createMateriaDefault({usuario:newUsuario, qR})
+      const materias:Materia[] = await this.materiaService.createMateriaDefault({usuario:newUsuario, qR});
+      const precios:Precio[] = await this.precioService.createPrecioDefault({usuario:newUsuario, qR})
+      
       await qR.commitTransaction();
 
       return newUsuario;

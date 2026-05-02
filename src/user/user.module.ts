@@ -7,6 +7,7 @@ import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
 import { UserController } from './user.controller';
 import { MateriaModule } from '@src/materia/materia.module';
+import { PrecioModule } from '@src/precio/precio.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MateriaModule } from '@src/materia/materia.module';
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
     forwardRef(() => MateriaModule),
+    forwardRef(() => PrecioModule),
   ],
   controllers: [UserController],
   providers: [UserService],

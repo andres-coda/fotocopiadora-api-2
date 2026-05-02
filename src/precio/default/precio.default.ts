@@ -13,35 +13,35 @@ export const NAMES_PRECIO = {
 
 export const PRECIO_DEFAULT: PrecioDefaultProp[] = [
   {
-    nombre:NAMES_PRECIO.COLOR_DOBLEFAZ,
+    tipo:NAMES_PRECIO.COLOR_DOBLEFAZ,
     importe: 180
   }, 
   {
-    nombre:NAMES_PRECIO.COLOR_SIMPLEFAZ,
+    tipo:NAMES_PRECIO.COLOR_SIMPLEFAZ,
     importe: 160
   },
   {
-    nombre:NAMES_PRECIO.BLANCOYNEGRO_DOBLEFAZ,
+    tipo:NAMES_PRECIO.BLANCOYNEGRO_DOBLEFAZ,
     importe: 120
   },
   {
-    nombre:NAMES_PRECIO.BLANCOYNEGRO_SIMPLEFAZ,
+    tipo:NAMES_PRECIO.BLANCOYNEGRO_SIMPLEFAZ,
     importe: 110
   },
   {
-    nombre:NAMES_PRECIO.ANILLADO1,
+    tipo:NAMES_PRECIO.ANILLADO1,
     importe: 2100
   },
   {
-    nombre:NAMES_PRECIO.ANILLADO2,
+    tipo:NAMES_PRECIO.ANILLADO2,
     importe: 2300
   },
   {
-    nombre:NAMES_PRECIO.ANILLADO3,
+    tipo:NAMES_PRECIO.ANILLADO3,
     importe:2500
   },
   {
-    nombre:NAMES_PRECIO.ANILLADO4,
+    tipo:NAMES_PRECIO.ANILLADO4,
     importe: 2700
   },
 ]

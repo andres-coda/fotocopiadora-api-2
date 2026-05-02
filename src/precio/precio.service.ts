@@ -4,13 +4,14 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateDefaultProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Precio } from './entity/precio.entity';
 import { DtoPrecioCrear } from './dto/precioCrear.dto';
 import { DtoPrecioEditar } from './dto/precioEditar.dto';
 import { PRECIO_RELATIONS, PRECIO_SELECTED } from './default/relacion';
+import { PRECIO_DEFAULT } from './default/precio.default';
 
 @Injectable()
 export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar> {
@@ -96,4 +97,17 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.tipo || id} en el registro de precios`)
     }
   }
+
+   async createPrecioDefault({ usuario, qR }: CreateDefaultProp): Promise<Precio[]> {
+      try {
+        const precios: Precio[] = await Promise.all(
+          PRECIO_DEFAULT.map(precio =>
+            this.createDato({ usuario, qR, dto: precio, entidad: Entidad.PRECIO })
+          )
+        );
+        return precios;
+      } catch (er) {
+        throw this.erroresService.handleExceptions(er, `Error al intentar crear precios por defecto`)
+      }
+    }
 }
