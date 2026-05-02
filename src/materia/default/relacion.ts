@@ -9,4 +9,5 @@ export const MATERIA_RELATIONS: RelationsKey<Materia> = {
 
 export const MATERIA_SELECTED: SelectedDeep<Materia> = {
   ...SELECTED_BASE,
+  nombre:true
 }

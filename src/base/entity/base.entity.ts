@@ -1,5 +1,4 @@
-import { Column, CreateDateColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import * as path from 'path';
+import { Column, CreateDateColumn, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../../user/entity/user.entity";
 
 export abstract class Base {
@@ -15,7 +14,8 @@ export abstract class Base {
   @Column()
   deleted: boolean;
 
-  @ManyToOne(() => require('../../user/entity/user.entity').User)
+  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user!: User;
 
   constructor() {

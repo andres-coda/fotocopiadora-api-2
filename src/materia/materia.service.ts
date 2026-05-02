@@ -4,13 +4,14 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateDefaultProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Materia } from './entity/materia.entity';
 import { DtoMateriaCrear } from './dto/materiaCrear.dto';
 import { DtoMateriaEditar } from './dto/materiaEditar.dto';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
+import { MATERIAS_DEFAULT } from './default/materia.default';
 
 @Injectable()
 export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar> {
@@ -61,7 +62,7 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Materia, DtoMateriaEditar,typeof Entidad.MATERIA>): Promise<UpdateRetorno<Materia>> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Materia, DtoMateriaEditar, typeof Entidad.MATERIA>): Promise<UpdateRetorno<Materia>> {
     try {
       const materia: Materia = await this.getDatoByIdOrFail({
         id,
@@ -92,6 +93,19 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de materias`)
+    }
+  }
+
+  async createMateriaDefault({ usuario, qR }: CreateDefaultProp): Promise<Materia[]> {
+    try {
+      const materias: Materia[] = await Promise.all(
+        MATERIAS_DEFAULT.map(materia =>
+          this.createDato({ usuario, qR, dto: materia, entidad: Entidad.MATERIA })
+        )
+      );
+      return materias;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear materias por defecto`)
     }
   }
 }

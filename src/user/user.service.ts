@@ -7,6 +7,8 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { UsuarioCrear } from './dto/userCrear.dto';
 import { Role } from '../auth/rol/rol.enum';
 import { EditarUsuario, ModificarRole } from './interface/usuario.interface';
+import { Materia } from '@src/materia/entity/materia.entity';
+import { MateriaService } from '@src/materia/materia.service';
 
 @Injectable()
 export class UserService {
@@ -16,6 +18,7 @@ export class UserService {
     @InjectDataSource() private readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gateway: GatewayGateway,
+    private readonly materiaService: MateriaService,
   ) {
   }
 
@@ -78,6 +81,7 @@ export class UserService {
       const newUsuario: User = await qR.manager.save(User, usuario);
       if (!newUsuario) throw new NotFoundException(`Error al intentar crear el dato ${datos.nombre} en usuario`)
 
+      const materias:Materia[] = await this.materiaService.createMateriaDefault({usuario:newUsuario, qR})
       await qR.commitTransaction();
 
       return newUsuario;

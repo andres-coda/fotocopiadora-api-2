@@ -1,6 +1,6 @@
 import { Base } from "../../base/entity/base.entity";
 import { Libro } from "../../libro/entity/libro.entity";
-import { Column, Entity, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import { DtoStockEditar } from "../dto/stockEditar.dto";
 import { Estado } from "../../interface/estado.interface";
 import { NotFoundException } from "@nestjs/common";
@@ -23,6 +23,7 @@ export class Stock extends Base {
   cancelado!: number;
 
   @OneToOne(() => Libro, libro => libro.stock)
+  @JoinColumn({ name: 'libro_id' })
   libro!: Libro;
 
   constructor() {

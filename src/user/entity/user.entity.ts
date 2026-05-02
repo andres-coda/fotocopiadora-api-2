@@ -36,37 +36,37 @@ export class User {
   @Column({ type: 'varchar', length: 255 })
   email!: string;
 
-  @OneToMany(() => Cliente, cliente => cliente.user, { cascade: true })
+  @OneToMany(() => Cliente, cliente => cliente.user )
   clientes!: Cliente[];
 
-  @OneToMany(() => ClienteResumen, cl => cl.user, { cascade: true })
+  @OneToMany(() => ClienteResumen, cl => cl.user )
   resumenes!: ClienteResumen[];
 
-  @OneToMany(() => Especificacion, esp => esp.user, { cascade: true })
+  @OneToMany(() => Especificacion, esp => esp.user )
   especificaciones!: Especificacion[];
 
-  @OneToMany(() => Libro, l => l.user, { cascade: true })
+  @OneToMany(() => Libro, l => l.user )
   libros!: Libro[];
 
-  @OneToMany(() => LibroPedido, lp => lp.user, { cascade: true })
+  @OneToMany(() => LibroPedido, lp => lp.user )
   librosPedidos!: LibroPedido[];
 
-  @OneToMany(() => Materia, materia => materia.user, { cascade: true })
+  @OneToMany(() => Materia, materia => materia.user )
   materias!: Materia[];
 
-  @OneToMany(() => Pedido, pedido => pedido.user, { cascade: true })
+  @OneToMany(() => Pedido, pedido => pedido.user )
   pedidos!: Pedido[];
 
-  @OneToMany(() => Precio, precio => precio.user, { cascade: true })
+  @OneToMany(() => Precio, precio => precio.user )
   precios!: Precio[];
 
-  @OneToMany(() => Propuesta, propuesta => propuesta.user, { cascade: true })
+  @OneToMany(() => Propuesta, propuesta => propuesta.user )
   propuestas!: Propuesta[];
 
-  @OneToMany(() => Sede, sede => sede.user, { cascade: true })
+  @OneToMany(() => Sede, sede => sede.user )
   sedes!: Sede[];
 
-  @OneToMany(() => Stock, stock => stock.user, { cascade: true })
+  @OneToMany(() => Stock, stock => stock.user )
   stocks!: Stock[];
 
   @Column({ type: 'enum', enum: Role, default: Role.User })
