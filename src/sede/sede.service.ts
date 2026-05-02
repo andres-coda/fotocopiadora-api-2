@@ -4,13 +4,14 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateDefaultProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Sede } from './entity/sede.entity';
 import { DtoSedeCrear } from './dto/sedeCrear.dto';
 import { DtoSedeEditar } from './dto/sedeEditar.dto';
 import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
+import { SEDE_DEFAULT } from './default/sede.default';
 
 @Injectable()
 export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar> {
@@ -88,10 +89,23 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return {dato:newSede, isQr:true};
+      return { dato: newSede, isQr: true };
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de sedes`)
+    }
+  }
+
+  async createSedeDefault({ usuario, qR }: CreateDefaultProp): Promise<Sede[]> {
+    try {
+      const sedes: Sede[] = await Promise.all(
+        SEDE_DEFAULT.map(sede =>
+          this.createDato({ usuario, qR, dto: sede, entidad: Entidad.SEDE })
+        )
+      );
+      return sedes;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear sedes por defecto`)
     }
   }
 }

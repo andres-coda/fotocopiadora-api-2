@@ -11,6 +11,8 @@ import { Materia } from '@src/materia/entity/materia.entity';
 import { MateriaService } from '@src/materia/materia.service';
 import { Precio } from '@src/precio/entity/precio.entity';
 import { PrecioService } from '@src/precio/precio.service';
+import { Sede } from '@src/sede/entity/sede.entity';
+import { SedeService } from '@src/sede/sede.service';
 
 @Injectable()
 export class UserService {
@@ -22,6 +24,7 @@ export class UserService {
     protected readonly gateway: GatewayGateway,
     private readonly materiaService: MateriaService,
     private readonly precioService: PrecioService,
+    private readonly sedeService: SedeService,
   ) {
   }
 
@@ -86,6 +89,7 @@ export class UserService {
 
       const materias:Materia[] = await this.materiaService.createMateriaDefault({usuario:newUsuario, qR});
       const precios:Precio[] = await this.precioService.createPrecioDefault({usuario:newUsuario, qR})
+      const sedes:Sede[] = await this.sedeService.createSedeDefault({usuario:newUsuario, qR})
       
       await qR.commitTransaction();
 
