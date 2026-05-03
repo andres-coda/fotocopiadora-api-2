@@ -1,8 +1,9 @@
 import { Base } from "../../base/entity/base.entity";
 import { Libro } from "../../libro/entity/libro.entity";
-import { Column, Entity, ManyToMany, OneToMany } from "typeorm";
+import { Column, Entity, Index, ManyToMany, OneToMany } from "typeorm";
 
 @Entity('componente')
+@Index(['nombre', 'user'], { unique: true })
 export class Componente extends Base {
 
   @Column({ type: 'varchar', length: 30 })

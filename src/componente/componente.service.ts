@@ -4,13 +4,13 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateDefaultProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Componente } from './entity/componente.entity';
 import { DtoComponenteCrear } from './dto/componenteCrear.dto';
 import { DtoComponenteEditar } from './dto/componenteEditar.dto';
-import { COMPONENTE_RELATIONS, componentesDefault, SELECTED_COMPONENTE } from './default/relacion.default';
+import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from './default/relacion.default';
 
 @Injectable()
 export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar> {
@@ -104,29 +104,6 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de componente`)
-    }
-  }
-
-  async createComponenteDefault({usuario,qR}: CreateDefaultProp): Promise<Componente[]> {
-    try {
-      const componentesxDefault: Componente[] = await Promise.all(
-        componentesDefault.map((dto) =>
-          this.createDato({
-            usuario,
-            dto,
-            qR,
-            entidad: Entidad.COMPONENTE
-          })
-        )
-      );
-
-      return componentesxDefault;
-
-    } catch (er) {
-      throw this.erroresService.handleExceptions(
-        er,
-        `Error al intentar crear los componentes por defecto`
-      );
     }
   }
 }

@@ -7,6 +7,7 @@ export const NAMES_COMPONENTE = {
   PUPILS: 'Pupils Book',
   TEACHER: 'Teach Book',
   WORKBOOK: 'Workbook',
+  ENTRY: 'Entry Book',
 } as const;
 
 export const COMPONENTE_DEFAULT: ComponenteDefaultProp[] = [
@@ -27,5 +28,8 @@ export const COMPONENTE_DEFAULT: ComponenteDefaultProp[] = [
   },
   {
     nombre:NAMES_COMPONENTE.WORKBOOK,
+  },
+  {
+    nombre:NAMES_COMPONENTE.ENTRY,
   },
 ]

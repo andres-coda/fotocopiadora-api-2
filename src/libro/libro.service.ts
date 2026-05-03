@@ -47,7 +47,27 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
         entidadError: 'libro'
       });
 
-      if (libroExiste) return libroExiste;
+      if (libroExiste) {
+        const normalize = (s: string) => s.toLowerCase().trim();
+
+        const setLibro = new Set(
+          libroExiste.componentes.map(c => normalize(c.nombre))
+        );
+
+        const setDto = new Set(
+          (dto.componentes ?? []).map(normalize)
+        );
+
+        const mismosComponentes =
+          setLibro.size === setDto.size &&
+          [...setLibro].every(nombre => setDto.has(nombre));
+
+        const mismoNivel = libroExiste.nivel === dto.nivel;
+
+        if (mismosComponentes && mismoNivel) {
+          return libroExiste;
+        }
+      }
 
       const componentes: Componente[] = await this.componenteService.getDatosByNombres({
         nombres: dto.componentes ?? [],
@@ -135,7 +155,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
       libro.cantidadPg = dto.cantidadPg ?? libro.cantidadPg;
       libro.anio = dto.anio ?? libro.anio;
       libro.adhesivo = dto.adhesivos ?? libro.adhesivo;
-      libro.autor = dto.autor ?? libro.autor;      
+      libro.autor = dto.autor ?? libro.autor;
       libro.img = dto.img ?? libro.img;
       libro.especificacionesDefecto = dto.especificacionesDefecto ?? libro.especificacionesDefecto;
       libro.materia = materia;
