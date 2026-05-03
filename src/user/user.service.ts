@@ -13,6 +13,13 @@ import { Precio } from '@src/precio/entity/precio.entity';
 import { PrecioService } from '@src/precio/precio.service';
 import { Sede } from '@src/sede/entity/sede.entity';
 import { SedeService } from '@src/sede/sede.service';
+import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
+import { SEDE_DEFAULT } from '@src/sede/default/sede.default';
+import { PRECIO_DEFAULT } from '@src/precio/default/precio.default';
+import { MATERIAS_DEFAULT } from '@src/materia/default/materia.default';
+import { EspecificacionService } from '@src/especificacion/especificacion.service';
+import { Especificacion } from '@src/especificacion/entity/especificacion.entity';
+import { ESPECIFICACION_DEFAULT } from '@src/especificacion/default/especificacion.default';
 
 @Injectable()
 export class UserService {
@@ -25,6 +32,7 @@ export class UserService {
     private readonly materiaService: MateriaService,
     private readonly precioService: PrecioService,
     private readonly sedeService: SedeService,
+    private readonly espService: EspecificacionService,
   ) {
   }
 
@@ -87,9 +95,10 @@ export class UserService {
       const newUsuario: User = await qR.manager.save(User, usuario);
       if (!newUsuario) throw new NotFoundException(`Error al intentar crear el dato ${datos.nombre} en usuario`)
 
-      const materias:Materia[] = await this.materiaService.createMateriaDefault({usuario:newUsuario, qR});
-      const precios:Precio[] = await this.precioService.createPrecioDefault({usuario:newUsuario, qR})
-      const sedes:Sede[] = await this.sedeService.createSedeDefault({usuario:newUsuario, qR})
+      const sedes:Sede[] = await this.sedeService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.SEDE, entidadError:'sedes', defecto:SEDE_DEFAULT})
+      const precios:Precio[] = await this.precioService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.PRECIO, entidadError:'precios', defecto:PRECIO_DEFAULT})
+      const materias:Materia[] = await this.materiaService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.MATERIA, entidadError:'materias', defecto:MATERIAS_DEFAULT})
+      const especificaciones:Especificacion[] = await this.espService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.ESP, entidadError:'especificaciones', defecto:ESPECIFICACION_DEFAULT})
       
       await qR.commitTransaction();
 

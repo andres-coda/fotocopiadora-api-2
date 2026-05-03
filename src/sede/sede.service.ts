@@ -95,17 +95,4 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de sedes`)
     }
   }
-
-  async createSedeDefault({ usuario, qR }: CreateDefaultProp): Promise<Sede[]> {
-    try {
-      const sedes: Sede[] = await Promise.all(
-        SEDE_DEFAULT.map(sede =>
-          this.createDato({ usuario, qR, dto: sede, entidad: Entidad.SEDE })
-        )
-      );
-      return sedes;
-    } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear sedes por defecto`)
-    }
-  }
 }

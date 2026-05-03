@@ -53,8 +53,9 @@ export interface CreateProp<P extends BaseDto, K extends keyof EntidadDatoMapTyp
   dto: P;
   entidad: K;
 }
-export interface CreateDefaultProp extends Pick<GenericoProp, 'qR'> {
-  usuario:User
+export interface CreateDefaultProp<K extends keyof EntidadDatoMapType, P extends BaseDto> extends Omit<CreateProp<P,K>, 'dto'> {
+  entidadError: string;
+  defecto: P[];
 }
 
 

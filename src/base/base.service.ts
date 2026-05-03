@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityTarget, FindManyOptions, FindOneOptions, In, Repository } from 'typeorm';
 import { Base } from './entity/base.entity';
-import { CreateElementoControllerProp, CreateProp, CriterioProp, DeletProp, EditarElementoControllerProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetNombresProp, GetProp, RelationsKey, SelectedDeep, UpdateRetorno } from './interface/base.interface';
+import { CreateDefaultProp, CreateElementoControllerProp, CreateProp, CriterioProp, DeletProp, EditarElementoControllerProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetNombresProp, GetProp, RelationsKey, SelectedDeep, UpdateRetorno } from './interface/base.interface';
 import { EntidadDatoMapType, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { ErroresService } from '../error/error.service';
@@ -490,5 +490,18 @@ export abstract class BaseService<
       await qR.release();
     }
   }
+
+  async createElementoDefault({ usuario, qR, entidad, defecto, entidadError }: CreateDefaultProp<K,CrearDto>): Promise<T[]> {
+      try {
+        const defaults: T[] = await Promise.all(
+          defecto.map(d =>
+            this.createDato({ usuario, qR, dto: d, entidad })
+          )
+        );
+        return defaults;
+      } catch (er) {
+        throw this.erroresService.handleExceptions(er, `Error al intentar crear ${entidadError} por defecto`)
+      }
+    }
 }
 
