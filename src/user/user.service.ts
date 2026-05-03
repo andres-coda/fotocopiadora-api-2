@@ -20,6 +20,9 @@ import { MATERIAS_DEFAULT } from '@src/materia/default/materia.default';
 import { EspecificacionService } from '@src/especificacion/especificacion.service';
 import { Especificacion } from '@src/especificacion/entity/especificacion.entity';
 import { ESPECIFICACION_DEFAULT } from '@src/especificacion/default/especificacion.default';
+import { ComponenteService } from '@src/componente/componente.service';
+import { Componente } from '@src/componente/entity/componente.entity';
+import { COMPONENTE_DEFAULT } from '@src/componente/default/componente.default';
 
 @Injectable()
 export class UserService {
@@ -33,6 +36,7 @@ export class UserService {
     private readonly precioService: PrecioService,
     private readonly sedeService: SedeService,
     private readonly espService: EspecificacionService,
+    private readonly componenteService: ComponenteService,
   ) {
   }
 
@@ -95,10 +99,11 @@ export class UserService {
       const newUsuario: User = await qR.manager.save(User, usuario);
       if (!newUsuario) throw new NotFoundException(`Error al intentar crear el dato ${datos.nombre} en usuario`)
 
-      const sedes:Sede[] = await this.sedeService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.SEDE, entidadError:'sedes', defecto:SEDE_DEFAULT})
-      const precios:Precio[] = await this.precioService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.PRECIO, entidadError:'precios', defecto:PRECIO_DEFAULT})
-      const materias:Materia[] = await this.materiaService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.MATERIA, entidadError:'materias', defecto:MATERIAS_DEFAULT})
-      const especificaciones:Especificacion[] = await this.espService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.ESP, entidadError:'especificaciones', defecto:ESPECIFICACION_DEFAULT})
+      const sedes:Sede[] = await this.sedeService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.SEDE, entidadError:'sedes', defecto:SEDE_DEFAULT});
+      const precios:Precio[] = await this.precioService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.PRECIO, entidadError:'precios', defecto:PRECIO_DEFAULT});
+      const materias:Materia[] = await this.materiaService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.MATERIA, entidadError:'materias', defecto:MATERIAS_DEFAULT});
+      const especificaciones:Especificacion[] = await this.espService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.ESP, entidadError:'especificaciones', defecto:ESPECIFICACION_DEFAULT});
+      const componentes:Componente[] = await this.componenteService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.COMPONENTE, entidadError:'componentes', defecto:COMPONENTE_DEFAULT});
       
       await qR.commitTransaction();
 
