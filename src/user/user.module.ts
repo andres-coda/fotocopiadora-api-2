@@ -9,6 +9,8 @@ import { UserController } from './user.controller';
 import { MateriaModule } from '@src/materia/materia.module';
 import { PrecioModule } from '@src/precio/precio.module';
 import { EspecificacionModule } from '@src/especificacion/especificacion.module';
+import { LibroModule } from '@src/libro/libro.module';
+import { ComponenteModule } from '@src/componente/componente.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { EspecificacionModule } from '@src/especificacion/especificacion.module'
     forwardRef(() => MateriaModule),
     forwardRef(() => PrecioModule),
     forwardRef(() => EspecificacionModule),
+    forwardRef(() => ComponenteModule),
+    forwardRef(() => LibroModule),
   ],
   controllers: [UserController],
   providers: [UserService],
