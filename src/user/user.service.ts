@@ -23,6 +23,9 @@ import { ESPECIFICACION_DEFAULT } from '@src/especificacion/default/especificaci
 import { ComponenteService } from '@src/componente/componente.service';
 import { Componente } from '@src/componente/entity/componente.entity';
 import { COMPONENTE_DEFAULT } from '@src/componente/default/componente.default';
+import { Libro } from '@src/libro/entity/libro.entity';
+import { LibroService } from '@src/libro/libro.service';
+import { LIBRO_DEFAULT } from '@src/libro/default/libro.default';
 
 @Injectable()
 export class UserService {
@@ -37,6 +40,7 @@ export class UserService {
     private readonly sedeService: SedeService,
     private readonly espService: EspecificacionService,
     private readonly componenteService: ComponenteService,
+    private readonly libroService: LibroService,
   ) {
   }
 
@@ -104,6 +108,7 @@ export class UserService {
       const materias:Materia[] = await this.materiaService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.MATERIA, entidadError:'materias', defecto:MATERIAS_DEFAULT});
       const especificaciones:Especificacion[] = await this.espService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.ESP, entidadError:'especificaciones', defecto:ESPECIFICACION_DEFAULT});
       const componentes:Componente[] = await this.componenteService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.COMPONENTE, entidadError:'componentes', defecto:COMPONENTE_DEFAULT});
+      const libros:Libro[] = await this.libroService.createElementoDefault({usuario:newUsuario, qR, entidad:Entidad.LIBRO, entidadError:'libros', defecto:LIBRO_DEFAULT});
       
       await qR.commitTransaction();
 
