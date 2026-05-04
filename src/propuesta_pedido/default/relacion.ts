@@ -4,7 +4,7 @@ import { Propuesta } from "../entity/propuesta_pedido.entity";
 
 export const PROPUESTA_RELATIONS: RelationsKey<Propuesta> = {
   relations: ['libro'],
-  nestedRelations: {}
+  nestedRelations: {'libro':{'componentes':{}}}
 };
 
 export const PROPUESTA_SELECTED: SelectedDeep<Propuesta> = {
@@ -15,6 +15,14 @@ export const PROPUESTA_SELECTED: SelectedDeep<Propuesta> = {
     nombre: true,
     anio: true,
     cantidadPg: true,
-    adhesivo: true
+    adhesivo: true,
+    nivel:true,
+    especificacionesDefecto:true,
+    componentes:{
+      id:true,
+      nombre:true
+    },
+    editorial:true,
+    edicion:true
   }
 }

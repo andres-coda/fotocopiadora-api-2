@@ -12,8 +12,9 @@ import { DtoPropuestaCrear } from './dto/propuesta_pedidoCrear.dto';
 import { DtoPropuestaEditar } from './dto/propuesta_pedidoEditar.dto';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
-import { PROPUESTA_RELATIONS } from './default/relacion';
+import { PROPUESTA_RELATIONS, PROPUESTA_SELECTED } from './default/relacion';
 import { PRECIO_SELECTED } from '@src/precio/default/relacion';
+import { LIBRO_RELATIONS, SELECTED_LIBROS_TODOS } from '@src/libro/default/relacion.default';
 
 
 @Injectable()
@@ -35,7 +36,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         usuarioId: usuario.id,
         qR,
         relaciones: [PROPUESTA_RELATIONS],
-        selected: PRECIO_SELECTED,
+        selected: PROPUESTA_SELECTED,
         entidadError: 'propuesta de pedido'
       });
 
@@ -103,7 +104,9 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
           ids: dto.libros,
           entidadError: 'libro',
           qR,
-          usuarioId
+          usuarioId,
+          relaciones:[LIBRO_RELATIONS],
+          selected:SELECTED_LIBROS_TODOS
         });
 
       propuesta.nombre = dto.nombre ?? propuesta.nombre;

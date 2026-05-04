@@ -30,7 +30,8 @@ export const SELECTED_LIBROS_TODOS: SelectedDeep<Libro> = {
   componentes: {
     id: true,
     nombre: true
-  }
+  },
+  especificacionesDefecto:true
 }
 
 export const SELECTED_LIBRO: SelectedDeep<Libro> = {
