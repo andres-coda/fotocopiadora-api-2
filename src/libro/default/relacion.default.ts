@@ -7,8 +7,14 @@ export const LIBRO_RELATIONS: RelationsKey<Libro> = {
   nestedRelations: {}
 };
 
-export const SELECTED_LIBRO: SelectedDeep<Libro> = {
+export const SELECTED_LIBROS_TODOS: SelectedDeep<Libro> = {
   ...SELECTED_BASE,
+  nombre: true,
+  cantidadPg: true,
+  nivel: true,
+  editorial: true,
+  anio: true,
+  adhesivo: true,
   materia: {
     id: true,
     nombre: true
@@ -21,8 +27,16 @@ export const SELECTED_LIBRO: SelectedDeep<Libro> = {
     retirado: true,
     cancelado: true,
   },
-  componentes:{
-    id:true,
-    nombre:true
+  componentes: {
+    id: true,
+    nombre: true
   }
 }
+
+export const SELECTED_LIBRO: SelectedDeep<Libro> = {
+  ...SELECTED_LIBROS_TODOS,
+  descripcion: true,
+  edicion: true,
+  img: true
+}
+

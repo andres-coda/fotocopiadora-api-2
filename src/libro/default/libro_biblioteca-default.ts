@@ -1,9 +1,9 @@
 import { NAMES_EDITORIAL } from "@src/default/editoriales.default";
 import { LibroDefaultProp } from "../interface/libro.interface";
-import { NAMES_LIBRO } from "./libro.default";
 import { NAMES_MATERIAS } from "@src/materia/default/materia.default";
 import { NAMES_COMPONENTE } from "@src/componente/default/componente.default";
 import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
+import { NAMES_LIBRO } from "./libro_name.default";
 
 export const LIBRO_LEARN: LibroDefaultProp[] = [
   {

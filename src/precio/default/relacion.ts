@@ -9,4 +9,6 @@ export const PRECIO_RELATIONS: RelationsKey<Precio> = {
 
 export const PRECIO_SELECTED: SelectedDeep<Precio> = {
   ...SELECTED_BASE,
+  nombre:true,
+  importe:true
 }

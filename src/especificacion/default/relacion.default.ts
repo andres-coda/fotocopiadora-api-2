@@ -9,4 +9,5 @@ export const ESPECIFICACION_RELATIONS: RelationsKey<Especificacion> = {
 
 export const SELECTED_ESPECIFICACION: SelectedDeep<Especificacion> = {
   ...SELECTED_BASE,
+  nombre:true
 }

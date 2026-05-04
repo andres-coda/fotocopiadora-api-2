@@ -4,7 +4,7 @@ import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 export class DtoPrecioCrear extends BaseDto {
   @IsNotEmpty()
   @IsString()
-  tipo!: string;
+  nombre!: string;
 
   @IsNotEmpty()
   @IsNumber()

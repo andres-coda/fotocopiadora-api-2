@@ -27,7 +27,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
   async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPrecioCrear, typeof Entidad.PRECIO>): Promise<Precio> {
     try {
       const precioExistente: Precio | null = await this.getDatoByName({
-        dato: dto.tipo,
+        dato: dto.nombre,
         usuarioId: usuario.id,
         qR,
         relaciones: [PRECIO_RELATIONS],
@@ -35,10 +35,12 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
         entidadError: 'precio'
       });
 
+      console.log(`Precio de ${dto.nombre} existente: ${precioExistente?.nombre || 'no existe'}`)
+
       if (precioExistente) return precioExistente;
 
       const precio: Precio = new Precio();
-      precio.tipo = dto.tipo;
+      precio.nombre = dto.nombre;
       precio.importe = dto.importe;
       precio.user = usuario;
 
@@ -59,7 +61,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
       return newPrecio;
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.tipo} en el registro de ${entidad}`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
     }
   }
 
@@ -74,7 +76,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
         entidadError
       });
 
-      precio.tipo = dto.tipo || precio.tipo;
+      precio.nombre = dto.nombre || precio.nombre;
       precio.importe = dto.importe || precio.importe;
 
       const newPrecio: Precio = qR
@@ -91,23 +93,10 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return { dato:newPrecio, isQr:true}
+      return { dato: newPrecio, isQr: true }
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.tipo || id} en el registro de precios`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de precios`)
     }
   }
-
-   async createPrecioDefault({ usuario, qR }: CreateDefaultProp): Promise<Precio[]> {
-      try {
-        const precios: Precio[] = await Promise.all(
-          PRECIO_DEFAULT.map(precio =>
-            this.createDato({ usuario, qR, dto: precio, entidad: Entidad.PRECIO })
-          )
-        );
-        return precios;
-      } catch (er) {
-        throw this.erroresService.handleExceptions(er, `Error al intentar crear precios por defecto`)
-      }
-    }
 }

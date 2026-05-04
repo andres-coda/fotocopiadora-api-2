@@ -5,7 +5,6 @@ import { DataSource, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { UsuarioCrear } from './dto/userCrear.dto';
-import { Role } from '../auth/rol/rol.enum';
 import { EditarUsuario, ModificarRole } from './interface/usuario.interface';
 import { Materia } from '@src/materia/entity/materia.entity';
 import { MateriaService } from '@src/materia/materia.service';

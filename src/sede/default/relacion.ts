@@ -9,4 +9,5 @@ export const SEDE_RELATIONS: RelationsKey<Sede> = {
 
 export const SEDE_SELECTED: SelectedDeep<Sede> = {
   ...SELECTED_BASE,
+  nombre:true
 }

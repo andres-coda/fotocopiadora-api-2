@@ -95,17 +95,4 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de materias`)
     }
   }
-
-  async createMateriaDefault({ usuario, qR }: CreateDefaultProp): Promise<Materia[]> {
-    try {
-      const materias: Materia[] = await Promise.all(
-        MATERIAS_DEFAULT.map(materia =>
-          this.createDato({ usuario, qR, dto: materia, entidad: Entidad.MATERIA })
-        )
-      );
-      return materias;
-    } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear materias por defecto`)
-    }
-  }
 }

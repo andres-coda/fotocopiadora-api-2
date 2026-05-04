@@ -4,7 +4,7 @@ import { IsNumber, IsOptional, IsString } from "class-validator";
 export class DtoPrecioEditar extends BaseDto {
   @IsOptional()
   @IsString()
-  tipo?: string;
+  nombre?: string;
 
   @IsOptional()
   @IsNumber()

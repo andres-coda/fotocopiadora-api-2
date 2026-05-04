@@ -5,7 +5,7 @@ import { Column, Entity } from "typeorm";
 export class Precio extends Base {
 
   @Column({type: 'varchar', length: 64})
-  tipo!: string;
+  nombre!: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   importe!: number;

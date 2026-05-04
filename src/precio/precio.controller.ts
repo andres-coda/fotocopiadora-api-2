@@ -12,6 +12,6 @@ export class PrecioController extends BaseController<typeof Entidad.PRECIO, Prec
   constructor(
     protected readonly precioService: PrecioService,
   ) {
-    super(precioService, Entidad.PRECIO, 'precio', [PRECIO_RELATIONS], 'tipo', PRECIO_SELECTED)
+    super(precioService, Entidad.PRECIO, 'precio', [PRECIO_RELATIONS], 'nombre', PRECIO_SELECTED)
   }
 }
