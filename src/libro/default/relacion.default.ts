@@ -37,6 +37,8 @@ export const SELECTED_LIBRO: SelectedDeep<Libro> = {
   ...SELECTED_LIBROS_TODOS,
   descripcion: true,
   edicion: true,
-  img: true
+  img: true,
+  fechaActualizacion:true,
+  fechaCreacion:true
 }
 

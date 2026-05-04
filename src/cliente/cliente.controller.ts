@@ -5,14 +5,14 @@ import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
 import { ClienteService } from './cliente.service';
-import { CLIENTE_RELATIONS, CLIENTE_SELECTED } from './default/relacion';
+import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID } from './default/relacion';
 
 @Controller('cliente')
 export class ClienteController extends BaseController<typeof Entidad.CLIENTE,Cliente, DtoClienteCrear, DtoClienteEditar> {
   constructor(
     protected readonly clienteService: ClienteService,
   ) {
-    super(clienteService, Entidad.CLIENTE, 'cliente', [CLIENTE_RELATIONS], 'telefono', CLIENTE_SELECTED)
+    super(clienteService, Entidad.CLIENTE, 'cliente', [CLIENTE_RELATIONS], 'telefono', CLIENTE_SELECTED_BY_ID, undefined, CLIENTE_SELECTED)
   }
 }
 

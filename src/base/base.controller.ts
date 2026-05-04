@@ -21,6 +21,8 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
     protected readonly relaciones?: RelationsKey<T>[],
     protected readonly orden?: keyof T & string,
     protected readonly selected?: SelectedDeep<T>,
+    protected readonly relacionesGenerales?: RelationsKey<T>[],
+    protected readonly selectedGeneral?: SelectedDeep<T>,
   ) { }
 
   /**
@@ -39,8 +41,8 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
     return this.baseService.getDato({
       usuarioId: user.sub,
       entidadError: this.entidadError,
-      relaciones: this.relaciones,
-      selected: this.selected,
+      relaciones: this.relacionesGenerales ?? this.relaciones,
+      selected: this.selectedGeneral || this.selected,
       orden: this.orden
     });
   }

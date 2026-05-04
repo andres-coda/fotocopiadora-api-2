@@ -12,6 +12,8 @@ export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
   telefono:true,
   email:true,
   nombre:true,
+  fechaActualizacion:false,
+  fechaCreacion:false,
   pedidos:{
     libroPedidos:{
       estado:true,
@@ -22,6 +24,8 @@ export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
 
 export const CLIENTE_SELECTED_BY_ID: SelectedDeep<Cliente> = {
   ...CLIENTE_SELECTED,
+  fechaActualizacion:true,
+  fechaCreacion:true,
   pedidos:{
     id:true,
     anillados:true,

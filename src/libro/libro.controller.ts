@@ -5,13 +5,13 @@ import { DtoLibroEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { LibroService } from './libro.service';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
-import { LIBRO_RELATIONS, SELECTED_LIBRO } from './default/relacion.default';
+import { LIBRO_RELATIONS, SELECTED_LIBRO, SELECTED_LIBROS_TODOS } from './default/relacion.default';
 
 @Controller('libro')
 export class LibroController extends BaseController<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar> {
   constructor(
     protected readonly libroService: LibroService,
   ) {
-    super(libroService, Entidad.LIBRO, 'libro', [LIBRO_RELATIONS], 'nombre', SELECTED_LIBRO)
+    super(libroService, Entidad.LIBRO, 'libro', [LIBRO_RELATIONS], 'nombre', SELECTED_LIBRO, undefined, SELECTED_LIBROS_TODOS)
   }
 }

@@ -9,6 +9,8 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { BaseDto } from './dto/baseDto';
 import { BASE_RELATIONS, mergeNestedRelations, mergeRelationsBase, mergeSimpleRelations, relacionesAString } from '../utils/relacion';
 import { QueryRunner } from 'typeorm/browser';
+import { DtoBaseRetorno } from './dto/baseRetorno.dto';
+import { User } from '@src/user/entity/user.entity';
 
 @Injectable()
 export abstract class BaseService<
@@ -161,6 +163,13 @@ export abstract class BaseService<
       ...(orden && { order: { [orden]: 'ASC' } }),
     } as TOptions;
   }
+
+  protected toRespuesta(dato: T): T {
+    const newUser: User = new User();
+    newUser.id = dato.user.id;
+    return { ...dato, user: newUser }
+  }
+
 
   /**
    * Obtiene todos los datos activos (no eliminados) asociados a un usuario.
@@ -491,17 +500,17 @@ export abstract class BaseService<
     }
   }
 
-  async createElementoDefault({ usuario, qR, entidad, defecto, entidadError }: CreateDefaultProp<K,CrearDto>): Promise<T[]> {
-      try {
-        const defaults: T[] = await Promise.all(
-          defecto.map(d =>
-            this.createDato({ usuario, qR, dto: d, entidad })
-          )
-        );
-        return defaults;
-      } catch (er) {
-        throw this.erroresService.handleExceptions(er, `Error al intentar crear ${entidadError} por defecto`)
-      }
+  async createElementoDefault({ usuario, qR, entidad, defecto, entidadError }: CreateDefaultProp<K, CrearDto>): Promise<T[]> {
+    try {
+      const defaults: T[] = await Promise.all(
+        defecto.map(d =>
+          this.createDato({ usuario, qR, dto: d, entidad })
+        )
+      );
+      return defaults;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear ${entidadError} por defecto`)
     }
+  }
 }
 

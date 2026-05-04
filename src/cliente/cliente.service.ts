@@ -13,6 +13,8 @@ import { DtoClienteEditar } from './dto/clienteEditar.dto';
 import { CLIENTE_RELATIONS, CLIENTE_SELECTED } from './default/relacion';
 import { ClienteRetorno } from './interface/cliente_retorno.interface';
 import { Estado } from '@src/interface/estado.interface';
+import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
+import { User } from '@src/user/entity/user.entity';
 
 interface getClientes {
   usuarioId: string;
@@ -151,36 +153,36 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     }
   }
 
-    /**
-   * Crea un nuevo cliente asociado a un usuario.
-   *
-   * Flujo:
-   * 1. Valida que el DTO contenga al menos un identificador (telefono o email).
-   * 2. Verifica si ya existe un cliente con ese dato (telefono/email) para el usuario.
-   *    - Si existe, retorna ese cliente sin crear uno nuevo.
-   * 3. Si no existe:
-   *    - Instancia un nuevo cliente
-   *    - Asigna propiedades desde el DTO
-   *    - Persiste en base de datos (con o sin QueryRunner)
-   * 4. Si la operación NO está dentro de una transacción:
-   *    - Emite un evento vía Gateway notificando la creación
-   *
-   * Soporte de transacciones:
-   * - Si se provee un QueryRunner, todas las operaciones se ejecutan dentro de la transacción.
-   * - Si no se provee, se utiliza el repositorio directamente.
-   *
-   * Manejo de errores:
-   * - Cualquier error es capturado y transformado mediante erroresService.
-   *
-   * @param usuario - Usuario propietario del cliente
-   * @param dto - Datos para crear el cliente
-   * @param entidad - Nombre de la entidad para logging/eventos
-   * @param qR - QueryRunner opcional para transacciones
-   *
-   * @returns Cliente existente o recién creado
-   *
-   * @throws HttpException - Si ocurre un error en la operación
-   */
+  /**
+ * Crea un nuevo cliente asociado a un usuario.
+ *
+ * Flujo:
+ * 1. Valida que el DTO contenga al menos un identificador (telefono o email).
+ * 2. Verifica si ya existe un cliente con ese dato (telefono/email) para el usuario.
+ *    - Si existe, retorna ese cliente sin crear uno nuevo.
+ * 3. Si no existe:
+ *    - Instancia un nuevo cliente
+ *    - Asigna propiedades desde el DTO
+ *    - Persiste en base de datos (con o sin QueryRunner)
+ * 4. Si la operación NO está dentro de una transacción:
+ *    - Emite un evento vía Gateway notificando la creación
+ *
+ * Soporte de transacciones:
+ * - Si se provee un QueryRunner, todas las operaciones se ejecutan dentro de la transacción.
+ * - Si no se provee, se utiliza el repositorio directamente.
+ *
+ * Manejo de errores:
+ * - Cualquier error es capturado y transformado mediante erroresService.
+ *
+ * @param usuario - Usuario propietario del cliente
+ * @param dto - Datos para crear el cliente
+ * @param entidad - Nombre de la entidad para logging/eventos
+ * @param qR - QueryRunner opcional para transacciones
+ *
+ * @returns Cliente existente o recién creado
+ *
+ * @throws HttpException - Si ocurre un error en la operación
+ */
   async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<Cliente> {
     try {
       const dato: string | undefined = dto.telefono || dto.email;

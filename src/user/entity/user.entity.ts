@@ -1,3 +1,4 @@
+import { Exclude } from "class-transformer";
 import { Role } from "../../auth/rol/rol.enum";
 import { Cliente } from "../../cliente/entity/cliente.entity";
 import { ClienteResumen } from "../../cliente_resumen/entity/clienteResumen.entity";
@@ -27,48 +28,63 @@ export class User {
   @Column()
   deleted: boolean;
 
+  @Exclude()
   @Column({ type: 'varchar', length: 100 })
   nombre!: string;
-
+  
+  @Exclude()
   @Column({ type: 'varchar' })
   password!: string;
 
+  @Exclude()
   @Column({ type: 'varchar', length: 255 })
   email!: string;
 
+  @Exclude()
   @OneToMany(() => Cliente, cliente => cliente.user )
   clientes!: Cliente[];
 
+  @Exclude()
   @OneToMany(() => ClienteResumen, cl => cl.user )
   resumenes!: ClienteResumen[];
 
+  @Exclude()
   @OneToMany(() => Especificacion, esp => esp.user )
   especificaciones!: Especificacion[];
 
+  @Exclude()
   @OneToMany(() => Libro, l => l.user )
   libros!: Libro[];
 
+  @Exclude()
   @OneToMany(() => LibroPedido, lp => lp.user )
   librosPedidos!: LibroPedido[];
 
+  @Exclude()
   @OneToMany(() => Materia, materia => materia.user )
   materias!: Materia[];
 
+  @Exclude()
   @OneToMany(() => Pedido, pedido => pedido.user )
   pedidos!: Pedido[];
 
+  @Exclude()
   @OneToMany(() => Precio, precio => precio.user )
   precios!: Precio[];
 
+  @Exclude()
   @OneToMany(() => Propuesta, propuesta => propuesta.user )
   propuestas!: Propuesta[];
 
+  @Exclude()
   @OneToMany(() => Sede, sede => sede.user )
   sedes!: Sede[];
 
+  @Exclude()
   @OneToMany(() => Stock, stock => stock.user )
   stocks!: Stock[];
 
+  @Exclude()
   @Column({ type: 'enum', enum: Role, default: Role.User })
   role!: string;
 
