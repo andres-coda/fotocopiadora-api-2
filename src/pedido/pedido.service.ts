@@ -15,7 +15,6 @@ import { ClienteService } from '../cliente/cliente.service';
 import { LibroPedidoService } from '@src/libro_pedido/libro_pedido.service';
 import { LibroPedido } from '@src/libro_pedido/entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from '@src/libro_pedido/dto/DtoCrearLibroPedido.dto';
-import { Stock } from '@src/stock/entity/stock.entity';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -119,11 +118,11 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
             pedido_id: newPedido.id
           };
 
-          return this.libroPedidoService.createDato({
+          return this.libroPedidoService.createDatoXEntidad({
             usuario,
             qR,
             dto: dtoLp,
-            entidad: Entidad.LIBRO_PEDIDO
+            pedido: newPedido
           });
         })
       );

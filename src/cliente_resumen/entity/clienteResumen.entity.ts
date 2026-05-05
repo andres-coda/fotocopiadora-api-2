@@ -52,7 +52,7 @@ export class ClienteResumen extends Base {
         }
         this.retirado = this.retirado - 1;
         break;
-      default: throw new NotFoundException('No esta desarrollado ese estado');
+      default: break;
     }
 
     switch (dto.actual) {

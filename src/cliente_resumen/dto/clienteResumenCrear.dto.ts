@@ -8,4 +8,8 @@ export class DtoResumenCrear extends BaseDto {
   @IsOptional()
   @IsEnum(Estado)
   estado?: Estado;
+
+  @IsOptional()
+  @IsUUID()
+  cliente_id?:string;
 }

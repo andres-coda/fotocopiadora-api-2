@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '@src/base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
@@ -13,8 +13,8 @@ import { DtoClienteEditar } from './dto/clienteEditar.dto';
 import { CLIENTE_RELATIONS, CLIENTE_SELECTED } from './default/relacion';
 import { ClienteRetorno } from './interface/cliente_retorno.interface';
 import { Estado } from '@src/interface/estado.interface';
-import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
-import { User } from '@src/user/entity/user.entity';
+import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
+import { ClienteResumen } from '@src/cliente_resumen/entity/clienteResumen.entity';
 
 interface getClientes {
   usuarioId: string;
@@ -27,6 +27,8 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
+    @Inject(forwardRef(() => ClienteResumenService))
+    private readonly resumenService: ClienteResumenService,
   ) {
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -206,6 +208,13 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       const newCliente: Cliente = qR
         ? await qR.manager.save(Cliente, cliente)
         : await this.clienteRepository.save(cliente);
+
+      const resumen:ClienteResumen = await this.resumenService.createDatoXEntidad({
+        qR,
+        usuario,
+        dto:{},
+        cliente:newCliente
+      });
 
       if (!qR) {
         const payload: Mensaje = {

@@ -30,6 +30,10 @@ import { Sede } from '../sede/entity/sede.entity';
 import { SedeService } from '../sede/sede.service';
 import { Estado } from '@src/interface/estado.interface';
 
+interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.RESUMEN>, "entidad"> {
+  pedido: Pedido
+}
+
 @Injectable()
 export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
   constructor(
@@ -48,16 +52,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
   }
 
   async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoLibroPedidoCrear, typeof Entidad.LIBRO_PEDIDO>): Promise<LibroPedido> {
-    try {
-
-      const libro: Libro = await this.libroService.getDatoByIdOrFail({
-        id: dto.libro_id,
-        qR,
-        relaciones: [LIBRO_RELATIONS],
-        entidadError: 'libro',
-        usuarioId: usuario.id,
-        selected: SELECTED_LIBRO
-      });
+    try {      
 
       const pedido: Pedido = await this.pedidoService.getDatoByIdOrFail({
         id: dto.pedido_id,
@@ -68,63 +63,9 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         selected: PEDIDO_SELECTED
       });
 
-      const sede: Sede = await this.sedeService.getDatoByIdOrFail({
-        id: dto.sede_id,
-        qR,
-        entidadError: 'sede',
-        usuarioId: usuario.id,
-      });
-
-      const especificaciones: Especificacion[] = await this.espService.getDatosByNombres({
-        nombres: dto.especificaciones || [],
-        qR,
-        relaciones: [ESPECIFICACION_RELATIONS],
-        entidadError: 'pedido',
-        usuarioId: usuario.id,
-        selected: SELECTED_ESPECIFICACION
-      });
-
-      const libroPedido: LibroPedido = new LibroPedido();
-      libroPedido.cantidad = dto.cantidad || 0;
-      libroPedido.detalles = dto.detalles;
-      libroPedido.libro = libro;
-      libroPedido.pedido = pedido;
-      libroPedido.sede = sede;
-      if (especificaciones) libroPedido.especificaciones = especificaciones;
-      libroPedido.user = usuario;
-
-      const newLibroPedido: LibroPedido = qR
-        ? await qR.manager.save(LibroPedido, libroPedido)
-        : await this.libroPedidoRepository.save(libroPedido);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad: entidad,
-          dato: newLibroPedido
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
-      const dtoStock:DtoStockEditar = {
-        actual: Estado.PENDIENTE,
-        cantidad: dto.cantidad
-      }
-
-      const stockRetorno:UpdateRetorno<Stock> = await this.stockService.updateDato({
-        usuarioId:usuario.id,
-        qR,
-        dto:dtoStock,
-        id: libro.stock.id,
-        entidadError: 'stock',
-        relaciones: [STOCK_RELATIONS],
-        selected: STOCK_SELECTED,
-        entidad:Entidad.STOCK
-      });
-
-      newLibroPedido.libro.stock = stockRetorno.dato;
-
+     const newLibroPedido: LibroPedido = await this.createDatoXEntidad({
+      usuario, qR, dto, pedido
+     })
       return newLibroPedido;
 
     } catch (er) {
@@ -209,6 +150,86 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar item de libro en pedidos`)
+    }
+  }
+
+  async createDatoXEntidad({dto, usuario, qR, pedido}:CreateDatoXEntidadProp):Promise<LibroPedido>{
+    try {
+
+      const libro: Libro = await this.libroService.getDatoByIdOrFail({
+        id: dto.libro_id,
+        qR,
+        relaciones: [LIBRO_RELATIONS],
+        entidadError: 'libro',
+        usuarioId: usuario.id,
+        selected: SELECTED_LIBRO
+      });
+
+      const sede: Sede = await this.sedeService.getDatoByIdOrFail({
+        id: dto.sede_id,
+        qR,
+        entidadError: 'sede',
+        usuarioId: usuario.id,
+      });
+
+      const dtoEsp: Especificaciones[] = dto.especificaciones && dto.especificaciones?.length> 0 
+        ? dto.especificaciones
+        : !libro.especificacionesDefecto ?[] : libro.especificacionesDefecto;
+
+      const especificaciones: Especificacion[] = await this.espService.getDatosByNombres({
+        nombres: dtoEsp,
+        qR,
+        relaciones: [ESPECIFICACION_RELATIONS],
+        entidadError: 'pedido',
+        usuarioId: usuario.id,
+        selected: SELECTED_ESPECIFICACION
+      });
+
+      const libroPedido: LibroPedido = new LibroPedido();
+      libroPedido.cantidad = dto.cantidad || 0;
+      libroPedido.detalles = dto.detalles;
+      libroPedido.libro = libro;
+      libroPedido.pedido = pedido;
+      libroPedido.sede = sede;
+      if (especificaciones) libroPedido.especificaciones = especificaciones;
+      libroPedido.user = usuario;
+
+      const newLibroPedido: LibroPedido = qR
+        ? await qR.manager.save(LibroPedido, libroPedido)
+        : await this.libroPedidoRepository.save(libroPedido);
+
+      if (!qR) {
+        const payload: Mensaje = {
+          mensaje: Mens.CREAR,
+          entidad: Entidad.PEDIDO,
+          dato: newLibroPedido
+        }
+
+        this.gatewayGateway.actualizacionDato(payload);
+      }
+
+      const dtoStock:DtoStockEditar = {
+        actual: Estado.PENDIENTE,
+        cantidad: dto.cantidad
+      }
+
+      const stockRetorno:UpdateRetorno<Stock> = await this.stockService.updateDato({
+        usuarioId:usuario.id,
+        qR,
+        dto:dtoStock,
+        id: libro.stock.id,
+        entidadError: 'stock',
+        relaciones: [STOCK_RELATIONS],
+        selected: STOCK_SELECTED,
+        entidad:Entidad.STOCK
+      });
+
+      newLibroPedido.libro.stock = stockRetorno.dato;
+
+      return newLibroPedido;
+
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear el item del pedido en el registro de pedidos`)
     }
   }
 
