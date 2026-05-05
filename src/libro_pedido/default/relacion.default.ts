@@ -4,7 +4,7 @@ import { LibroPedido } from "../entity/libroPedido.entity";
 
 export const LIBRO_PEDIDO_RELATIONS: RelationsKey<LibroPedido> = {
   relations: ['libro', 'pedido', 'sede'],
-  nestedRelations: {'pedido':{'cliente':{}}}
+  nestedRelations: {'pedido':{'cliente':{}}, 'libro':{componentes:{}}}
 };
 
 export const SELECTED_LIBRO_PEDIDO: SelectedDeep<LibroPedido> = {
@@ -17,6 +17,10 @@ export const SELECTED_LIBRO_PEDIDO: SelectedDeep<LibroPedido> = {
     cantidadPg:true,
     adhesivo:true,
     anio:true,
+    componentes:{
+      id:true,
+      nombre:true
+    }
   },
   pedido:{
     id:true,

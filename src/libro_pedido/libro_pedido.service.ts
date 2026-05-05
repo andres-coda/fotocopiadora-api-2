@@ -28,6 +28,7 @@ import { DtoStockEditar } from '../stock/dto/stockEditar.dto';
 import { STOCK_RELATIONS, STOCK_SELECTED } from '../stock/default/relacion';
 import { Sede } from '../sede/entity/sede.entity';
 import { SedeService } from '../sede/sede.service';
+import { Estado } from '@src/interface/estado.interface';
 
 @Injectable()
 export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
@@ -105,6 +106,24 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
 
         this.gatewayGateway.actualizacionDato(payload);
       }
+
+      const dtoStock:DtoStockEditar = {
+        actual: Estado.PENDIENTE,
+        cantidad: dto.cantidad
+      }
+
+      const stockRetorno:UpdateRetorno<Stock> = await this.stockService.updateDato({
+        usuarioId:usuario.id,
+        qR,
+        dto:dtoStock,
+        id: libro.stock.id,
+        entidadError: 'stock',
+        relaciones: [STOCK_RELATIONS],
+        selected: STOCK_SELECTED,
+        entidad:Entidad.STOCK
+      });
+
+      newLibroPedido.libro.stock = stockRetorno.dato;
 
       return newLibroPedido;
 

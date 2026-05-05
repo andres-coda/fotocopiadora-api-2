@@ -62,6 +62,8 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
 
       const stock:Stock = stockExistente.verificarStock(dto);
 
+      console.log('Stock : ', stock)
+
       const newStock: Stock = qR
         ? await qR.manager.save(Stock, stock)
         : await this.stockRepository.save(stock);
