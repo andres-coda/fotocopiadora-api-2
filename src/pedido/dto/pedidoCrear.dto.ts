@@ -2,11 +2,14 @@ import { BaseDto } from "../../base/dto/baseDto";
 import { DtoClienteCrear } from "../../cliente/dto/clienteCrear.dto";
 import { DtoLibroPedidoCrearParcial } from "../../libro_pedido/dto/DtoCrearLibroPedido.dto";
 import { Type } from "class-transformer";
-import { ArrayMinSize, IsArray, IsNotEmpty, IsNumber, IsString, IsUUID, ValidateIf, ValidateNested } from "class-validator";
+import { ArrayMinSize, IsArray, IsDateString, IsNotEmpty, IsNumber, IsString, IsUUID, Matches, ValidateIf, ValidateNested } from "class-validator";
 
 export class DtoPedidoCrear extends BaseDto {
   @IsNotEmpty()
-  @IsString()
+  @IsDateString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'La fecha debe tener formato YYYY-MM-DD'
+  })
   fechaEntrega!: string;
 
   @IsNotEmpty()

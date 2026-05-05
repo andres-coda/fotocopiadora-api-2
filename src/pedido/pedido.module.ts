@@ -11,6 +11,7 @@ import { Cliente } from '../cliente/entity/cliente.entity';
 import { ClienteModule } from '../cliente/cliente.module';
 import { Pedido } from './entity/pedido.entity';
 import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
+import { LibroPedidoModule } from '@src/libro_pedido/libro_pedido.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
     forwardRef(() => ClienteModule),
+    forwardRef(() => LibroPedidoModule),
   ],
   controllers: [PedidoController],
   providers: [PedidoService],

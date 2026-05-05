@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
@@ -37,6 +37,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
     private readonly libroService: LibroService,
+    @Inject(forwardRef(() => PedidoService))
     private readonly pedidoService: PedidoService,
     private readonly espService: EspecificacionService,
     private readonly stockService: StockService,

@@ -20,7 +20,9 @@ export const PROPUESTA_SELECTED: SelectedDeep<Propuesta> = {
     especificacionesDefecto:true,
     componentes:{
       id:true,
-      nombre:true
+      nombre:true,
+      fechaActualizacion:false,
+      fechaCreacion:false,
     },
     editorial:true,
     edicion:true

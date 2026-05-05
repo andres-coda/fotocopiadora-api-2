@@ -12,3 +12,9 @@ export const SELECTED_COMPONENTE: SelectedDeep<Componente> = {
   ...SELECTED_BASE,
   nombre:true,
 }
+
+export const SELECTED_COMPONENTE_BY_ID: SelectedDeep<Componente> = {
+  ...SELECTED_COMPONENTE,
+  fechaActualizacion:true,
+  fechaCreacion:true,
+}

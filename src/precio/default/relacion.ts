@@ -12,3 +12,9 @@ export const PRECIO_SELECTED: SelectedDeep<Precio> = {
   nombre:true,
   importe:true
 }
+
+export const PRECIO_SELECTED_BY_ID: SelectedDeep<Precio> = {
+  ...PRECIO_SELECTED,
+  fechaActualizacion:true,
+  fechaCreacion:true,
+}
