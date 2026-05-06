@@ -1,5 +1,5 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from "class-validator";
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from "class-validator";
 
 export class DtoClienteCrear extends BaseDto {
   @IsOptional()
@@ -16,5 +16,9 @@ export class DtoClienteCrear extends BaseDto {
   @IsNotEmpty({ message: 'Debe proporcionar teléfono o email' })
   @IsString({ message: 'El telefono debe estar pasado en formato string' })
   @IsPhoneNumber('AR', { message: 'Debe ser un número de teléfono válido de Argentina' })
-  telefono?: string
+  telefono?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  vienePedido?:boolean;
 }

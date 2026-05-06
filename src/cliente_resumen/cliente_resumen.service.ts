@@ -27,22 +27,22 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
     @Inject(forwardRef(() => ClienteService))
-    private readonly clienteService:ClienteService,
+    private readonly clienteService: ClienteService,
   ) {
     super(resumenRepository, dataSource, erroresService, gatewayGateway)
   }
 
   async createDato({ usuario, qR, dto, entidad }: CreateProp<DtoResumenCrear, typeof Entidad.RESUMEN>): Promise<ClienteResumen> {
     try {
-      if(!dto.cliente_id) throw new NotFoundException("Falta el id del cliente para crear el resumen")
-      
-      const cliente:Cliente = await this.clienteService.getDatoByIdOrFail({
-        id:dto.cliente_id,
+      if (!dto.cliente_id) throw new NotFoundException("Falta el id del cliente para crear el resumen")
+
+      const cliente: Cliente = await this.clienteService.getDatoByIdOrFail({
+        id: dto.cliente_id,
         qR,
-        usuarioId:usuario.id,
+        usuarioId: usuario.id,
         entidadError: 'cliente',
       });
-        
+
       const newClienteResumen: ClienteResumen = await this.createDatoXEntidad({
         qR,
         usuario,
@@ -67,9 +67,10 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
         entidadError,
       });
 
-      const iguales =
-        (estadosPendientes.has(dto.actual) && estadosPendientes.has(dto.anterior)) ||
-        (estadosRetirados.has(dto.actual) && estadosRetirados.has(dto.anterior));
+      const iguales = dto.anterior
+        ? (estadosPendientes.has(dto.actual) && estadosPendientes.has(dto.anterior))
+        || (estadosRetirados.has(dto.actual) && estadosRetirados.has(dto.anterior))
+        : false;
 
       if (iguales) return { dato: resumenExistente, isQr: false };
 

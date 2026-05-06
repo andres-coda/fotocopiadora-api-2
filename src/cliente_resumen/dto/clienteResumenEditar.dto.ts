@@ -1,11 +1,11 @@
 import { BaseDto } from "../../base/dto/baseDto";
 import { Estado } from "../../interface/estado.interface";
-import { IsEnum, IsNotEmpty } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional } from "class-validator";
 
 export class DtoResumenEditar extends BaseDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(Estado)
-  anterior!: Estado;
+  anterior?: Estado;
 
   @IsNotEmpty()
   @IsEnum(Estado)

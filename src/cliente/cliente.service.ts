@@ -10,7 +10,7 @@ import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
-import { CLIENTE_RELATIONS, CLIENTE_SELECTED } from './default/relacion';
+import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID } from './default/relacion';
 import { ClienteRetorno } from './interface/cliente_retorno.interface';
 import { Estado } from '@src/interface/estado.interface';
 import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
@@ -194,10 +194,25 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         dato,
         usuarioId: usuario.id,
         qR,
-        entidadError: 'cliente'
+        entidadError: 'cliente',
+        relaciones: [CLIENTE_RELATIONS],
+        selected: CLIENTE_SELECTED_BY_ID
       });
 
-      if (clienteExistente) return clienteExistente;
+      if (clienteExistente) {
+        if(dto.vienePedido) {
+          const resumen:UpdateRetorno<ClienteResumen> =await this.resumenService.updateDato({
+            id:clienteExistente.resumen.id,
+            usuarioId:usuario.id,
+            dto:{actual:Estado.PENDIENTE},
+            qR,
+            entidadError: 'resumen de cliente',
+            entidad: Entidad.RESUMEN,
+          });
+          clienteExistente.resumen = resumen.dato;
+        }
+        return clienteExistente;
+      }
 
       const cliente: Cliente = new Cliente();
       cliente.nombre = dto.nombre;
@@ -212,9 +227,11 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       const resumen:ClienteResumen = await this.resumenService.createDatoXEntidad({
         qR,
         usuario,
-        dto:{},
+        dto:{estado:Estado.PENDIENTE},
         cliente:newCliente
       });
+
+      newCliente.resumen=resumen;
 
       if (!qR) {
         const payload: Mensaje = {
