@@ -158,7 +158,7 @@ export abstract class BaseService<
 
     return {
       relations: relationStrings,
-      ...(finalSelected && !hasNestedRelations && { select: finalSelected }),
+      ...(finalSelected && { select: finalSelected }),
       where,
       ...(orden && { order: { [orden]: 'ASC' } }),
     } as TOptions;

@@ -18,7 +18,7 @@ export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_P
   constructor(
     protected readonly libroPedidoService: LibroPedidoService,
   ) {
-    super(libroPedidoService, Entidad.LIBRO_PEDIDO, Entidad.LIBRO_PEDIDO, [LIBRO_PEDIDO_RELATIONS], 'cantidad', SELECTED_LIBRO_PEDIDO)
+    super(libroPedidoService, Entidad.LIBRO_PEDIDO, Entidad.LIBRO_PEDIDO, [LIBRO_PEDIDO_RELATIONS], 'cantidad', SELECTED_LIBRO_PEDIDO, undefined, SELECTED_LIBRO_PEDIDO)
   }
   @Patch(':id')
   @UseGuards(UsuarioGuard, AdminGuard)
