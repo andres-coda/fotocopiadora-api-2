@@ -8,7 +8,7 @@ import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { LIBRO_RELATIONS, SELECTED_LIBRO, SELECTED_LIBROS_TODOS } from './default/relacion.default';
 
 @Controller('libro')
-export class LibroController extends BaseController<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar> {
+export class LibroController extends BaseController<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar, LibroService> {
   constructor(
     protected readonly libroService: LibroService,
   ) {

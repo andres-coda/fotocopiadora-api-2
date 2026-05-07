@@ -8,7 +8,7 @@ import { EspecificacionService } from './especificacion.service';
 import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from './default/relacion.default';
 
 @Controller('especificacion')
-export class EspecificacionController  extends BaseController<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar> {
+export class EspecificacionController  extends BaseController<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar, EspecificacionService> {
   constructor(
     protected readonly especificacionService: EspecificacionService,
   ) {

@@ -13,9 +13,9 @@ import { AuthParcialDto } from '../auth/dto/authParcial.dto';
 import { User } from '../user/entity/user.entity';
 
 @Controller('base')
-export abstract class BaseController<K extends keyof EntidadDatoMapType, T extends Base & EntidadDatoMapType[K], CrearDto extends BaseDto, EditarDto extends BaseDto> {
+export abstract class BaseController<K extends keyof EntidadDatoMapType, T extends Base & EntidadDatoMapType[K], CrearDto extends BaseDto, EditarDto extends BaseDto, Servicio extends BaseService<K, T, CrearDto, EditarDto>> {
   protected constructor(
-    protected readonly baseService: BaseService<K, T, CrearDto, EditarDto>,
+    protected readonly baseService: Servicio,
     protected readonly entidad: K,
     protected readonly entidadError?: string,
     protected readonly relaciones?: RelationsKey<T>[],
@@ -38,7 +38,7 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
   async findAll(
     @UsuarioActual() user: AuthParcialDto,
   ): Promise<T[]> {
-    return this.baseService.getDato({
+    return await this.baseService.getDato({
       usuarioId: user.sub,
       entidadError: this.entidadError,
       relaciones: this.relacionesGenerales ?? this.relaciones,

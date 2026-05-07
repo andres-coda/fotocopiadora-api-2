@@ -30,8 +30,6 @@ export class LibroPedido extends Base {
   })
   sede!: Sede;
 
-  
-  @Exclude()
   @ManyToOne(() => Pedido, pedido => pedido.libroPedidos, {
     nullable: false,
     onDelete: 'CASCADE'

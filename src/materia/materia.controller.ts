@@ -8,7 +8,7 @@ import { MateriaService } from './materia.service';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
 
 @Controller('materia')
-export class MateriaController extends BaseController<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar> {
+export class MateriaController extends BaseController<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar, MateriaService> {
   constructor(
     protected readonly materiaService: MateriaService,
   ) {

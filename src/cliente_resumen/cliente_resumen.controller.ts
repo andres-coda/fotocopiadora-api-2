@@ -7,7 +7,7 @@ import { DtoResumenEditar } from './dto/clienteResumenEditar.dto';
 import { ClienteResumenService } from './cliente_resumen.service';
 
 @Controller('cliente-resumen')
-export class ClienteResumenController extends BaseController<typeof Entidad.RESUMEN, ClienteResumen, DtoResumenCrear, DtoResumenEditar> {
+export class ClienteResumenController extends BaseController<typeof Entidad.RESUMEN, ClienteResumen, DtoResumenCrear, DtoResumenEditar, ClienteResumenService> {
   constructor(
     protected readonly resumenService: ClienteResumenService,
   ) {

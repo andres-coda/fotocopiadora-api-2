@@ -8,7 +8,7 @@ import { StockService } from './stock.service';
 import { STOCK_RELATIONS, STOCK_SELECTED } from './default/relacion';
 
 @Controller('stock')
-export class StockController extends BaseController<typeof Entidad.STOCK, Stock, DtoStockCrear, DtoStockEditar> {
+export class StockController extends BaseController<typeof Entidad.STOCK, Stock, DtoStockCrear, DtoStockEditar, StockService> {
   constructor(
     protected readonly stockService: StockService,
   ) {

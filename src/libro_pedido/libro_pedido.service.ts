@@ -1,16 +1,16 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarElementoControllerProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarElementoControllerProp, EditarProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { LibroPedido } from './entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from './dto/DtoCrearLibroPedido.dto';
 import { DtoLibroPedidoEditar } from './dto/DtoEditarLibroPedido.dto';
-import { LIBRO_PEDIDO_ESTADO_RELATIONS, SELECTED_LIBRO_PEDIDO_ESTADO } from './default/relacion.default';
+import { LIBRO_PEDIDO_ESTADO_RELATIONS, SELECTED_LIBRO_PEDIDO, SELECTED_LIBRO_PEDIDO_ESTADO } from './default/relacion.default';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
 import { LIBRO_RELATIONS, SELECTED_LIBRO } from '../libro/default/relacion.default';
@@ -52,7 +52,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
   }
 
   async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoLibroPedidoCrear, typeof Entidad.LIBRO_PEDIDO>): Promise<LibroPedido> {
-    try {      
+    try {
 
       const pedido: Pedido = await this.pedidoService.getDatoByIdOrFail({
         id: dto.pedido_id,
@@ -63,9 +63,9 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         selected: PEDIDO_SELECTED
       });
 
-     const newLibroPedido: LibroPedido = await this.createDatoXEntidad({
-      usuario, qR, dto, pedido
-     })
+      const newLibroPedido: LibroPedido = await this.createDatoXEntidad({
+        usuario, qR, dto, pedido
+      })
       return newLibroPedido;
 
     } catch (er) {
@@ -153,7 +153,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  async createDatoXEntidad({dto, usuario, qR, pedido}:CreateDatoXEntidadProp):Promise<LibroPedido>{
+  async createDatoXEntidad({ dto, usuario, qR, pedido }: CreateDatoXEntidadProp): Promise<LibroPedido> {
     try {
 
       const libro: Libro = await this.libroService.getDatoByIdOrFail({
@@ -172,9 +172,9 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         usuarioId: usuario.id,
       });
 
-      const dtoEsp: Especificaciones[] = dto.especificaciones && dto.especificaciones?.length> 0 
+      const dtoEsp: Especificaciones[] = dto.especificaciones && dto.especificaciones?.length > 0
         ? dto.especificaciones
-        : !libro.especificacionesDefecto ?[] : libro.especificacionesDefecto;
+        : !libro.especificacionesDefecto ? [] : libro.especificacionesDefecto;
 
       const especificaciones: Especificacion[] = await this.espService.getDatosByNombres({
         nombres: dtoEsp,
@@ -208,20 +208,20 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      const dtoStock:DtoStockEditar = {
+      const dtoStock: DtoStockEditar = {
         actual: Estado.PENDIENTE,
         cantidad: dto.cantidad
       }
 
-      const stockRetorno:UpdateRetorno<Stock> = await this.stockService.updateDato({
-        usuarioId:usuario.id,
+      const stockRetorno: UpdateRetorno<Stock> = await this.stockService.updateDato({
+        usuarioId: usuario.id,
         qR,
-        dto:dtoStock,
+        dto: dtoStock,
         id: libro.stock.id,
         entidadError: 'stock',
         relaciones: [STOCK_RELATIONS],
         selected: STOCK_SELECTED,
-        entidad:Entidad.STOCK
+        entidad: Entidad.STOCK
       });
 
       newLibroPedido.libro.stock = stockRetorno.dato;

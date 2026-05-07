@@ -8,7 +8,7 @@ import { ClienteService } from './cliente.service';
 import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID } from './default/relacion';
 
 @Controller('cliente')
-export class ClienteController extends BaseController<typeof Entidad.CLIENTE,Cliente, DtoClienteCrear, DtoClienteEditar> {
+export class ClienteController extends BaseController<typeof Entidad.CLIENTE,Cliente, DtoClienteCrear, DtoClienteEditar, ClienteService> {
   constructor(
     protected readonly clienteService: ClienteService,
   ) {

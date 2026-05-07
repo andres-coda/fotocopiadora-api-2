@@ -14,7 +14,7 @@ import { UsuarioCompleto } from '../utils/usuarioActual.decorador';
 import { EditarElementoControllerProp } from '../base/interface/base.interface';
 
 @Controller('libro-pedido')
-export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_PEDIDO,LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
+export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_PEDIDO,LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar, LibroPedidoService> {
   constructor(
     protected readonly libroPedidoService: LibroPedidoService,
   ) {

@@ -8,7 +8,7 @@ import { ComponenteService } from './componente.service';
 import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE, SELECTED_COMPONENTE_BY_ID } from './default/relacion.default';
 
 @Controller('componente')
-export class ComponenteController extends BaseController<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar> {
+export class ComponenteController extends BaseController<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar, ComponenteService> {
   constructor(
     protected readonly componenteService: ComponenteService,
   ) {

@@ -453,6 +453,7 @@ export abstract class BaseService<
       const newElemento: T = await this.createDato({ usuario, dto, qR, entidad });
 
       await qR.commitTransaction();
+      console.log('New elemento: ',newElemento)
 
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
@@ -460,6 +461,7 @@ export abstract class BaseService<
         dato: newElemento
       }
       this.gateway.actualizacionDato(payload);
+      
       return newElemento;
     } catch (er) {
       await qR.rollbackTransaction();

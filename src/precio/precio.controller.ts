@@ -8,7 +8,7 @@ import { PrecioService } from './precio.service';
 import { PRECIO_RELATIONS, PRECIO_SELECTED, PRECIO_SELECTED_BY_ID } from './default/relacion';
 
 @Controller('precio')
-export class PrecioController extends BaseController<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar> {
+export class PrecioController extends BaseController<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar, PrecioService> {
   constructor(
     protected readonly precioService: PrecioService,
   ) {
