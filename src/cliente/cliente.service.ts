@@ -10,7 +10,7 @@ import { Mens } from '@src/gateway/enum/Mens.enum';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
-import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID } from './default/relacion';
+import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID, CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
 import { ClienteRetorno } from './interface/cliente_retorno.interface';
 import { Estado } from '@src/interface/estado.interface';
 import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
@@ -195,8 +195,8 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         usuarioId: usuario.id,
         qR,
         entidadError: 'cliente',
-        relaciones: [CLIENTE_RELATIONS],
-        selected: CLIENTE_SELECTED_BY_ID
+        relaciones: [CLIENTE_X_RESUMEN_RELATIONS],
+        selected: CLIENTE_X_RESUMEN_SELECTED
       });
 
       if (clienteExistente) {

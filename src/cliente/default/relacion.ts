@@ -7,24 +7,26 @@ export const CLIENTE_RELATIONS: RelationsKey<Cliente> = {
   nestedRelations: {'pedidos':{'libroPedidos':{}}}
 };
 
-export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
+export const CLIENTE_X_RESUMEN_SELECTED:SelectedDeep<Cliente> = {
   ...SELECTED_BASE,
   telefono:true,
   email:true,
   nombre:true,
-  fechaActualizacion:false,
-  fechaCreacion:false,
-  pedidos:{
-    libroPedidos:{
-      estado:true,
-      cantidad:true,
-    }
-  },
   resumen:{
     id:true,
     pendiente:true,
     listo:true,
     retirado:true,
+  }
+}
+
+export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
+  ...CLIENTE_X_RESUMEN_SELECTED,
+  pedidos:{
+    libroPedidos:{
+      estado:true,
+      cantidad:true,
+    }
   }
 }
 
@@ -46,3 +48,9 @@ export const CLIENTE_SELECTED_BY_ID: SelectedDeep<Cliente> = {
     }
   }
 }
+
+export const CLIENTE_X_RESUMEN_RELATIONS: RelationsKey<Cliente> = {
+  relations:['resumen'],
+  nestedRelations: {}
+};
+

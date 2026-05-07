@@ -15,6 +15,7 @@ import { ClienteService } from '../cliente/cliente.service';
 import { LibroPedidoService } from '@src/libro_pedido/libro_pedido.service';
 import { LibroPedido } from '@src/libro_pedido/entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from '@src/libro_pedido/dto/DtoCrearLibroPedido.dto';
+import { CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '@src/cliente/default/relacion';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -34,7 +35,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     try {
       if (!dto.cliente && !dto.clienteDatos) throw new NotFoundException('Requiere datos del cliente');
       const cliente: Cliente = dto.cliente
-        ? await this.clienteService.getDatoByIdOrFail({ id: dto.cliente, qR, entidadError: 'cliente', usuarioId: usuario.id })
+        ? await this.clienteService.getDatoByIdOrFail({ id: dto.cliente, qR, entidadError: 'cliente', usuarioId: usuario.id, relaciones: [CLIENTE_X_RESUMEN_RELATIONS], selected: CLIENTE_X_RESUMEN_SELECTED })
         : await this.clienteService.createDato({ usuario, dto: dto.clienteDatos!, qR, entidad: Entidad.CLIENTE });
 
       const pedido: Pedido = new Pedido();
@@ -60,6 +61,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
+      console.log('Dentro de crear dato, cliente: ', cliente)
       return newPedido;
 
     } catch (er) {
@@ -114,7 +116,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     try {
       console.log('metod createDatCx, en PedidoService: antes de crear pedido')
       const newPedido: Pedido = await this.createDato({ usuario, dto, qR, entidad });
-      console.log('metod createDatCx, en PedidoService: despues de crear pedido: ',newPedido);
+      console.log('metod createDatCx, en PedidoService: despues de crear pedido: cliente: ',newPedido?.cliente);
 
       const libroPedidos: LibroPedido[] = await Promise.all(
         dto.librosPedidos?.map(lp => {
@@ -132,11 +134,14 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         })
       );
 
-      console.log('metod createDatCx, en PedidoService: despues de crear libroPedidos[]', libroPedidos)
+      console.log('metod createDatCx, en PedidoService: despues de crear libroPedidos[]')
 
       newPedido.libroPedidos = libroPedidos;
 
       await qR.commitTransaction();
+
+      
+      console.log('metod createDatCx, en PedidoService: despues del commit qR, pedido: ',newPedido)
 
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
