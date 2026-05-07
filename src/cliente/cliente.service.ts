@@ -15,13 +15,14 @@ import { ClienteRetorno } from './interface/cliente_retorno.interface';
 import { Estado } from '@src/interface/estado.interface';
 import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
 import { ClienteResumen } from '@src/cliente_resumen/entity/clienteResumen.entity';
+import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
 
 interface getClientes {
   usuarioId: string;
 }
 
 @Injectable()
-export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente, DtoClienteCrear, DtoClienteEditar> {
+export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente, DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta> {
   constructor(
     @InjectRepository(Cliente) private readonly clienteRepository: Repository<Cliente>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -200,11 +201,11 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       });
 
       if (clienteExistente) {
-        if(dto.vienePedido) {
-          const resumen:UpdateRetorno<ClienteResumen> =await this.resumenService.updateDato({
-            id:clienteExistente.resumen.id,
-            usuarioId:usuario.id,
-            dto:{actual:Estado.PENDIENTE},
+        if (dto.vienePedido) {
+          const resumen: UpdateRetorno<ClienteResumen> = await this.resumenService.updateDato({
+            id: clienteExistente.resumen.id,
+            usuarioId: usuario.id,
+            dto: { actual: Estado.PENDIENTE },
             qR,
             entidadError: 'resumen de cliente',
             entidad: Entidad.RESUMEN,
@@ -224,14 +225,14 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         ? await qR.manager.save(Cliente, cliente)
         : await this.clienteRepository.save(cliente);
 
-      const resumen:ClienteResumen = await this.resumenService.createDatoXEntidad({
+      const resumen: ClienteResumen = await this.resumenService.createDatoXEntidad({
         qR,
         usuario,
-        dto:{estado:Estado.PENDIENTE},
-        cliente:newCliente
+        dto: { estado: Estado.PENDIENTE },
+        cliente: newCliente
       });
 
-      newCliente.resumen=resumen;
+      newCliente.resumen = resumen;
 
       if (!qR) {
         const payload: Mensaje = {
@@ -285,4 +286,28 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.telefono || id} en el registro de clientes`)
     }
   }
+
+  remplaceToReturn(entidad: Cliente): DtoClienteRespuesta {
+    return {
+      id: entidad.id,
+      fechaCreacion: entidad.fechaCreacion,
+      fechaActualizacion: entidad.fechaActualizacion,
+      deleted: entidad.deleted,
+
+      nombre: entidad.nombre,
+      telefono: entidad.telefono,
+      email: entidad.email,
+
+      resumen: {
+        id: entidad.resumen.id,
+        fechaCreacion: entidad.resumen.fechaCreacion,
+        fechaActualizacion: entidad.resumen.fechaActualizacion,
+        deleted: entidad.resumen.deleted,
+
+        pendiente: entidad.resumen.pendiente,
+        listo: entidad.resumen.listo,
+        retirado: entidad.resumen.retirado,
+      }
+    };
+  };
 }

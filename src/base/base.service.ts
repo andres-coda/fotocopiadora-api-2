@@ -17,7 +17,8 @@ export abstract class BaseService<
   K extends keyof EntidadDatoMapType,
   T extends Base & EntidadDatoMapType[K],
   CrearDto extends BaseDto,
-  EditarDto extends BaseDto
+  EditarDto extends BaseDto,
+  RetornoDto extends DtoBaseRetorno
 > {
   protected constructor(
     protected readonly baseRepository: Repository<T>,
@@ -42,6 +43,8 @@ export abstract class BaseService<
    * @returns Una promesa que resuelve a un objeto UpdateRetorno con el dato actualizado.
    */
   abstract updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<T, EditarDto, K>): Promise<UpdateRetorno<T>>;
+
+  abstract remplaceToReturn(entidad: T):RetornoDto;
 
   /**
    * Realiza un merge profundo de objetos SelectedDeep.
@@ -162,12 +165,6 @@ export abstract class BaseService<
       where,
       ...(orden && { order: { [orden]: 'ASC' } }),
     } as TOptions;
-  }
-
-  protected toRespuesta(dato: T): T {
-    const newUser: User = new User();
-    newUser.id = dato.user.id;
-    return { ...dato, user: newUser }
   }
 
 
@@ -445,7 +442,7 @@ export abstract class BaseService<
   // Método utilizado por los controladores para crear elementos.
   // Gestiona explícitamente la transacción mediante QueryRunner,
   // asegurando commit o rollback según el resultado de la operación.
-  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<CrearDto, K>): Promise<T> {
+  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<CrearDto, K>): Promise<RetornoDto> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
@@ -456,14 +453,15 @@ export abstract class BaseService<
       await qR.commitTransaction();
       console.log('New elemento: ',newElemento)
 
+      const retorno: RetornoDto = this.remplaceToReturn(newElemento);
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
         entidad: entidad,
-        dato: newElemento
+        dato: retorno
       }
       this.gateway.actualizacionDato(payload);
 
-      return newElemento;
+      return retorno;
     } catch (er) {
       await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el elemento en la entidad`)

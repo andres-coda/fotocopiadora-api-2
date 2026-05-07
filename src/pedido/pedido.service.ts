@@ -60,8 +60,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
 
         this.gatewayGateway.actualizacionDato(payload);
       }
-
-      console.log('Dentro de crear dato, cliente: ', cliente)
+      
       return newPedido;
 
     } catch (er) {
@@ -108,15 +107,11 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
   }
 
   async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<DtoPedidoCrear, "pedido">): Promise<Pedido> {
-    console.log('metod createDatCx, en PedidoService: antes de crear qR')
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
-    console.log('metod createDatCx, en PedidoService: despues de crear qR')
     try {
-      console.log('metod createDatCx, en PedidoService: antes de crear pedido')
       const newPedido: Pedido = await this.createDato({ usuario, dto, qR, entidad });
-      console.log('metod createDatCx, en PedidoService: despues de crear pedido: cliente: ',newPedido?.cliente);
 
       const libroPedidos: LibroPedido[] = await Promise.all(
         dto.librosPedidos?.map(lp => {
@@ -124,7 +119,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
             ...lp,
             pedido_id: newPedido.id
           };
-
+          
           return this.libroPedidoService.createDatoXEntidad({
             usuario,
             qR,
@@ -133,9 +128,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
           });
         })
       );
-
-      console.log('metod createDatCx, en PedidoService: despues de crear libroPedidos[]')
-
+      
       newPedido.libroPedidos = libroPedidos;
 
       await qR.commitTransaction();
