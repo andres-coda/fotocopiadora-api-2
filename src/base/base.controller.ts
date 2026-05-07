@@ -153,11 +153,13 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
     @UsuarioCompleto() user: User,
     @Body() datos: CrearDto
   ): Promise<T> {
+    console.log('Metodo POST, BaseController')
     const dto: CreateProp<CrearDto,K> = {
       dto: datos,
       usuario:user,
       entidad:this.entidad
     }
+    console.log('Despues de la creación de la dto')
     const retorno: T = await this.baseService.createDatoCx(dto);
     return retorno;
   }

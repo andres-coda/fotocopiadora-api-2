@@ -450,8 +450,9 @@ export abstract class BaseService<
     await qR.connect();
     await qR.startTransaction();
     try {
+      console.log('Antes de crear el elemento')
       const newElemento: T = await this.createDato({ usuario, dto, qR, entidad });
-
+      console.log('Despues de crear el elemento')
       await qR.commitTransaction();
       console.log('New elemento: ',newElemento)
 
@@ -461,7 +462,7 @@ export abstract class BaseService<
         dato: newElemento
       }
       this.gateway.actualizacionDato(payload);
-      
+
       return newElemento;
     } catch (er) {
       await qR.rollbackTransaction();
