@@ -6,9 +6,10 @@ import { DtoMateriaCrear } from './dto/materiaCrear.dto';
 import { DtoMateriaEditar } from './dto/materiaEditar.dto';
 import { MateriaService } from './materia.service';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
+import { DtoMateriaRespuesta } from './dto/materiaRetorno.dto';
 
 @Controller('materia')
-export class MateriaController extends BaseController<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar, MateriaService> {
+export class MateriaController extends BaseController<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar, DtoMateriaRespuesta, MateriaService> {
   constructor(
     protected readonly materiaService: MateriaService,
   ) {

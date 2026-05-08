@@ -12,9 +12,11 @@ import { DtoMateriaCrear } from './dto/materiaCrear.dto';
 import { DtoMateriaEditar } from './dto/materiaEditar.dto';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
 import { MATERIAS_DEFAULT } from './default/materia.default';
+import { DtoMateriaRespuesta } from './dto/materiaRetorno.dto';
+import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 
 @Injectable()
-export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar> {
+export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar, DtoMateriaRespuesta> {
   constructor(
     @InjectRepository(Materia) private readonly materiaRepository: Repository<Materia>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -93,6 +95,15 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de materias`)
+    }
+  }
+
+  remplaceToReturn(entidad: Materia): DtoMateriaRespuesta {
+    const base:DtoBaseRetorno = this.remplaceToBase(entidad);
+    return{
+      ... base,
+      
+      nombre: entidad.nombre
     }
   }
 }
