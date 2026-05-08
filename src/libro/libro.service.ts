@@ -24,6 +24,7 @@ import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from '../componente/default
 import { DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 import { DtoComponenteRespuesta } from '@src/componente/dto/componenteRetorno.dto';
+import { DtoMateriaRespuesta } from '@src/materia/dto/materiaRetorno.dto';
 
 @Injectable()
 export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar, DtoLibroRespuesta> {
@@ -257,6 +258,9 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
     const componentes: DtoComponenteRespuesta[] = entidad.componentes?.length>0 
       ? entidad.componentes.map(c => this.componenteService.remplaceToReturn(c))
       :[];
+
+    const materia: DtoMateriaRespuesta = this.materiaService.remplaceToReturn(entidad.materia);
+
     return {
       ...base,
       nombre: entidad.nombre,
@@ -270,8 +274,9 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
       autor: entidad.autor,
       img: entidad.img,
       especificacionesDefecto: entidad.especificacionesDefecto,
-      
+
       componentes,
+      materia,
 
     }
   }
