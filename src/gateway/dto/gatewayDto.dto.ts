@@ -11,7 +11,7 @@ import { LibroPedido } from "../../libro_pedido/entity/libroPedido.entity";
 import { ClienteResumen } from "../../cliente_resumen/entity/clienteResumen.entity";
 import { Materia } from "../../materia/entity/materia.entity";
 import { Base } from "../../base/entity/base.entity";
-import { TestEntity } from "../../base/__test__/base.service.spec";
+import { TestEntity, TestEntityDto } from "../../base/__test__/base.service.spec";
 import { Componente } from "../../componente/entity/componente.entity";
 import { DtoClienteRespuesta } from "@src/cliente/dto/clienteRespuesta.dto";
 import { DtoComponenteRespuesta } from "@src/componente/dto/componenteRetorno.dto";
@@ -40,6 +40,7 @@ export const EntidadDatoMap = {
   sede: {} as DtoSedeRespuesta,
   stock: {} as DtoStockRespuesta,
   resumen: {} as DtoResumenRespuesta,
+  testEntity: {} as TestEntityDto,
 } satisfies Record<string, DtoBaseRetorno>;
 
 

@@ -4,11 +4,11 @@ import { Base } from '@src/base/entity/base.entity';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base.service';
 import { createMockQueryRunner } from 'test/mock/qR.mock';
 import { SelectedDeep } from '../interface/base.interface';
-import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
+import { Entidad, EntidadDatoMapType } from '@src/gateway/dto/gatewayDto.dto';
 import { mockErrores } from 'test/mock/error.mocks';
 import { mockGateway } from 'test/mock/gateway.mocks';
 import { mockEntity } from 'test/mock/test.mock';
@@ -80,6 +80,16 @@ class TestService extends BaseService<
   async updateDato(): Promise<any> {
     throw new Error('Not implemented');
   }
+
+  remplaceToReturn(entidad: TestEntity): EntidadDatoMapType[typeof Entidad.TESTENTITY] {
+  return {
+    id: entidad.id,
+    nombre: entidad.nombre,
+    fechaCreacion: entidad.fechaCreacion,
+    fechaActualizacion: entidad.fechaActualizacion,
+    deleted: entidad.deleted,
+  };
+}
 }
 
 /* =========================
