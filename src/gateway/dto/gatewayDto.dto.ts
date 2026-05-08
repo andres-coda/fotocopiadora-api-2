@@ -13,22 +13,34 @@ import { Materia } from "../../materia/entity/materia.entity";
 import { Base } from "../../base/entity/base.entity";
 import { TestEntity } from "../../base/__test__/base.service.spec";
 import { Componente } from "../../componente/entity/componente.entity";
+import { DtoClienteRespuesta } from "@src/cliente/dto/clienteRespuesta.dto";
+import { DtoComponenteRespuesta } from "@src/componente/dto/componenteRetorno.dto";
+import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto";
+import { DtoEspecificaionRetorno } from "@src/especificacion/dto/DtoEspecificacionRetorno.dto";
+import { DtoLibroRespuesta } from "@src/libro/dto/libroRetorno.dto";
+import { DtoLibroPedidoRespuesta } from "@src/libro_pedido/dto/libroPedidoRetorno.dto";
+import { DtoMateriaRespuesta } from "@src/materia/dto/materiaRetorno.dto";
+import { DtoPedidoRespuesta } from "@src/pedido/dto/pedidoRetorno.dto";
+import { DtoPrecioRespuesta } from "@src/precio/dto/precioRetorno.dto";
+import { DtoPropuestaRespuesta } from "@src/propuesta_pedido/dto/propuestaRetorno.dto";
+import { DtoSedeRespuesta } from "@src/sede/dto/sedeRetorno.dto";
+import { DtoStockRespuesta } from "@src/stock/dto/stockRetorno.dto";
+import { DtoResumenRespuesta } from "@src/cliente_resumen/dto/clienteResumenRespuesta.dto";
 
 export const EntidadDatoMap = {
-  cliente: {} as Cliente,
-  componente: {} as Componente,
-  esp: {} as Especificacion,
-  libro: {} as Libro,
-  libro_pedido: {} as LibroPedido,
-  materia: {} as Materia,
-  pedido: {} as Pedido,
-  precio: {} as Precio,
-  propuesta_pedido: {} as Propuesta,
-  sede: {} as Sede,
-  stock: {} as Stock,
-  resumen: {} as ClienteResumen,
-  testEntity: {} as TestEntity
-} satisfies Record<string, Base>;
+  cliente: {} as DtoClienteRespuesta,
+  componente: {} as DtoComponenteRespuesta,
+  esp: {} as DtoEspecificaionRetorno,
+  libro: {} as DtoLibroRespuesta,
+  libro_pedido: {} as DtoLibroPedidoRespuesta,
+  materia: {} as DtoMateriaRespuesta,
+  pedido: {} as DtoPedidoRespuesta,
+  precio: {} as DtoPrecioRespuesta,
+  propuesta_pedido: {} as DtoPropuestaRespuesta,
+  sede: {} as DtoSedeRespuesta,
+  stock: {} as DtoStockRespuesta,
+  resumen: {} as DtoResumenRespuesta,
+} satisfies Record<string, DtoBaseRetorno>;
 
 
 export type EntidadDatoMapType = typeof EntidadDatoMap;

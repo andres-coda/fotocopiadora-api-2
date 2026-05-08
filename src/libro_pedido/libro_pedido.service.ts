@@ -40,7 +40,7 @@ interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, ty
 }
 
 @Injectable()
-export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar, DtoLibroPedidoRespuesta> {
+export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
   constructor(
     @InjectRepository(LibroPedido) private readonly libroPedidoRepository: Repository<LibroPedido>,
     @InjectDataSource() protected readonly dataSource: DataSource,

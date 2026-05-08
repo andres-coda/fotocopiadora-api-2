@@ -20,7 +20,7 @@ export interface GetEspNombres extends Omit<GetIdsProp<Especificacion>, 'ids'> {
 }
 
 @Injectable()
-export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar, DtoEspecificaionRetorno> {
+export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar> {
   constructor(
     @InjectRepository(Especificacion) private readonly especificacionRepository: Repository<Especificacion>,
     @InjectDataSource() protected readonly dataSource: DataSource,

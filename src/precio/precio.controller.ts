@@ -9,7 +9,7 @@ import { PRECIO_RELATIONS, PRECIO_SELECTED, PRECIO_SELECTED_BY_ID } from './defa
 import { DtoPrecioRespuesta } from './dto/precioRetorno.dto';
 
 @Controller('precio')
-export class PrecioController extends BaseController<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar, DtoPrecioRespuesta, PrecioService> {
+export class PrecioController extends BaseController<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar, PrecioService> {
   constructor(
     protected readonly precioService: PrecioService,
   ) {

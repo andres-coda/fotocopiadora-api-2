@@ -9,7 +9,7 @@ import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
 import { DtoSedeRespuesta } from './dto/sedeRetorno.dto';
 
 @Controller('sede')
-export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar, DtoSedeRespuesta, SedeService> {
+export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar, SedeService> {
   constructor(
     protected readonly sedeService: SedeService,
   ) {

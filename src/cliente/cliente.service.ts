@@ -22,7 +22,7 @@ interface getClientes {
 }
 
 @Injectable()
-export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente, DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta> {
+export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente, DtoClienteCrear, DtoClienteEditar> {
   constructor(
     @InjectRepository(Cliente) private readonly clienteRepository: Repository<Cliente>,
     @InjectDataSource() protected readonly dataSource: DataSource,

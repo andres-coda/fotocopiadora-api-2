@@ -22,7 +22,7 @@ import { DtoLibroPedidoRespuesta } from '@src/libro_pedido/dto/libroPedidoRetorn
 import { DtoClienteRespuesta } from '@src/cliente/dto/clienteRespuesta.dto';
 
 @Injectable()
-export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta> {
+export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
   constructor(
     @InjectRepository(Pedido) private readonly pedidoRepository: Repository<Pedido>,
     @InjectDataSource() protected readonly dataSource: DataSource,

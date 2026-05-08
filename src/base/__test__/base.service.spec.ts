@@ -13,6 +13,7 @@ import { mockErrores } from 'test/mock/error.mocks';
 import { mockGateway } from 'test/mock/gateway.mocks';
 import { mockEntity } from 'test/mock/test.mock';
 import { createMockRepository } from 'test/mock/repo.mocks';
+import { DtoBaseRetorno } from '../dto/baseRetorno.dto';
 
 
 jest.mock('@src/base/entity/base.entity', () => ({
@@ -34,7 +35,7 @@ jest.mock('@src/cliente_resumen/entity/clienteResumen.entity', () => ({
    🧱 ENTIDAD DE TEST
 ========================= */
 
-export class TestEntity extends Base {
+export class TestEntity extends DtoBaseRetorno {
   nombre!: string;
   constructor() {
     super()

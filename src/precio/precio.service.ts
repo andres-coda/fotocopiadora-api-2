@@ -16,7 +16,7 @@ import { DtoPrecioRespuesta } from './dto/precioRetorno.dto';
 import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 
 @Injectable()
-export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar, DtoPrecioRespuesta> {
+export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar> {
   constructor(
     @InjectRepository(Precio) private readonly precioRepository: Repository<Precio>,
     @InjectDataSource() protected readonly dataSource: DataSource,

@@ -9,7 +9,7 @@ import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE, SELECTED_COMPONENTE_BY_ID } 
 import { DtoComponenteRespuesta } from './dto/componenteRetorno.dto';
 
 @Controller('componente')
-export class ComponenteController extends BaseController<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar, DtoComponenteRespuesta, ComponenteService> {
+export class ComponenteController extends BaseController<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar, ComponenteService> {
   constructor(
     protected readonly componenteService: ComponenteService,
   ) {

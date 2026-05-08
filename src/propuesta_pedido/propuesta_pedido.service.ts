@@ -21,7 +21,7 @@ import { DtoLibroRespuesta } from '@src/libro/dto/libroRetorno.dto';
 
 
 @Injectable()
-export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDIDO, Propuesta, DtoPropuestaCrear, DtoPropuestaEditar, DtoPropuestaRespuesta> {
+export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDIDO, Propuesta, DtoPropuestaCrear, DtoPropuestaEditar> {
   constructor(
     @InjectRepository(Propuesta) private readonly propuestaRepository: Repository<Propuesta>,
     @InjectDataSource() protected readonly dataSource: DataSource,

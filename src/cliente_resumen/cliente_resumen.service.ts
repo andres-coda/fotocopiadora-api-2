@@ -21,7 +21,7 @@ interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoResumenCrear, typeof
 }
 
 @Injectable()
-export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, ClienteResumen, DtoResumenCrear, DtoResumenEditar, DtoResumenRespuesta> {
+export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, ClienteResumen, DtoResumenCrear, DtoResumenEditar> {
   constructor(
     @InjectRepository(ClienteResumen) private readonly resumenRepository: Repository<ClienteResumen>,
     @InjectDataSource() protected readonly dataSource: DataSource,

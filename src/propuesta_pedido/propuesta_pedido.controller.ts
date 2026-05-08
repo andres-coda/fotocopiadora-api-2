@@ -9,7 +9,7 @@ import { PROPUESTA_RELATIONS, PROPUESTA_SELECTED } from './default/relacion';
 import { DtoPropuestaRespuesta } from './dto/propuestaRetorno.dto';
 
 @Controller('propuesta-pedido')
-export class PropuestaPedidoController extends BaseController<typeof Entidad.PROPUESTA_PEDIDO, Propuesta, DtoPropuestaCrear, DtoPropuestaEditar, DtoPropuestaRespuesta, PropuestaService> {
+export class PropuestaPedidoController extends BaseController<typeof Entidad.PROPUESTA_PEDIDO, Propuesta, DtoPropuestaCrear, DtoPropuestaEditar, PropuestaService> {
   constructor(
     protected readonly propuestaService: PropuestaService,
   ) {
