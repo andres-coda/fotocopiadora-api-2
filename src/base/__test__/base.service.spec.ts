@@ -35,11 +35,15 @@ jest.mock('@src/cliente_resumen/entity/clienteResumen.entity', () => ({
    🧱 ENTIDAD DE TEST
 ========================= */
 
-export class TestEntity extends DtoBaseRetorno {
+export class TestEntity extends Base {
   nombre!: string;
   constructor() {
     super()
   }
+}
+
+export class TestEntityDto extends DtoBaseRetorno {
+  nombre!: string;
 }
 
 /* =========================
