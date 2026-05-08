@@ -6,9 +6,10 @@ import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
 import { ClienteService } from './cliente.service';
 import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID } from './default/relacion';
+import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
 
 @Controller('cliente')
-export class ClienteController extends BaseController<typeof Entidad.CLIENTE,Cliente, DtoClienteCrear, DtoClienteEditar, ClienteService> {
+export class ClienteController extends BaseController<typeof Entidad.CLIENTE,Cliente, DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta, ClienteService> {
   constructor(
     protected readonly clienteService: ClienteService,
   ) {

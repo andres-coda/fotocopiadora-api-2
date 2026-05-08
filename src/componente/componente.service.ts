@@ -11,9 +11,11 @@ import { Componente } from './entity/componente.entity';
 import { DtoComponenteCrear } from './dto/componenteCrear.dto';
 import { DtoComponenteEditar } from './dto/componenteEditar.dto';
 import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from './default/relacion.default';
+import { DtoComponenteRespuesta } from './dto/componenteRetorno.dto';
+import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 
 @Injectable()
-export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar> {
+export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar, DtoComponenteRespuesta> {
   constructor(
     @InjectRepository(Componente) private readonly componenteRepository: Repository<Componente>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -104,6 +106,15 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de componente`)
+    }
+  }
+
+  public remplaceToReturn(entidad: Componente): DtoComponenteRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    return {
+      ...base,
+
+      nombre: entidad.nombre
     }
   }
 }

@@ -14,13 +14,14 @@ import { DtoResumenCrear } from './dto/clienteResumenCrear.dto';
 import { DtoResumenEditar } from './dto/clienteResumenEditar.dto';
 import { Cliente } from '@src/cliente/entity/cliente.entity';
 import { ClienteService } from '@src/cliente/cliente.service';
+import { DtoResumenRespuesta } from './dto/clienteResumenRespuesta.dto';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoResumenCrear, typeof Entidad.RESUMEN>, "entidad"> {
   cliente: Cliente
 }
 
 @Injectable()
-export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, ClienteResumen, DtoResumenCrear, DtoResumenEditar> {
+export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, ClienteResumen, DtoResumenCrear, DtoResumenEditar, DtoResumenRespuesta> {
   constructor(
     @InjectRepository(ClienteResumen) private readonly resumenRepository: Repository<ClienteResumen>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -125,5 +126,17 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el resumen`)
     }
+  }
+
+  public remplaceToReturn(entidad: ClienteResumen): DtoResumenRespuesta {
+    const base = this.remplaceToBase(entidad);
+    return {
+      ...base,
+
+      pendiente: entidad.pendiente,
+      listo: entidad.listo,
+      retirado: entidad.retirado,
+
+    };
   }
 }

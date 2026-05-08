@@ -288,26 +288,17 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
   }
 
   remplaceToReturn(entidad: Cliente): DtoClienteRespuesta {
+    const base = this.remplaceToBase(entidad);
+    const resumen = this.resumenService.remplaceToReturn(entidad.resumen);
+    
     return {
-      id: entidad.id,
-      fechaCreacion: entidad.fechaCreacion,
-      fechaActualizacion: entidad.fechaActualizacion,
-      deleted: entidad.deleted,
+      ...base,
 
       nombre: entidad.nombre,
       telefono: entidad.telefono,
       email: entidad.email,
 
-      resumen: {
-        id: entidad.resumen.id,
-        fechaCreacion: entidad.resumen.fechaCreacion,
-        fechaActualizacion: entidad.resumen.fechaActualizacion,
-        deleted: entidad.resumen.deleted,
-
-        pendiente: entidad.resumen.pendiente,
-        listo: entidad.resumen.listo,
-        retirado: entidad.resumen.retirado,
-      }
+      resumen
     };
   };
 }

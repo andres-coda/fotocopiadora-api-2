@@ -6,9 +6,10 @@ import { DtoComponenteCrear } from './dto/componenteCrear.dto';
 import { DtoComponenteEditar } from './dto/componenteEditar.dto';
 import { ComponenteService } from './componente.service';
 import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE, SELECTED_COMPONENTE_BY_ID } from './default/relacion.default';
+import { DtoComponenteRespuesta } from './dto/componenteRetorno.dto';
 
 @Controller('componente')
-export class ComponenteController extends BaseController<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar, ComponenteService> {
+export class ComponenteController extends BaseController<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar, DtoComponenteRespuesta, ComponenteService> {
   constructor(
     protected readonly componenteService: ComponenteService,
   ) {

@@ -44,7 +44,16 @@ export abstract class BaseService<
    */
   abstract updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<T, EditarDto, K>): Promise<UpdateRetorno<T>>;
 
-  abstract remplaceToReturn(entidad: T):RetornoDto;
+  abstract remplaceToReturn(entidad: T): RetornoDto;
+
+  protected remplaceToBase(entidad: T): DtoBaseRetorno {
+    return {
+      id: entidad.id,
+      fechaCreacion: entidad.fechaCreacion,
+      fechaActualizacion: entidad.fechaActualizacion,
+      deleted: entidad.deleted,
+    }
+  }
 
   /**
    * Realiza un merge profundo de objetos SelectedDeep.
@@ -56,9 +65,9 @@ export abstract class BaseService<
    * @returns El objeto merged resultante.
    */
   protected mergeSelected<T>(
-    base: SelectedDeep<T> | undefined,
-    override: SelectedDeep<T>
-  ): SelectedDeep<T> {
+      base: SelectedDeep<T> | undefined,
+      override: SelectedDeep<T>
+    ): SelectedDeep<T> {
     if (!base) return override;
 
     const result: any = { ...base };
@@ -451,7 +460,7 @@ export abstract class BaseService<
       const newElemento: T = await this.createDato({ usuario, dto, qR, entidad });
       console.log('Despues de crear el elemento')
       await qR.commitTransaction();
-      console.log('New elemento: ',newElemento)
+      console.log('New elemento: ', newElemento)
 
       const retorno: RetornoDto = this.remplaceToReturn(newElemento);
       const payload: Mensaje = {
@@ -473,26 +482,30 @@ export abstract class BaseService<
   // Método utilizado por los controladores para editar elementos.
   // Gestiona explícitamente la transacción mediante QueryRunner
   // y asegura la consistencia del versionado.
-  async updateElementoController({ usuario, dto, entidad, id, relaciones, selected, entidadError }: EditarElementoControllerProp<T, EditarDto, K>): Promise<T> {
+  async updateElementoController({ usuario, dto, entidad, id, relaciones, selected, entidadError }: EditarElementoControllerProp<T, EditarDto, K>): Promise<RetornoDto> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
     try {
       const newElemento: UpdateRetorno<T> = await this.updateDato({ usuarioId: usuario.id, dto, qR, id, relaciones, selected, entidadError, entidad });
 
-      await qR.commitTransaction();
       if (!newElemento) throw new NotFoundException(`No se pudo actualizar el elemento ${id} en concepto`)
+      await qR.commitTransaction();
+
+      
+      const retorno: RetornoDto = this.remplaceToReturn(newElemento.dato);
 
       if (newElemento.isQr) {
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
           entidad: entidad,
-          dato: newElemento.dato
+          dato: retorno
         }
         this.gateway.actualizacionDato(payload);
       }
 
-      return newElemento.dato;
+      
+      return retorno;
     } catch (er) {
       await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar actualizar el elemento en la entidad ${entidad}`)
