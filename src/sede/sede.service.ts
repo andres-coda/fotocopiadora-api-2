@@ -12,9 +12,11 @@ import { DtoSedeCrear } from './dto/sedeCrear.dto';
 import { DtoSedeEditar } from './dto/sedeEditar.dto';
 import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
 import { SEDE_DEFAULT } from './default/sede.default';
+import { DtoSedeRespuesta } from './dto/sedeRetorno.dto';
+import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 
 @Injectable()
-export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar> {
+export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar, DtoSedeRespuesta> {
   constructor(
     @InjectRepository(Sede) private readonly sedeRepository: Repository<Sede>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -93,6 +95,15 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de sedes`)
+    }
+  }
+
+  remplaceToReturn(entidad: Sede): DtoSedeRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+
+    return {
+      ...base,
+      nombre:entidad.nombre
     }
   }
 }
