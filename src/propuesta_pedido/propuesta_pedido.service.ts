@@ -15,10 +15,13 @@ import { LibroService } from '../libro/libro.service';
 import { PROPUESTA_RELATIONS, PROPUESTA_SELECTED } from './default/relacion';
 import { PRECIO_SELECTED } from '@src/precio/default/relacion';
 import { LIBRO_RELATIONS, SELECTED_LIBROS_TODOS } from '@src/libro/default/relacion.default';
+import { DtoPropuestaRespuesta } from './dto/propuestaRetorno.dto';
+import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
+import { DtoLibroRespuesta } from '@src/libro/dto/libroRetorno.dto';
 
 
 @Injectable()
-export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDIDO, Propuesta, DtoPropuestaCrear, DtoPropuestaEditar> {
+export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDIDO, Propuesta, DtoPropuestaCrear, DtoPropuestaEditar, DtoPropuestaRespuesta> {
   constructor(
     @InjectRepository(Propuesta) private readonly propuestaRepository: Repository<Propuesta>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -42,7 +45,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
       console.log('Existe: ', existe)
 
-      if(existe) throw new NotFoundException(`El nombre ${dto.nombre} de la propuesta del pedido ya existe en la base de datos, elija otro nombre`);
+      if (existe) throw new NotFoundException(`El nombre ${dto.nombre} de la propuesta del pedido ya existe en la base de datos, elija otro nombre`);
 
       const libros: Libro[] = await this.libroService.getDatosByIds({
         ids: dto.libros,
@@ -105,8 +108,8 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
           entidadError: 'libro',
           qR,
           usuarioId,
-          relaciones:[LIBRO_RELATIONS],
-          selected:SELECTED_LIBROS_TODOS
+          relaciones: [LIBRO_RELATIONS],
+          selected: SELECTED_LIBROS_TODOS
         });
 
       propuesta.nombre = dto.nombre ?? propuesta.nombre;
@@ -130,6 +133,20 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de propuestas`)
+    }
+  }
+
+  remplaceToReturn(entidad: Propuesta): DtoPropuestaRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    const libro: DtoLibroRespuesta[] = entidad.libro?.length > 0 
+      ? entidad.libro.map(l=> this.libroService.remplaceToReturn(l))
+      :[];
+
+    return {
+      ...base,
+      nombre:entidad.nombre,
+
+      libro
     }
   }
 }
