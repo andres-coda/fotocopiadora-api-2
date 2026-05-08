@@ -6,9 +6,10 @@ import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
 import { EspecificacionService } from './especificacion.service';
 import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from './default/relacion.default';
+import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
 
 @Controller('especificacion')
-export class EspecificacionController  extends BaseController<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar, EspecificacionService> {
+export class EspecificacionController  extends BaseController<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar, DtoEspecificaionRetorno, EspecificacionService> {
   constructor(
     protected readonly especificacionService: EspecificacionService,
   ) {
