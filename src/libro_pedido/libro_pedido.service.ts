@@ -29,13 +29,18 @@ import { STOCK_RELATIONS, STOCK_SELECTED } from '../stock/default/relacion';
 import { Sede } from '../sede/entity/sede.entity';
 import { SedeService } from '../sede/sede.service';
 import { Estado } from '@src/interface/estado.interface';
+import { DtoLibroPedidoRespuesta } from './dto/libroPedidoRetorno.dto';
+import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
+import { DtoSedeRespuesta } from '@src/sede/dto/sedeRetorno.dto';
+import { DtoLibroRespuesta } from '@src/libro/dto/libroRetorno.dto';
+import { DtoEspecificaionRetorno } from '@src/especificacion/dto/DtoEspecificacionRetorno.dto';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.RESUMEN>, "entidad"> {
   pedido: Pedido
 }
 
 @Injectable()
-export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
+export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar, DtoLibroPedidoRespuesta> {
   constructor(
     @InjectRepository(LibroPedido) private readonly libroPedidoRepository: Repository<LibroPedido>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -233,7 +238,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<LibroPedido> {
+  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<DtoLibroPedidoRespuesta> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
@@ -273,10 +278,12 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
 
       await qR.commitTransaction();
 
+      const retorno: DtoLibroPedidoRespuesta = this.remplaceToReturn(newLibroPedido);
+
       const payload: Mensaje = {
         mensaje: Mens.EDITAR,
         entidad,
-        dato: newLibroPedido
+        dato: retorno
       }
 
       this.gatewayGateway.actualizacionDato(payload);
@@ -291,7 +298,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       }
 
 
-      return newLibroPedido;
+      return retorno;
     } catch (er) {
       await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el estado del libro`)
@@ -300,4 +307,25 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
+  remplaceToReturn(entidad: LibroPedido): DtoLibroPedidoRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    const especificaciones: DtoEspecificaionRetorno[] = entidad.especificaciones?.length > 0
+      ? entidad.especificaciones.map(esp => this.espService.remplaceToReturn(esp))
+      : [];
+
+    const libro: DtoLibroRespuesta = this.libroService.remplaceToReturn(entidad.libro);
+    const sede: DtoSedeRespuesta = this.sedeService.remplaceToReturn(entidad.sede);
+
+    return {
+      ...base,
+
+      cantidad: entidad.cantidad,
+      detalles: entidad.detalles,
+      estado: entidad.estado,
+
+      libro,
+      sede,
+      especificaciones
+    }
+  }
 }

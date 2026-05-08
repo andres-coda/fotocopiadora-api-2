@@ -12,9 +12,10 @@ import { UsuarioGuard } from '../auth/guard/user.guard';
 import { AdminGuard } from '../auth/guard/admin.guard';
 import { UsuarioCompleto } from '../utils/usuarioActual.decorador';
 import { EditarElementoControllerProp } from '../base/interface/base.interface';
+import { DtoLibroPedidoRespuesta } from './dto/libroPedidoRetorno.dto';
 
 @Controller('libro-pedido')
-export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_PEDIDO,LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar, LibroPedidoService> {
+export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_PEDIDO,LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar, DtoLibroPedidoRespuesta, LibroPedidoService> {
   constructor(
     protected readonly libroPedidoService: LibroPedidoService,
   ) {
@@ -34,7 +35,7 @@ export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_P
       id: id,
       usuarioId:user.id
     }
-    const retorno: LibroPedido = await this.libroPedidoService.cambiarEstadoCx(dto);
+    const retorno: DtoLibroPedidoRespuesta = await this.libroPedidoService.cambiarEstadoCx(dto);
     return retorno ? true : false;
   }
 
