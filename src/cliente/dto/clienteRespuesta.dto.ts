@@ -1,4 +1,4 @@
-import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto";
+import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
 
 export class DtoClienteRespuesta extends DtoBaseRetorno{
   nombre?: string;

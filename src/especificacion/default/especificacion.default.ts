@@ -1,4 +1,4 @@
-import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
+import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
 import { EspecificacionDefaultProp } from "../interface/especificacion.interface";
 
 export const ESPECIFICACION_DEFAULT: EspecificacionDefaultProp[] = [

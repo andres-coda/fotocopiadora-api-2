@@ -12,8 +12,8 @@ import { Estado } from '../interface/estado.interface';
 import { estadosPendientes, estadosRetirados } from '../utils/estados';
 import { DtoResumenCrear } from './dto/clienteResumenCrear.dto';
 import { DtoResumenEditar } from './dto/clienteResumenEditar.dto';
-import { Cliente } from '@src/cliente/entity/cliente.entity';
-import { ClienteService } from '@src/cliente/cliente.service';
+import { Cliente } from '../cliente/entity/cliente.entity';
+import { ClienteService } from '../cliente/cliente.service';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoResumenCrear, typeof Entidad.RESUMEN>, "entidad"> {
   cliente: Cliente

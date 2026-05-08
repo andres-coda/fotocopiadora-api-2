@@ -1,20 +1,20 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '@src/base/base.service';
+import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
-import { ErroresService } from '@src/error/error.service';
-import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp, UpdateRetorno } from '@src/base/interface/base.interface';
-import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
-import { Mens } from '@src/gateway/enum/Mens.enum';
+import { ErroresService } from '../error/error.service';
+import { GatewayGateway } from '../gateway/gateway.gateway';
+import { CreateProp, EditarProp, GetDatoProp, UpdateRetorno } from '../base/interface/base.interface';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { Mens } from '../gateway/enum/Mens.enum';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
-import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID, CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
+import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
 import { ClienteRetorno } from './interface/cliente_retorno.interface';
-import { Estado } from '@src/interface/estado.interface';
-import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
-import { ClienteResumen } from '@src/cliente_resumen/entity/clienteResumen.entity';
+import { Estado } from '../interface/estado.interface';
+import { ClienteResumenService } from '../cliente_resumen/cliente_resumen.service';
+import { ClienteResumen } from '../cliente_resumen/entity/clienteResumen.entity';
 
 interface getClientes {
   usuarioId: string;

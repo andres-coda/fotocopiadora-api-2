@@ -1,4 +1,4 @@
-import { UserRetornoProp } from "@src/interface/userRetorno.interface";
+import { UserRetornoProp } from "../../interface/userRetorno.interface";
 
 export class DtoBaseRetorno {
   id!: string;

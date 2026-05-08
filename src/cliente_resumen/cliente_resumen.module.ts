@@ -9,7 +9,7 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
-import { ClienteModule } from '@src/cliente/cliente.module';
+import { ClienteModule } from '../cliente/cliente.module';
 
 @Module({
   imports: [

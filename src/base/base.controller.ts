@@ -7,7 +7,7 @@ import { AdminGuard } from '../auth/guard/admin.guard';
 import { BaseDto } from './dto/baseDto';
 import { EntidadDatoMapType } from '../gateway/dto/gatewayDto.dto';
 import type { SelectedDeep } from './interface/base.interface';
-import { CreateProp, DeletProp, EditarElementoControllerProp, RelationsKey, UpdateRetorno } from './interface/base.interface';
+import { CreateProp, DeletProp, EditarElementoControllerProp, RelationsKey } from './interface/base.interface';
 import { UsuarioActual, UsuarioCompleto } from '../utils/usuarioActual.decorador';
 import { AuthParcialDto } from '../auth/dto/authParcial.dto';
 import { User } from '../user/entity/user.entity';

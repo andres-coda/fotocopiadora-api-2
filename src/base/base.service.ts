@@ -9,7 +9,6 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { BaseDto } from './dto/baseDto';
 import { BASE_RELATIONS, mergeNestedRelations, mergeRelationsBase, mergeSimpleRelations, relacionesAString } from '../utils/relacion';
 import { QueryRunner } from 'typeorm/browser';
-import { DtoBaseRetorno } from './dto/baseRetorno.dto';
 import { User } from '@src/user/entity/user.entity';
 
 @Injectable()
