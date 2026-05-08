@@ -4,14 +4,15 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateDefaultProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Precio } from './entity/precio.entity';
 import { DtoPrecioCrear } from './dto/precioCrear.dto';
 import { DtoPrecioEditar } from './dto/precioEditar.dto';
 import { PRECIO_RELATIONS, PRECIO_SELECTED } from './default/relacion';
-import { PRECIO_DEFAULT } from './default/precio.default';
+import { DtoPrecioRespuesta } from './dto/precioRetorno.dto';
+import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 
 @Injectable()
 export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar> {
@@ -97,6 +98,16 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de precios`)
+    }
+  }
+
+  remplaceToReturn(entidad: Precio): DtoPrecioRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+
+    return {
+      ...base,
+      nombre: entidad.nombre,
+      importe: entidad.importe
     }
   }
 }

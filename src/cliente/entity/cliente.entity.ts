@@ -1,7 +1,7 @@
 import { Base } from "../../base/entity/base.entity";
 import { ClienteResumen } from "../../cliente_resumen/entity/clienteResumen.entity";
 import { Pedido } from "../../pedido/entity/pedido.entity";
-import { Column, Entity, OneToMany, OneToOne, Unique } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 
 @Entity('cliente')
 export class Cliente extends Base {

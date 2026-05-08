@@ -13,7 +13,7 @@ import { AuthParcialDto } from '../auth/dto/authParcial.dto';
 import { User } from '../user/entity/user.entity';
 
 @Controller('base')
-export abstract class BaseController<K extends keyof EntidadDatoMapType, T extends Base & EntidadDatoMapType[K], CrearDto extends BaseDto, EditarDto extends BaseDto, Servicio extends BaseService<K, T, CrearDto, EditarDto>> {
+export abstract class BaseController<K extends keyof EntidadDatoMapType, T extends Base, CrearDto extends BaseDto, EditarDto extends BaseDto, Servicio extends BaseService<K, T, CrearDto, EditarDto>> {
   protected constructor(
     protected readonly baseService: Servicio,
     protected readonly entidad: K,
@@ -152,7 +152,7 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
   async createDato(
     @UsuarioCompleto() user: User,
     @Body() datos: CrearDto
-  ): Promise<T> {
+  ): Promise< EntidadDatoMapType[K]> {
     console.log('Metodo POST, BaseController')
     const dto: CreateProp<CrearDto,K> = {
       dto: datos,
@@ -160,7 +160,7 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
       entidad:this.entidad
     }
     console.log('Despues de la creación de la dto')
-    const retorno: T = await this.baseService.createDatoCx(dto);
+    const retorno:  EntidadDatoMapType[K] = await this.baseService.createDatoCx(dto);
     return retorno;
   }
 
@@ -178,7 +178,7 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
     @UsuarioCompleto() user: User,
     @Param('id') id: string,
     @Body() datos: EditarDto
-  ): Promise<T> {
+  ): Promise< EntidadDatoMapType[K]> {
     const dto: EditarElementoControllerProp<T, EditarDto,K> = {
       dto: datos,
       usuarioId: user.id,
@@ -188,7 +188,7 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
       relaciones:this.relaciones,
       selected: this.selected
     }
-    const retorno: T= await this.baseService.updateElementoController(dto);
+    const retorno:  EntidadDatoMapType[K]= await this.baseService.updateElementoController(dto);
     return retorno;
   }
 

@@ -1,6 +1,6 @@
 import { BaseDto } from "../../base/dto/baseDto";
 import { Estado } from "../../interface/estado.interface";
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 
 export class DtoStockEditar extends BaseDto {
   @IsOptional()

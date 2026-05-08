@@ -1,4 +1,4 @@
-import { Role } from "@src/auth/rol/rol.enum";
+import { Role } from "../../auth/rol/rol.enum";
 import { UsuarioCrear } from "../dto/userCrear.dto";
 
 export interface EditarUsuario{

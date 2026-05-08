@@ -12,10 +12,14 @@ import { DtoPedidoCrear } from './dto/pedidoCrear.dto';
 import { DtoPedidoEditar } from './dto/pedidoEditar.dto';
 import { Cliente } from '../cliente/entity/cliente.entity';
 import { ClienteService } from '../cliente/cliente.service';
-import { LibroPedidoService } from '@src/libro_pedido/libro_pedido.service';
-import { LibroPedido } from '@src/libro_pedido/entity/libroPedido.entity';
-import { DtoLibroPedidoCrear } from '@src/libro_pedido/dto/DtoCrearLibroPedido.dto';
-import { CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '@src/cliente/default/relacion';
+import { LibroPedidoService } from '../libro_pedido/libro_pedido.service';
+import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
+import { DtoLibroPedidoCrear } from '../libro_pedido/dto/DtoCrearLibroPedido.dto';
+import { CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
+import { DtoPedidoRespuesta } from './dto/pedidoRetorno.dto';
+import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.dto';
+import { DtoClienteRespuesta } from '../cliente/dto/clienteRespuesta.dto';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -61,7 +65,6 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      console.log('Dentro de crear dato, cliente: ', cliente)
       return newPedido;
 
     } catch (er) {
@@ -107,16 +110,12 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<DtoPedidoCrear, "pedido">): Promise<Pedido> {
-    console.log('metod createDatCx, en PedidoService: antes de crear qR')
+  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<DtoPedidoCrear, "pedido">): Promise<DtoPedidoRespuesta> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
-    console.log('metod createDatCx, en PedidoService: despues de crear qR')
     try {
-      console.log('metod createDatCx, en PedidoService: antes de crear pedido')
       const newPedido: Pedido = await this.createDato({ usuario, dto, qR, entidad });
-      console.log('metod createDatCx, en PedidoService: despues de crear pedido: cliente: ',newPedido?.cliente);
 
       const libroPedidos: LibroPedido[] = await Promise.all(
         dto.librosPedidos?.map(lp => {
@@ -134,28 +133,47 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         })
       );
 
-      console.log('metod createDatCx, en PedidoService: despues de crear libroPedidos[]')
-
       newPedido.libroPedidos = libroPedidos;
 
       await qR.commitTransaction();
 
-      
-      console.log('metod createDatCx, en PedidoService: despues del commit qR, pedido: ',newPedido)
+      const retorno: DtoPedidoRespuesta = this.remplaceToReturn(newPedido);
 
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
         entidad: Entidad.PEDIDO,
-        dato: newPedido
+        dato: retorno
       }
       this.gateway.actualizacionDato(payload);
 
-      return newPedido;
+      return retorno;
     } catch (er) {
       await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el elemento en la entidad`)
     } finally {
       await qR.release();
+    }
+  }
+
+  remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
+      ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
+      : [];
+
+    const cliente: DtoClienteRespuesta = this.clienteService.remplaceToReturn(entidad.cliente);
+
+    return {
+      ...base,
+
+      fechaEntrega: entidad.fechaEntrega,
+      importeTotal: entidad.importeTotal,
+      archivos: entidad.archivos,
+      anillados: entidad.anillados,
+      sena: entidad.sena,
+
+      cliente,
+      libroPedidos,
     }
   }
 

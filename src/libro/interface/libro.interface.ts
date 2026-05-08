@@ -1,6 +1,6 @@
-import { NAMES_COMPONENTE } from "@src/componente/default/componente.default";
-import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
-import { NAMES_MATERIAS } from "@src/materia/default/materia.default";
+import { NAMES_COMPONENTE } from "../../componente/default/componente.default";
+import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
+import { NAMES_MATERIAS } from "../../materia/default/materia.default";
 import { NAMES_LIBRO } from "../default/libro_name.default";
 
 export interface LibroDefaultProp {

@@ -13,6 +13,7 @@ import { mockErrores } from 'test/mock/error.mocks';
 import { mockGateway } from 'test/mock/gateway.mocks';
 import { mockEntity } from 'test/mock/test.mock';
 import { createMockRepository } from 'test/mock/repo.mocks';
+import { DtoBaseRetorno } from '../dto/baseRetorno.dto';
 
 
 jest.mock('@src/base/entity/base.entity', () => ({
@@ -39,6 +40,10 @@ export class TestEntity extends Base {
   constructor() {
     super()
   }
+}
+
+export class TestEntityDto extends DtoBaseRetorno {
+  nombre!: string;
 }
 
 /* =========================

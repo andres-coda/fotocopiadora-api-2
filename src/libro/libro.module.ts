@@ -12,7 +12,6 @@ import { MateriaModule } from '../materia/materia.module';
 import { Libro } from './entity/libro.entity';
 import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
 import { Stock } from '../stock/entity/stock.entity';
-import { StockService } from '../stock/stock.service';
 import { StockModule } from '../stock/stock.module';
 import { Componente } from '../componente/entity/componente.entity';
 import { ComponenteModule } from '../componente/componente.module';

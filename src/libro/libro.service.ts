@@ -21,6 +21,11 @@ import { Estado } from '../interface/estado.interface';
 import { Componente } from '../componente/entity/componente.entity';
 import { ComponenteService } from '../componente/componente.service';
 import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from '../componente/default/relacion.default';
+import { DtoLibroRespuesta } from './dto/libroRetorno.dto';
+import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { DtoComponenteRespuesta } from '../componente/dto/componenteRetorno.dto';
+import { DtoMateriaRespuesta } from '../materia/dto/materiaRetorno.dto';
+import { DtoStockRespuesta } from '../stock/dto/stockRetorno.dto';
 
 @Injectable()
 export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar> {
@@ -246,6 +251,35 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el stok del libro id ${id}`)
     } finally {
       await qR.release();
+    }
+  }
+
+  remplaceToReturn(entidad: Libro): DtoLibroRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    const componentes: DtoComponenteRespuesta[] = entidad.componentes?.length > 0
+      ? entidad.componentes.map(c => this.componenteService.remplaceToReturn(c))
+      : [];
+
+    const materia: DtoMateriaRespuesta = this.materiaService.remplaceToReturn(entidad.materia);
+    const stock: DtoStockRespuesta = this.stockService.remplaceToReturn(entidad.stock);
+
+    return {
+      ...base,
+      nombre: entidad.nombre,
+      descripcion: entidad.descripcion,
+      editorial: entidad.editorial,
+      edicion: entidad.edicion,
+      nivel: entidad.nivel,
+      cantidadPg: entidad.cantidadPg,
+      anio: entidad.anio,
+      adhesivos: entidad.adhesivo,
+      autor: entidad.autor,
+      img: entidad.img,
+      especificacionesDefecto: entidad.especificacionesDefecto,
+
+      componentes,
+      materia,
+      stock,
     }
   }
 }

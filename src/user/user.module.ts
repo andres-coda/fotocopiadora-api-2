@@ -6,12 +6,12 @@ import { AuthModule } from '../auth/auth.module';
 import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
 import { UserController } from './user.controller';
-import { MateriaModule } from '@src/materia/materia.module';
-import { PrecioModule } from '@src/precio/precio.module';
-import { EspecificacionModule } from '@src/especificacion/especificacion.module';
-import { LibroModule } from '@src/libro/libro.module';
-import { ComponenteModule } from '@src/componente/componente.module';
-import { SedeModule } from '@src/sede/sede.module';
+import { MateriaModule } from '../materia/materia.module';
+import { PrecioModule } from '../precio/precio.module';
+import { EspecificacionModule } from '../especificacion/especificacion.module';
+import { LibroModule } from '../libro/libro.module';
+import { ComponenteModule } from '../componente/componente.module';
+import { SedeModule } from '../sede/sede.module';
 
 @Module({
   imports: [

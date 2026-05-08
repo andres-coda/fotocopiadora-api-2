@@ -5,7 +5,6 @@ import { Pedido } from "../../pedido/entity/pedido.entity";
 import { Especificacion } from "../../especificacion/entity/especificacion.entity";
 import { Estado } from "../../interface/estado.interface";
 import { Sede } from "../../sede/entity/sede.entity";
-import { Exclude } from "class-transformer";
 
 @Entity('libro_pedido')
 export class LibroPedido extends Base {

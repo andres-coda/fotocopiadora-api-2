@@ -1,16 +1,16 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarElementoControllerProp, EditarProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarElementoControllerProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { LibroPedido } from './entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from './dto/DtoCrearLibroPedido.dto';
 import { DtoLibroPedidoEditar } from './dto/DtoEditarLibroPedido.dto';
-import { LIBRO_PEDIDO_ESTADO_RELATIONS, SELECTED_LIBRO_PEDIDO, SELECTED_LIBRO_PEDIDO_ESTADO } from './default/relacion.default';
+import { LIBRO_PEDIDO_ESTADO_RELATIONS, SELECTED_LIBRO_PEDIDO_ESTADO } from './default/relacion.default';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
 import { LIBRO_RELATIONS, SELECTED_LIBRO } from '../libro/default/relacion.default';
@@ -28,7 +28,12 @@ import { DtoStockEditar } from '../stock/dto/stockEditar.dto';
 import { STOCK_RELATIONS, STOCK_SELECTED } from '../stock/default/relacion';
 import { Sede } from '../sede/entity/sede.entity';
 import { SedeService } from '../sede/sede.service';
-import { Estado } from '@src/interface/estado.interface';
+import { Estado } from '../interface/estado.interface';
+import { DtoLibroPedidoRespuesta } from './dto/libroPedidoRetorno.dto';
+import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { DtoSedeRespuesta } from '../sede/dto/sedeRetorno.dto';
+import { DtoLibroRespuesta } from '../libro/dto/libroRetorno.dto';
+import { DtoEspecificaionRetorno } from '../especificacion/dto/DtoEspecificacionRetorno.dto';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.RESUMEN>, "entidad"> {
   pedido: Pedido
@@ -233,7 +238,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<LibroPedido> {
+  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<DtoLibroPedidoRespuesta> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
@@ -273,10 +278,12 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
 
       await qR.commitTransaction();
 
+      const retorno: DtoLibroPedidoRespuesta = this.remplaceToReturn(newLibroPedido);
+
       const payload: Mensaje = {
         mensaje: Mens.EDITAR,
         entidad,
-        dato: newLibroPedido
+        dato: retorno
       }
 
       this.gatewayGateway.actualizacionDato(payload);
@@ -291,7 +298,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       }
 
 
-      return newLibroPedido;
+      return retorno;
     } catch (er) {
       await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el estado del libro`)
@@ -300,4 +307,25 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
+  remplaceToReturn(entidad: LibroPedido): DtoLibroPedidoRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    const especificaciones: DtoEspecificaionRetorno[] = entidad.especificaciones?.length > 0
+      ? entidad.especificaciones.map(esp => this.espService.remplaceToReturn(esp))
+      : [];
+
+    const libro: DtoLibroRespuesta = this.libroService.remplaceToReturn(entidad.libro);
+    const sede: DtoSedeRespuesta = this.sedeService.remplaceToReturn(entidad.sede);
+
+    return {
+      ...base,
+
+      cantidad: entidad.cantidad,
+      detalles: entidad.detalles,
+      estado: entidad.estado,
+
+      libro,
+      sede,
+      especificaciones
+    }
+  }
 }

@@ -12,6 +12,8 @@ import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
 import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from './default/relacion.default';
 import { Especificaciones } from '../libro_pedido/interface/especificaciones.interface';
+import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
+import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 
 export interface GetEspNombres extends Omit<GetIdsProp<Especificacion>, 'ids'> {
   nombres: Especificaciones[]
@@ -119,6 +121,16 @@ export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especi
       return esp;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer las especificaciones en base de datos`)
+    }
+  }
+
+  remplaceToReturn(entidad: Especificacion): DtoEspecificaionRetorno {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+
+    return {
+      ...base,
+
+      nombre: entidad.nombre
     }
   }
 }

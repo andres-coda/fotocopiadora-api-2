@@ -4,14 +4,15 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateDefaultProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Sede } from './entity/sede.entity';
 import { DtoSedeCrear } from './dto/sedeCrear.dto';
 import { DtoSedeEditar } from './dto/sedeEditar.dto';
 import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
-import { SEDE_DEFAULT } from './default/sede.default';
+import { DtoSedeRespuesta } from './dto/sedeRetorno.dto';
+import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 
 @Injectable()
 export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar> {
@@ -93,6 +94,15 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de sedes`)
+    }
+  }
+
+  remplaceToReturn(entidad: Sede): DtoSedeRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+
+    return {
+      ...base,
+      nombre:entidad.nombre
     }
   }
 }
