@@ -6,9 +6,10 @@ import { Pedido } from './entity/pedido.entity';
 import { DtoPedidoCrear } from './dto/pedidoCrear.dto';
 import { DtoPedidoEditar } from './dto/pedidoEditar.dto';
 import { PEDIDO_RELATIONS, PEDIDO_SELECTED } from './default/relacion';
+import { DtoPedidoRespuesta } from './dto/pedidoRetorno.dto';
 
 @Controller('pedido')
-export class PedidoController extends BaseController<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar, PedidoService> {
+export class PedidoController extends BaseController<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta, PedidoService> {
   constructor(
     protected readonly pedidoService: PedidoService,
   ) {

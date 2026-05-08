@@ -16,9 +16,13 @@ import { LibroPedidoService } from '@src/libro_pedido/libro_pedido.service';
 import { LibroPedido } from '@src/libro_pedido/entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from '@src/libro_pedido/dto/DtoCrearLibroPedido.dto';
 import { CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '@src/cliente/default/relacion';
+import { DtoPedidoRespuesta } from './dto/pedidoRetorno.dto';
+import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
+import { DtoLibroPedidoRespuesta } from '@src/libro_pedido/dto/libroPedidoRetorno.dto';
+import { DtoClienteRespuesta } from '@src/cliente/dto/clienteRespuesta.dto';
 
 @Injectable()
-export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
+export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta> {
   constructor(
     @InjectRepository(Pedido) private readonly pedidoRepository: Repository<Pedido>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -60,7 +64,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
 
         this.gatewayGateway.actualizacionDato(payload);
       }
-      
+
       return newPedido;
 
     } catch (er) {
@@ -106,7 +110,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<DtoPedidoCrear, "pedido">): Promise<Pedido> {
+  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<DtoPedidoCrear, "pedido">): Promise<DtoPedidoRespuesta> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
@@ -119,7 +123,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
             ...lp,
             pedido_id: newPedido.id
           };
-          
+
           return this.libroPedidoService.createDatoXEntidad({
             usuario,
             qR,
@@ -128,27 +132,48 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
           });
         })
       );
-      
+
       newPedido.libroPedidos = libroPedidos;
 
       await qR.commitTransaction();
 
-      
-      console.log('metod createDatCx, en PedidoService: despues del commit qR, pedido: ',newPedido)
+      const retorno: DtoPedidoRespuesta = this.remplaceToReturn(newPedido);
 
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
         entidad: Entidad.PEDIDO,
-        dato: newPedido
+        dato: retorno
       }
       this.gateway.actualizacionDato(payload);
 
-      return newPedido;
+      return retorno;
     } catch (er) {
       await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el elemento en la entidad`)
     } finally {
       await qR.release();
+    }
+  }
+
+  remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
+      ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
+      : [];
+
+    const cliente: DtoClienteRespuesta = this.clienteService.remplaceToReturn(entidad.cliente);
+
+    return {
+      ...base,
+
+      fechaEntrega: entidad.fechaEntrega,
+      importeTotal: entidad.importeTotal,
+      archivos: entidad.archivos,
+      anillados: entidad.anillados,
+      sena: entidad.sena,
+
+      cliente,
+      libroPedidos,
     }
   }
 
