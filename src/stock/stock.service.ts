@@ -10,9 +10,11 @@ import { Mens } from '../gateway/enum/Mens.enum';
 import { Stock } from './entity/stock.entity';
 import { DtoStockCrear } from './dto/stockCrear.dto';
 import { DtoStockEditar } from './dto/stockEditar.dto';
+import { DtoStockRespuesta } from './dto/stockRetorno.dto';
+import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 
 @Injectable()
-export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoStockCrear, DtoStockEditar> {
+export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoStockCrear, DtoStockEditar, DtoStockRespuesta> {
   constructor(
     @InjectRepository(Stock) private readonly stockRepository: Repository<Stock>,
     @InjectDataSource() protected readonly dataSource: DataSource,
@@ -49,7 +51,7 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Stock, DtoStockEditar,typeof Entidad.STOCK>): Promise<UpdateRetorno<Stock>> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Stock, DtoStockEditar, typeof Entidad.STOCK>): Promise<UpdateRetorno<Stock>> {
     try {
       const stockExistente: Stock = await this.getDatoByIdOrFail({
         id,
@@ -60,7 +62,7 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
         entidadError
       });
 
-      const stock:Stock = stockExistente.verificarStock(dto);
+      const stock: Stock = stockExistente.verificarStock(dto);
 
       console.log('Stock : ', stock)
 
@@ -72,15 +74,29 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
           entidad,
-          dato:newStock
+          dato: newStock
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
-      return {dato:newStock, isQr:true};
+      return { dato: newStock, isQr: true };
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${ id} en el registro de stocks`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${id} en el registro de stocks`)
+    }
+  }
+
+  remplaceToReturn(entidad: Stock): DtoStockRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+
+    return {
+      ...base,
+
+      stock: entidad.stock,
+      pendiente: entidad.pendiente,
+      listo: entidad.listo,
+      retirado: entidad.retirado,
+      cancelado: entidad.cancelado
     }
   }
 }
