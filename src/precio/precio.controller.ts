@@ -6,9 +6,10 @@ import { DtoPrecioCrear } from './dto/precioCrear.dto';
 import { DtoPrecioEditar } from './dto/precioEditar.dto';
 import { PrecioService } from './precio.service';
 import { PRECIO_RELATIONS, PRECIO_SELECTED, PRECIO_SELECTED_BY_ID } from './default/relacion';
+import { DtoPrecioRespuesta } from './dto/precioRetorno.dto';
 
 @Controller('precio')
-export class PrecioController extends BaseController<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar, PrecioService> {
+export class PrecioController extends BaseController<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar, DtoPrecioRespuesta, PrecioService> {
   constructor(
     protected readonly precioService: PrecioService,
   ) {
