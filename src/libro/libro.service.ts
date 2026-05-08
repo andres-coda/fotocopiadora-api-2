@@ -25,6 +25,7 @@ import { DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 import { DtoComponenteRespuesta } from '@src/componente/dto/componenteRetorno.dto';
 import { DtoMateriaRespuesta } from '@src/materia/dto/materiaRetorno.dto';
+import { DtoStockRespuesta } from '@src/stock/dto/stockRetorno.dto';
 
 @Injectable()
 export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar, DtoLibroRespuesta> {
@@ -255,11 +256,12 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
 
   remplaceToReturn(entidad: Libro): DtoLibroRespuesta {
     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    const componentes: DtoComponenteRespuesta[] = entidad.componentes?.length>0 
+    const componentes: DtoComponenteRespuesta[] = entidad.componentes?.length > 0
       ? entidad.componentes.map(c => this.componenteService.remplaceToReturn(c))
-      :[];
+      : [];
 
     const materia: DtoMateriaRespuesta = this.materiaService.remplaceToReturn(entidad.materia);
+    const stock: DtoStockRespuesta = this.stockService.remplaceToReturn(entidad.stock);
 
     return {
       ...base,
@@ -277,7 +279,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
 
       componentes,
       materia,
-
+      stock,
     }
   }
 }

@@ -2,6 +2,7 @@ import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto";
 import { DtoComponenteRespuesta } from "@src/componente/dto/componenteRetorno.dto";
 import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
 import { DtoMateriaRespuesta } from "@src/materia/dto/materiaRetorno.dto";
+import { DtoStockRespuesta } from "@src/stock/dto/stockRetorno.dto";
 
 export class DtoLibroRespuesta extends DtoBaseRetorno {
   nombre!: string;
@@ -17,4 +18,5 @@ export class DtoLibroRespuesta extends DtoBaseRetorno {
   especificacionesDefecto?: Especificaciones[];
   componentes!: DtoComponenteRespuesta[]; 
   materia!: DtoMateriaRespuesta;
+  stock!: DtoStockRespuesta;
 }
