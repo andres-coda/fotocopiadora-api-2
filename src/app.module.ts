@@ -62,7 +62,7 @@ import { Componente } from './componente/entity/componente.entity';
         User,
       ],
       synchronize: true,
-      logging: false,
+      logging: true,
     }),
     ErroresModule,
     GateWayModule,

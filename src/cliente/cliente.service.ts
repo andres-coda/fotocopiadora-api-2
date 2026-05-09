@@ -228,7 +228,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       const resumen: ClienteResumen = await this.resumenService.createDatoXEntidad({
         qR,
         usuario,
-        dto: { estado: Estado.PENDIENTE },
+        dto: {},
         cliente: newCliente
       });
 

@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateElementoControllerProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
@@ -20,6 +20,8 @@ import { DtoPedidoRespuesta } from './dto/pedidoRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.dto';
 import { DtoClienteRespuesta } from '../cliente/dto/clienteRespuesta.dto';
+import { GetPedidoXLibro } from './interface/pedido.interface';
+import { PEDIDO_RELATIONS, PEDIDO_RELATIONS_BY_ID, PEDIDO_RELATIONS_LIBRO_ID, PEDIDO_SELECTED, PEDIDO_SELECTED_BY_ID, PEDIDO_SELECTED_LIBRO_ID } from './default/relacion';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -175,6 +177,37 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       cliente,
       libroPedidos,
     }
+  }
+
+  async getDatoXLibro({ estado, id_libro, usuarioId, qR }: GetPedidoXLibro): Promise<Pedido[]> {
+    try {
+      if (!id_libro || !estado) return [];
+      const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
+        relaciones: [PEDIDO_RELATIONS_LIBRO_ID],
+        selected: PEDIDO_SELECTED_LIBRO_ID,
+        where: {
+          libroPedidos: {
+            libro: {
+              id: id_libro
+            },
+            estado: estado
+          },
+        },
+        usuarioId,
+        orden:'fechaEntrega'
+
+      });
+
+      const datos: Pedido[] = qR
+        ? await qR.manager.find(Pedido, criterio)
+        : await this.baseRepository.find(criterio)
+
+      return datos;
+
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer los pedidos del libro con id ${id_libro} y el estado ${estado}`)
+    }
+
   }
 
 }
