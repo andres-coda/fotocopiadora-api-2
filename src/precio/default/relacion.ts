@@ -10,11 +10,13 @@ export const PRECIO_RELATIONS: RelationsKey<Precio> = {
 export const PRECIO_SELECTED: SelectedDeep<Precio> = {
   ...SELECTED_BASE,
   nombre:true,
-  importe:true
+  importe:true,
+  abreviatura: true,
 }
 
 export const PRECIO_SELECTED_BY_ID: SelectedDeep<Precio> = {
   ...PRECIO_SELECTED,
   fechaActualizacion:true,
   fechaCreacion:true,
+  abreviatura: true,
 }
