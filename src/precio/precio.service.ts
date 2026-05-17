@@ -43,7 +43,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
       const precio: Precio = new Precio();
       precio.nombre = dto.nombre;
       precio.importe = dto.importe;
-      precio.abreviatura = dto.abreviatura;
+      precio.abreviatura = dto.abreviatura ?? [];
       precio.user = usuario;
 
       const newPrecio: Precio = qR

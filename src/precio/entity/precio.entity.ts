@@ -7,10 +7,10 @@ import { PrecioAbareviatura } from "../interface/precio.interface";
 @Entity('precio')
 export class Precio extends Base {
 
-  @Column({type: 'varchar', length: 64})
+  @Column({ type: 'varchar', length: 64 })
   nombre!: string;
 
-  @Column({type: 'varchar', length: 20, nullable:true})
+  @Column({ type: 'simple-array', nullable: true })
   abreviatura?: PrecioAbareviatura[];
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
