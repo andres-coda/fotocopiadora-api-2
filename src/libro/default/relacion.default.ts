@@ -15,6 +15,7 @@ export const SELECTED_LIBROS_TODOS: SelectedDeep<Libro> = {
   editorial: true,
   anio: true,
   adhesivo: true,
+  img:true,
   materia: {
     id: true,
     nombre: true

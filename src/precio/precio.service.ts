@@ -43,6 +43,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
       const precio: Precio = new Precio();
       precio.nombre = dto.nombre;
       precio.importe = dto.importe;
+      precio.abreviatura = dto.abreviatura;
       precio.user = usuario;
 
       const newPrecio: Precio = qR
@@ -76,8 +77,10 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
         selected,
         entidadError
       });
-
-      precio.nombre = dto.nombre || precio.nombre;
+      if(!precio.abreviatura || precio.abreviatura.length === 0 ) {
+        precio.nombre = dto.nombre || precio.nombre;
+      }
+      
       precio.importe = dto.importe || precio.importe;
 
       const newPrecio: Precio = qR
@@ -107,7 +110,8 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
     return {
       ...base,
       nombre: entidad.nombre,
-      importe: entidad.importe
+      importe: entidad.importe,
+      abreviatura: entidad.abreviatura
     }
   }
 }

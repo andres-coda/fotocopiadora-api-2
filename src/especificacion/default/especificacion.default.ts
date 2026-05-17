@@ -29,4 +29,7 @@ export const ESPECIFICACION_DEFAULT: EspecificacionDefaultProp[] = [
   {
     nombre:Especificaciones.SUELTO,
   },
+  {
+    nombre:Especificaciones.TROKELADO,
+  },
 ]

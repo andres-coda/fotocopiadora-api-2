@@ -1,5 +1,6 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { PrecioAbareviatura } from "../interface/precio.interface";
 
 export class DtoPrecioCrear extends BaseDto {
   @IsNotEmpty()
@@ -9,4 +10,9 @@ export class DtoPrecioCrear extends BaseDto {
   @IsNotEmpty()
   @IsNumber()
   importe!: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(PrecioAbareviatura, { each: true })
+  abreviatura?: PrecioAbareviatura[];
 }

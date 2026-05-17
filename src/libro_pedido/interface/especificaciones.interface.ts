@@ -7,5 +7,6 @@ export enum Especificaciones {
   ABROCHADO = "abrochado",
   DOBLE_FAZ = "d_f",
   SIMPLE_FAZ = "s_f",
-  SELECCION = "seleccion"
+  SELECCION = "seleccion",
+  TROKELADO = "trokelado"
 }
