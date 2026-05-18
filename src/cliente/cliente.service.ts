@@ -188,7 +188,10 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
  */
   async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<Cliente> {
     try {
+      dto.telefono = dto.telefono?.trim() || undefined;
+      dto.email = dto.email?.trim() || undefined;
       const dato: string | undefined = dto.telefono || dto.email;
+
       if (!dato) throw new NotFoundException('No se ha proporcionado email ni telefono para crear cliente');
 
       const clienteExistente: Cliente | null = await this.clienteExistente({
@@ -261,6 +264,9 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         relaciones,
         selected
       });
+      
+      dto.telefono = dto.telefono?.trim() || undefined;
+      dto.email = dto.email?.trim() || undefined;
 
       cliente.nombre = dto.nombre || cliente.nombre;
       cliente.telefono = dto.telefono || cliente.telefono;
@@ -290,7 +296,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
   remplaceToReturn(entidad: Cliente): DtoClienteRespuesta {
     const base = this.remplaceToBase(entidad);
     const resumen = this.resumenService.remplaceToReturn(entidad.resumen);
-    
+
     return {
       ...base,
 

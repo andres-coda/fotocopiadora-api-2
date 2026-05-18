@@ -18,7 +18,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
     adhesivos: 4,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN,
@@ -46,7 +46,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN,
@@ -102,7 +102,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.ENTRY],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN,
@@ -116,7 +116,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN,
@@ -144,7 +144,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN,
@@ -172,7 +172,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN,
@@ -204,7 +204,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
     adhesivos: 4,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.STUDENT],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
@@ -232,7 +232,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
     adhesivos: 4,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
@@ -260,7 +260,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
@@ -288,7 +288,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
@@ -316,7 +316,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
@@ -344,7 +344,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
@@ -375,7 +375,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHT,
@@ -403,7 +403,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHT,
@@ -431,7 +431,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHT,
@@ -459,7 +459,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHT,
@@ -487,7 +487,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHT,
@@ -515,7 +515,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHT,
@@ -543,7 +543,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHT,
@@ -574,7 +574,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHTER,
@@ -602,7 +602,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
     adhesivos: 4,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHTER,
@@ -630,7 +630,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
     adhesivos: 4,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHTER,
@@ -658,7 +658,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHTER,
@@ -686,7 +686,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHTER,
@@ -714,7 +714,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHTER,
@@ -742,7 +742,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.CLASS],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.BRIGHTER,
