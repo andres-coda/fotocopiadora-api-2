@@ -38,7 +38,6 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
   async findAll(
     @UsuarioActual() user: AuthParcialDto,
   ): Promise<EntidadDatoMapType[K][]> {
-    console.log('Get controlador base')
     return await this.baseService.getDatoCx({
       usuarioId: user.sub,
       entidadError: this.entidadError,
@@ -63,8 +62,8 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
   async findOne(
     @Param('id') id: string,
     @UsuarioActual() user: AuthParcialDto,
-  ): Promise<T> {
-    const item = await this.baseService.getDatoByIdOrFail({
+  ): Promise<EntidadDatoMapType[K]> {
+    const item = await this.baseService.getDatoByIdCx({
       id,
       usuarioId: user.sub,
       entidadError: this.entidadError,

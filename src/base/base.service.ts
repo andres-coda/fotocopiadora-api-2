@@ -535,5 +535,15 @@ export abstract class BaseService<
       throw this.erroresService.handleExceptions(er, `Error al intentar leer todos los  ${entidadError} de la base de datos`)
     }
   }
+
+  async getDatoByIdCx({ id, qR, relaciones, entidadError, usuarioId, selected }: GetIdProp<T>): Promise<EntidadDatoMapType[K]>{
+    try{
+      const dato: T = await this.getDatoByIdOrFail({qR, usuarioId, entidadError, relaciones, id, selected});
+      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(dato);
+      return retorno;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer todos los  ${entidadError} de la base de datos`)
+    }
+  }
 }
 
