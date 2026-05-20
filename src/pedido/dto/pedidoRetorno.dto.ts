@@ -1,5 +1,6 @@
 import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
 import { DtoClienteRespuesta } from "../../cliente/dto/clienteRespuesta.dto";
+import { Estado } from "../../interface/estado.interface";
 import { DtoLibroPedidoRespuesta } from "../../libro_pedido/dto/libroPedidoRetorno.dto";
 
 export class DtoPedidoRespuesta extends DtoBaseRetorno {
@@ -7,6 +8,7 @@ export class DtoPedidoRespuesta extends DtoBaseRetorno {
   importeTotal!: number;
   archivos!: number;
   anillados!: number;
+  estado!: Estado; 
   sena!: number;
   cliente!: DtoClienteRespuesta;
   libroPedidos!: DtoLibroPedidoRespuesta[];

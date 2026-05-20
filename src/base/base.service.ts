@@ -525,5 +525,15 @@ export abstract class BaseService<
       throw this.erroresService.handleExceptions(er, `Error al intentar crear ${entidadError} por defecto`)
     }
   }
+
+  async getDatoCx({ qR, relaciones = [], entidadError = undefined, usuarioId = '', orden = undefined, selected = undefined }: GetProp<T>): Promise<EntidadDatoMapType[K][]>{
+    try{
+      const datos: T[] = await this.getDato({qR, usuarioId, entidadError, relaciones, orden, selected});
+      const retorno: EntidadDatoMapType[K][] = datos.map(d => this.remplaceToReturn(d));
+      return retorno;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer todos los  ${entidadError} de la base de datos`)
+    }
+  }
 }
 

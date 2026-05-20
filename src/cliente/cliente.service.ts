@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, GetDatoProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Cliente } from './entity/cliente.entity';
@@ -97,62 +97,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar encontrar el cliente ${dato} `)
-    }
-  }
-
-  // Obtiene todos los datos activos (no eliminados) asociados a un usuario.
-  // Permite definir relaciones, orden y selección de campos.
-  // Si se recibe un QueryRunner, la consulta se ejecuta dentro de la transacción.
-  async getDatoCx({ usuarioId }: getClientes): Promise<ClienteRetorno[]> {
-    try {
-      const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
-        relaciones: CLIENTE_RELATIONS,
-        selected: CLIENTE_SELECTED,
-        usuarioId,
-        where: {
-          deleted: false,
-        },
-      });
-
-      const clientes: Cliente[] = await this.baseRepository.find(criterio);
-
-      const estadosPendientes = new Set([
-        Estado.PENDIENTE,
-        Estado.IMPRESO_MITAD,
-        Estado.IMPRESO_COMPLETO
-      ]);
-
-      const clientesRetorno: ClienteRetorno[] = clientes.map((c) => {
-        let listo: number = 0;
-        let pendiente: number = 0;
-        let retirado: number = 0;
-        c.pedidos?.forEach((p) => {
-          let hayPendiente = false;
-          let hayListo = false;
-          p.libroPedidos?.forEach((lp) => {
-            if (lp.estado === Estado.LISTO) hayListo = true;
-            if (estadosPendientes.has(lp.estado)) hayPendiente = true;
-          })
-
-          if (hayPendiente) pendiente++;
-          else if (hayListo) listo++;
-          else retirado++;
-
-        })
-        return {
-          id: c.id,
-          nombre: c.nombre,
-          telefono: c.telefono,
-          email: c.email,
-          listo,
-          pendiente,
-          retirado
-        };
-      })
-
-      return clientesRetorno;
-    } catch (error) {
-      throw this.erroresService.handleExceptions(error, `Error al intentar leer los clientes`)
     }
   }
 
@@ -264,7 +208,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         relaciones,
         selected
       });
-      
+
       dto.telefono = dto.telefono?.trim() || undefined;
       dto.email = dto.email?.trim() || undefined;
 
@@ -295,8 +239,9 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
 
   remplaceToReturn(entidad: Cliente): DtoClienteRespuesta {
     const base = this.remplaceToBase(entidad);
-    const resumen = this.resumenService.remplaceToReturn(entidad.resumen);
-
+    const resumen = entidad.resumen
+      ? this.resumenService.remplaceToReturn(entidad.resumen)
+      : undefined;
     return {
       ...base,
 

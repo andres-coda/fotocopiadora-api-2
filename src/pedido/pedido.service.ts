@@ -22,6 +22,7 @@ import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.
 import { DtoClienteRespuesta } from '../cliente/dto/clienteRespuesta.dto';
 import { GetPedidoXLibro } from './interface/pedido.interface';
 import { PEDIDO_RELATIONS, PEDIDO_RELATIONS_BY_ID, PEDIDO_RELATIONS_LIBRO_ID, PEDIDO_SELECTED, PEDIDO_SELECTED_BY_ID, PEDIDO_SELECTED_LIBRO_ID } from './default/relacion';
+import { Estado } from '@src/interface/estado.interface';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -57,11 +58,12 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         ? await qR.manager.save(Pedido, pedido)
         : await this.pedidoRepository.save(pedido);
 
+
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
           entidad,
-          dato: newPedido
+          dato: this.remplaceToReturn(newPedido)
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -99,7 +101,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
           entidad,
-          dato: newPedido
+          dato: this.remplaceToReturn(newPedido)
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -158,13 +160,20 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
   }
 
   remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta {
+    console.log('Entre a reemplazo de pedido ')
     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    console.log('base ', base)
     const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
       ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
       : [];
 
+    console.log('libros pedidos:  ', libroPedidos)
     const cliente: DtoClienteRespuesta = this.clienteService.remplaceToReturn(entidad.cliente);
+    
+    console.log('cliente:  ', cliente)
+    const estado: Estado = this.estadoPedido(libroPedidos);
 
+    console.log('Estado pedidos: ', estado)
     return {
       ...base,
 
@@ -173,7 +182,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       archivos: entidad.archivos,
       anillados: entidad.anillados,
       sena: entidad.sena,
-
+      estado,
       cliente,
       libroPedidos,
     }
@@ -194,7 +203,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
           },
         },
         usuarioId,
-        orden:'fechaEntrega'
+        orden: 'fechaEntrega'
 
       });
 
@@ -208,6 +217,37 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       throw this.erroresService.handleExceptions(error, `Error al intentar leer los pedidos del libro con id ${id_libro} y el estado ${estado}`)
     }
 
+  }
+
+  private estadoPedido(libroPedidos?: DtoLibroPedidoRespuesta[]): Estado {
+    if (!libroPedidos?.length) {
+      return Estado.PENDIENTE;
+    }
+
+    const estados = new Set(libroPedidos.map(lp => lp.estado));
+
+    // Cualquier pedido no terminado => pendiente
+    if (
+      estados.has(Estado.PENDIENTE) ||
+      estados.has(Estado.IMPRESO_COMPLETO) ||
+      estados.has(Estado.IMPRESO_MITAD)
+    ) {
+      return Estado.PENDIENTE;
+    }
+
+    if (estados.has(Estado.LISTO)) {
+      return Estado.LISTO;
+    }
+
+    if (estados.has(Estado.RETIRADO)) {
+      return Estado.RETIRADO;
+    }
+
+    if (estados.has(Estado.CANCELADO)) {
+      return Estado.CANCELADO;
+    }
+
+    return Estado.RETIRADO;
   }
 
 }

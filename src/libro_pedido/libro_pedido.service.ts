@@ -313,8 +313,13 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       ? entidad.especificaciones.map(esp => this.espService.remplaceToReturn(esp))
       : [];
 
-    const libro: DtoLibroRespuesta = this.libroService.remplaceToReturn(entidad.libro);
-    const sede: DtoSedeRespuesta = this.sedeService.remplaceToReturn(entidad.sede);
+    const libro: DtoLibroRespuesta | undefined = entidad.libro 
+      ? this.libroService.remplaceToReturn(entidad.libro)
+      : undefined;
+
+    const sede: DtoSedeRespuesta | undefined = entidad.sede 
+      ? this.sedeService.remplaceToReturn(entidad.sede)
+      : undefined;
 
     return {
       ...base,

@@ -3,7 +3,7 @@ import { Pedido } from "../entity/pedido.entity";
 import { SELECTED_BASE } from "../../utils/relacion";
 
 export const PEDIDO_RELATIONS: RelationsKey<Pedido> = {
-  relations:['libroPedidos'],
+  relations:['libroPedidos', 'cliente'],
   nestedRelations: {}
 };
 
@@ -18,6 +18,12 @@ export const PEDIDO_SELECTED: SelectedDeep<Pedido> = {
     libroPedidos:{
       id:true,
       estado:true,
+    },
+    cliente:{
+      id:true,
+      nombre:true,
+      telefono:true,
+      email:true
     }
 }
 

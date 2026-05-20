@@ -5,5 +5,5 @@ export class DtoClienteRespuesta extends DtoBaseRetorno{
   nombre?: string;
   telefono?: string;
   email?: string;  
-  resumen!:DtoResumenRespuesta;
+  resumen?:DtoResumenRespuesta;
 }

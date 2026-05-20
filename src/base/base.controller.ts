@@ -37,8 +37,9 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
   @UseGuards(UsuarioGuard, AdminGuard)
   async findAll(
     @UsuarioActual() user: AuthParcialDto,
-  ): Promise<T[]> {
-    return await this.baseService.getDato({
+  ): Promise<EntidadDatoMapType[K][]> {
+    console.log('Get controlador base')
+    return await this.baseService.getDatoCx({
       usuarioId: user.sub,
       entidadError: this.entidadError,
       relaciones: this.relacionesGenerales ?? this.relaciones,
