@@ -18,7 +18,7 @@ export class DtoClienteCrear extends BaseDto {
   @ValidateIf(o => !o.email)
   @IsNotEmpty({ message: 'Debe proporcionar teléfono o email' })
   @IsString({ message: 'El telefono debe estar pasado en formato string' })
-  @IsPhoneNumber('AR', { message: 'Debe ser un número de teléfono válido de Argentina' })
+  @IsPhoneNumber(undefined, { message: 'Debe ser un número de teléfono válido con código de país' })
   telefono?: string;
 
   @IsOptional()
