@@ -4,10 +4,10 @@ import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { DtoLibroEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, GetDatoProp, UpdateRetorno } from '../base/interface/base.interface';
 import { LIBRO_RELATIONS, SELECTED_LIBRO } from './default/relacion.default';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
@@ -29,6 +29,12 @@ import { DtoStockRespuesta } from '../stock/dto/stockRetorno.dto';
 import { DtoPropuestaLibroRetorno } from '@src/propuesta_pedido/dto/propuestaRetorno.dto';
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
 
+interface NombreProp {
+  nombre: string,
+  nivel: string,
+  componentes: string[]
+}
+
 @Injectable()
 export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar> {
   constructor(
@@ -44,6 +50,26 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
 
   ) {
     super(libroRepository, dataSource, erroresService, gatewayGateway)
+  }
+
+  async getDatoByName({ dato, usuarioId, qR, relaciones, selected, entidadError }: GetDatoProp<Libro>): Promise<Libro | null> {
+    try {
+      const textArray: string[] = dato
+        .split("-")
+        .map(item => item.trim());
+
+      const nombre: NombreProp = {
+        nombre: textArray[0] ?? '',
+        nivel: textArray[1] ?? '',
+        componentes: textArray.slice(2) ?? []
+      };
+
+      const libros:Libro[] = await this.getDatosByNombres({nombres:[nombre.nombre], usuarioId, qR, relaciones, selected, entidadError})
+      
+
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer el dato con nombre ${dato} ${entidadError && `de ${entidadError}`}`)
+    }
   }
 
   async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoLibroCrear, typeof Entidad.LIBRO>): Promise<Libro> {
@@ -267,7 +293,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
 
     const materia: DtoMateriaRespuesta = this.materiaService.remplaceToReturn(entidad.materia);
     const stock: DtoStockRespuesta = this.stockService.remplaceToReturn(entidad.stock);
-    const propuesta: DtoPropuestaLibroRetorno[] = entidad.propuesta?.length>0 
+    const propuesta: DtoPropuestaLibroRetorno[] = entidad.propuesta?.length > 0
       ? entidad.propuesta.map(p => this.propuestaService.remplaceToReturn(p))
       : [];
 

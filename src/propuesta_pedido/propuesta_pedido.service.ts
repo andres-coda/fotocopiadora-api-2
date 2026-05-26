@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateDefaultProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Propuesta } from './entity/propuesta_pedido.entity';
@@ -42,8 +42,6 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         selected: PROPUESTA_SELECTED,
         entidadError: 'propuesta de pedido'
       });
-
-      console.log('Existe: ', existe)
 
       if (existe) throw new NotFoundException(`El nombre ${dto.nombre} de la propuesta del pedido ya existe en la base de datos, elija otro nombre`);
 
