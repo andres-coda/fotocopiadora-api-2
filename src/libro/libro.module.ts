@@ -15,6 +15,7 @@ import { Stock } from '../stock/entity/stock.entity';
 import { StockModule } from '../stock/stock.module';
 import { Componente } from '../componente/entity/componente.entity';
 import { ComponenteModule } from '../componente/componente.module';
+import { PropuestaPedidoModule } from '@src/propuesta_pedido/propuesta_pedido.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ComponenteModule } from '../componente/componente.module';
     forwardRef(() => MateriaModule),
     forwardRef(() => StockModule),
     forwardRef(() => ComponenteModule),
+    forwardRef(() => PropuestaPedidoModule),
   ],
   controllers: [LibroController],
   providers: [LibroService],
