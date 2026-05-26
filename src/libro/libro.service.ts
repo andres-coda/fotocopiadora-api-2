@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { DtoLibroEditar } from './dto/libroEditar.dto';
@@ -26,6 +26,8 @@ import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { DtoComponenteRespuesta } from '../componente/dto/componenteRetorno.dto';
 import { DtoMateriaRespuesta } from '../materia/dto/materiaRetorno.dto';
 import { DtoStockRespuesta } from '../stock/dto/stockRetorno.dto';
+import { DtoPropuestaLibroRetorno } from '@src/propuesta_pedido/dto/propuestaRetorno.dto';
+import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
 
 @Injectable()
 export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar> {
@@ -37,6 +39,9 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
     private readonly materiaService: MateriaService,
     private readonly stockService: StockService,
     private readonly componenteService: ComponenteService,
+    @Inject(forwardRef(() => PropuestaService))
+    private readonly propuestaService: PropuestaService,
+
   ) {
     super(libroRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -262,6 +267,9 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
 
     const materia: DtoMateriaRespuesta = this.materiaService.remplaceToReturn(entidad.materia);
     const stock: DtoStockRespuesta = this.stockService.remplaceToReturn(entidad.stock);
+    const propuesta: DtoPropuestaLibroRetorno[] = entidad.propuesta?.length>0 
+      ? entidad.propuesta.map(p => this.propuestaService.remplaceToReturn(p))
+      : [];
 
     return {
       ...base,
@@ -280,6 +288,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
       componentes,
       materia,
       stock,
+      propuesta
     }
   }
 }

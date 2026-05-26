@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -26,7 +26,8 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    private readonly libroService: LibroService
+    @Inject(forwardRef(() => LibroService))
+    private readonly libroService: LibroService,
   ) {
     super(propuestaRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -137,13 +138,13 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
   remplaceToReturn(entidad: Propuesta): DtoPropuestaRespuesta {
     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    const libro: DtoLibroRespuesta[] = entidad.libro?.length > 0 
-      ? entidad.libro.map(l=> this.libroService.remplaceToReturn(l))
-      :[];
+    const libro: DtoLibroRespuesta[] = entidad.libro?.length > 0
+      ? entidad.libro.map(l => this.libroService.remplaceToReturn(l))
+      : [];
 
     return {
       ...base,
-      nombre:entidad.nombre,
+      nombre: entidad.nombre,
 
       libro
     }

@@ -1,3 +1,4 @@
+import { DtoPropuestaLibroRetorno } from "@src/propuesta_pedido/dto/propuestaRetorno.dto";
 import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
 import { DtoComponenteRespuesta } from "../../componente/dto/componenteRetorno.dto";
 import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
@@ -19,4 +20,5 @@ export class DtoLibroRespuesta extends DtoBaseRetorno {
   componentes!: DtoComponenteRespuesta[]; 
   materia!: DtoMateriaRespuesta;
   stock!: DtoStockRespuesta;
+  propuesta?: DtoPropuestaLibroRetorno[];
 }
