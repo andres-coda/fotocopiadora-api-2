@@ -25,6 +25,7 @@ import { PropuestaService } from './propuesta_pedido.service';
     forwardRef(() => LibroModule),
   ],
   controllers: [PropuestaPedidoController],
-  providers: [PropuestaService]
+  providers: [PropuestaService],
+  exports: [PropuestaService]
 })
 export class PropuestaPedidoModule { }
