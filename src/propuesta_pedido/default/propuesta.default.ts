@@ -1,0 +1,140 @@
+import { NAMES_LIBRO, NAMES_LIBRO_EXT } from "@src/libro/default/libro_name.default";
+import { PropuestaDefaultProp } from "../interface/propuesta.interface";
+
+export const NAMES_PROPUESTA = {
+  LEARN_1: 'Learn 1',
+  LEARN_NOW_1: 'Learn NOW 1',
+  BRIGHT_STARTER: 'Bright 1',
+  BRIGHTER_STARTER: 'Brighter 1',
+  BRIGHT_1: 'Bright 1',
+  BRIGHTER_1: 'Brighter 1',
+  LEARN_2: 'Learn 2',
+  LEARN_NOW_2: 'Learn NOW 2',
+  BRIGHT_2: 'Bright 2',
+  BRIGHTER_2: 'Brighter 2',
+  LEARN_3: 'Learn 3',
+  LEARN_NOW_3: 'Learn NOW 3',
+  BRIGHT_3: 'Bright 3',
+  BRIGHTER_3: 'Brighter 3',
+  LEARN_4: 'Learn 4',
+  LEARN_NOW_4: 'Learn NOW 4',
+  BRIGHT_4: 'Bright 4',
+  BRIGHTER_4: 'Brighter 4',
+  LEARN_5: 'Learn 5',
+  LEARN_NOW_5: 'Learn NOW 5',
+  BRIGHT_5: 'Bright 5',
+  BRIGHTER_5: 'Brighter 5',
+  LEARN_6: 'Learn 6',
+  LEARN_NOW_6: 'Learn NOW 6',
+  BRIGHT_6: 'Bright 6',
+  BRIGHTER_6: 'Brighter 6',
+} as const;
+
+
+
+export const MATERIAS_DEFAULT: PropuestaDefaultProp[] = [
+  {
+    nombre: NAMES_PROPUESTA.LEARN_1,
+    libros: [NAMES_LIBRO_EXT.LEARN_1_AB, NAMES_LIBRO_EXT.LEARN_1_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_2,
+    libros: [NAMES_LIBRO_EXT.LEARN_2_AB, NAMES_LIBRO_EXT.LEARN_2_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_3,
+    libros: [NAMES_LIBRO_EXT.LEARN_3_AB, NAMES_LIBRO_EXT.LEARN_3_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_4,
+    libros: [NAMES_LIBRO_EXT.LEARN_4_AB, NAMES_LIBRO_EXT.LEARN_4_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_5,
+    libros: [NAMES_LIBRO_EXT.LEARN_5_AB, NAMES_LIBRO_EXT.LEARN_5_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_6,
+    libros: [NAMES_LIBRO_EXT.LEARN_6_AB, NAMES_LIBRO_EXT.LEARN_6_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_NOW_1,
+    libros: [NAMES_LIBRO_EXT.LEARN_NOW_1_AB, NAMES_LIBRO_EXT.LEARN_NOW_1_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_NOW_2,
+    libros: [NAMES_LIBRO_EXT.LEARN_NOW_2_AB, NAMES_LIBRO_EXT.LEARN_NOW_2_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_NOW_3,
+    libros: [NAMES_LIBRO_EXT.LEARN_NOW_3_AB, NAMES_LIBRO_EXT.LEARN_NOW_3_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_NOW_4,
+    libros: [NAMES_LIBRO_EXT.LEARN_NOW_4_AB, NAMES_LIBRO_EXT.LEARN_NOW_4_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_NOW_5,
+    libros: [NAMES_LIBRO_EXT.LEARN_NOW_5_AB, NAMES_LIBRO_EXT.LEARN_NOW_5_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.LEARN_NOW_6,
+    libros: [NAMES_LIBRO_EXT.LEARN_NOW_6_AB, NAMES_LIBRO_EXT.LEARN_NOW_6_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.BRIGHT_STARTER,
+    libros: [NAMES_LIBRO_EXT.BRIGHT_STARTER_AB, NAMES_LIBRO_EXT.BRIGHT_STARTER_AB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.BRIGHT_1,
+    libros: [NAMES_LIBRO_EXT. BRIGHT_1_AB, NAMES_LIBRO_EXT. BRIGHT_1_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHT_2,
+    libros: [NAMES_LIBRO_EXT. BRIGHT_2_AB, NAMES_LIBRO_EXT. BRIGHT_2_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHT_3,
+    libros: [NAMES_LIBRO_EXT. BRIGHT_3_AB, NAMES_LIBRO_EXT. BRIGHT_3_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHT_4,
+    libros: [NAMES_LIBRO_EXT. BRIGHT_4_AB, NAMES_LIBRO_EXT. BRIGHT_4_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHT_5,
+    libros: [NAMES_LIBRO_EXT. BRIGHT_5_AB, NAMES_LIBRO_EXT. BRIGHT_5_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHT_6,
+    libros: [NAMES_LIBRO_EXT. BRIGHT_6_AB, NAMES_LIBRO_EXT. BRIGHT_6_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA.BRIGHTER_STARTER,
+    libros: [NAMES_LIBRO_EXT.BRIGHTER_STARTER_AB, NAMES_LIBRO_EXT.BRIGHTER_STARTER_AB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHTER_1,
+    libros: [NAMES_LIBRO_EXT. BRIGHTER_1_AB, NAMES_LIBRO_EXT. BRIGHTER_1_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHTER_2,
+    libros: [NAMES_LIBRO_EXT. BRIGHTER_2_AB, NAMES_LIBRO_EXT. BRIGHTER_2_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHTER_3,
+    libros: [NAMES_LIBRO_EXT. BRIGHTER_3_AB, NAMES_LIBRO_EXT. BRIGHTER_3_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHTER_4,
+    libros: [NAMES_LIBRO_EXT. BRIGHTER_4_AB, NAMES_LIBRO_EXT. BRIGHTER_4_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHTER_5,
+    libros: [NAMES_LIBRO_EXT. BRIGHTER_5_AB, NAMES_LIBRO_EXT. BRIGHTER_5_CB]
+  },
+  {
+    nombre: NAMES_PROPUESTA. BRIGHTER_6,
+    libros: [NAMES_LIBRO_EXT. BRIGHTER_6_AB, NAMES_LIBRO_EXT. BRIGHTER_6_CB]
+  },
+]
