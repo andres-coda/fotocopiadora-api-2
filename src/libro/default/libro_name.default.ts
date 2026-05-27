@@ -1,12 +1,5 @@
 import { LIBRO_BRIGHT, LIBRO_BRIGHTER, LIBRO_LEARN, LIBRO_LEARN_NOW } from "./libro_biblioteca-default";
 
-export const NAMES_LIBRO = {
-  LEARN: 'Learn whit us',
-  LEARN_NOW: 'Learn whit us NOW',
-  BRIGHT: 'Bright Ideas',
-  BRIGHTER: 'Brighter Ideas',
-} as const;
-
 export const NAMES_LIBRO_EXT = {
   LEARN_1_CB: `${LIBRO_LEARN[0].nombre} - ${LIBRO_LEARN[0].nivel} - ${LIBRO_LEARN[0]?.componentes?.join(' - ')}`,
   LEARN_1_AB: `${LIBRO_LEARN[1].nombre} - ${LIBRO_LEARN[1].nivel} - ${LIBRO_LEARN[1]?.componentes?.join(' - ')}`,

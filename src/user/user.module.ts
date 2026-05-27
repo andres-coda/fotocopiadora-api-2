@@ -12,6 +12,7 @@ import { EspecificacionModule } from '../especificacion/especificacion.module';
 import { LibroModule } from '../libro/libro.module';
 import { ComponenteModule } from '../componente/componente.module';
 import { SedeModule } from '../sede/sede.module';
+import { PropuestaPedidoModule } from '@src/propuesta_pedido/propuesta_pedido.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { SedeModule } from '../sede/sede.module';
     forwardRef(() => ComponenteModule),
     forwardRef(() => SedeModule),
     forwardRef(() => LibroModule),
+    forwardRef(() => PropuestaPedidoModule),
   ],
   controllers: [UserController],
   providers: [UserService],

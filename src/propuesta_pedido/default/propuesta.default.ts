@@ -1,4 +1,4 @@
-import { NAMES_LIBRO, NAMES_LIBRO_EXT } from "@src/libro/default/libro_name.default";
+import { NAMES_LIBRO_EXT } from "@src/libro/default/libro_name.default";
 import { PropuestaDefaultProp } from "../interface/propuesta.interface";
 
 export const NAMES_PROPUESTA = {
@@ -32,7 +32,7 @@ export const NAMES_PROPUESTA = {
 
 
 
-export const MATERIAS_DEFAULT: PropuestaDefaultProp[] = [
+export const PROPUESTA_DEFAULT: PropuestaDefaultProp[] = [
   {
     nombre: NAMES_PROPUESTA.LEARN_1,
     libros: [NAMES_LIBRO_EXT.LEARN_1_AB, NAMES_LIBRO_EXT.LEARN_1_CB]
@@ -83,7 +83,7 @@ export const MATERIAS_DEFAULT: PropuestaDefaultProp[] = [
   },
   {
     nombre: NAMES_PROPUESTA.BRIGHT_STARTER,
-    libros: [NAMES_LIBRO_EXT.BRIGHT_STARTER_AB, NAMES_LIBRO_EXT.BRIGHT_STARTER_AB]
+    libros: [NAMES_LIBRO_EXT.BRIGHT_STARTER_AB, NAMES_LIBRO_EXT.BRIGHT_STARTER_CB]
   },
   {
     nombre: NAMES_PROPUESTA.BRIGHT_1,
@@ -111,7 +111,7 @@ export const MATERIAS_DEFAULT: PropuestaDefaultProp[] = [
   },
   {
     nombre: NAMES_PROPUESTA.BRIGHTER_STARTER,
-    libros: [NAMES_LIBRO_EXT.BRIGHTER_STARTER_AB, NAMES_LIBRO_EXT.BRIGHTER_STARTER_AB]
+    libros: [NAMES_LIBRO_EXT.BRIGHTER_STARTER_AB, NAMES_LIBRO_EXT.BRIGHTER_STARTER_CB]
   },
   {
     nombre: NAMES_PROPUESTA. BRIGHTER_1,

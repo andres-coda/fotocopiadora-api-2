@@ -1,7 +1,7 @@
 import { NAMES_COMPONENTE } from "../../componente/default/componente.default";
 import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
 import { NAMES_MATERIAS } from "../../materia/default/materia.default";
-import { NAMES_LIBRO } from "../default/libro_name.default";
+import { NAMES_LIBRO } from "../default/libro_const_default";
 
 export interface LibroDefaultProp {
   nombre: typeof NAMES_LIBRO[keyof typeof NAMES_LIBRO];
