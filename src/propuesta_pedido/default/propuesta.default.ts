@@ -43,7 +43,7 @@ export const PROPUESTA_DEFAULT: PropuestaDefaultProp[] = [
   },
   {
     nombre: NAMES_PROPUESTA.LEARN_3,
-    libros: [NAMES_LIBRO_EXT.LEARN_3_AB, NAMES_LIBRO_EXT.LEARN_3_CB]
+    libros: [NAMES_LIBRO_EXT.LEARN_3_AB, NAMES_LIBRO_EXT.LEARN_3_CB, NAMES_LIBRO_EXT.LEARN_3_EB]
   },
   {
     nombre: NAMES_PROPUESTA.LEARN_4,
