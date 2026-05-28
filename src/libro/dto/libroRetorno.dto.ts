@@ -18,7 +18,7 @@ export class DtoLibroRespuesta extends DtoBaseRetorno {
   img?: string;
   especificacionesDefecto?: Especificaciones[];
   componentes!: DtoComponenteRespuesta[]; 
-  materia!: DtoMateriaRespuesta;
-  stock!: DtoStockRespuesta;
+  materia?: DtoMateriaRespuesta;
+  stock?: DtoStockRespuesta;
   propuesta?: DtoPropuestaLibroRetorno[];
 }

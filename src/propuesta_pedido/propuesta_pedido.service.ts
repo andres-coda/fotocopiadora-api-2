@@ -148,11 +148,10 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
   }
 
   remplaceToReturn(entidad: Propuesta): DtoPropuestaRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
     const libro: DtoLibroRespuesta[] = entidad.libro?.length > 0
       ? entidad.libro.map(l => this.libroService.remplaceToReturn(l))
-      : [];
-
+      : [];   
     return {
       ...base,
       nombre: entidad.nombre,

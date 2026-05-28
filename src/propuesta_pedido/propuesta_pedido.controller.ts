@@ -12,6 +12,6 @@ export class PropuestaPedidoController extends BaseController<typeof Entidad.PRO
   constructor(
     protected readonly propuestaService: PropuestaService,
   ) {
-    super(propuestaService, Entidad.PROPUESTA_PEDIDO, 'propuesta', [PROPUESTA_RELATIONS], 'nombre', PROPUESTA_SELECTED)
+    super(propuestaService, Entidad.PROPUESTA_PEDIDO, 'propuesta', [PROPUESTA_RELATIONS], 'nombre', PROPUESTA_SELECTED, [PROPUESTA_RELATIONS], PROPUESTA_SELECTED)
   }
 }

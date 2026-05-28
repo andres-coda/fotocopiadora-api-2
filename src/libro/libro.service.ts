@@ -267,8 +267,8 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
       ? entidad.componentes.map(c => this.componenteService.remplaceToReturn(c))
       : [];
 
-    const materia: DtoMateriaRespuesta = this.materiaService.remplaceToReturn(entidad.materia);
-    const stock: DtoStockRespuesta = this.stockService.remplaceToReturn(entidad.stock);
+    const materia: DtoMateriaRespuesta | undefined= entidad.materia ? this.materiaService.remplaceToReturn(entidad.materia) : undefined;
+    const stock: DtoStockRespuesta | undefined = entidad.stock ? this.stockService.remplaceToReturn(entidad.stock) : undefined;
     const propuesta: DtoPropuestaLibroRetorno[] = entidad.propuesta?.length > 0
       ? entidad.propuesta.map(p => this.propuestaService.remplaceToReturn(p))
       : [];

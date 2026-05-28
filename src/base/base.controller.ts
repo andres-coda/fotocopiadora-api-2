@@ -42,7 +42,7 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
       usuarioId: user.sub,
       entidadError: this.entidadError,
       relaciones: this.relacionesGenerales ?? this.relaciones,
-      selected: this.selectedGeneral || this.selected,
+      selected: this.selectedGeneral ?? this.selected,
       orden: this.orden
     });
   }

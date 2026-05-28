@@ -529,6 +529,7 @@ export abstract class BaseService<
   async getDatoCx({ qR, relaciones = [], entidadError = undefined, usuarioId = '', orden = undefined, selected = undefined }: GetProp<T>): Promise<EntidadDatoMapType[K][]>{
     try{
       const datos: T[] = await this.getDato({qR, usuarioId, entidadError, relaciones, orden, selected});
+    
       const retorno: EntidadDatoMapType[K][] = datos.map(d => this.remplaceToReturn(d));
       return retorno;
     } catch (er) {
