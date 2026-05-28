@@ -3,7 +3,7 @@ import { Libro } from "../entity/libro.entity";
 import { SELECTED_BASE } from "../../utils/relacion";
 
 export const LIBRO_RELATIONS: RelationsKey<Libro> = {
-  relations: ['materia', 'stock', 'componentes', 'propuesta'],
+  relations: ['materia', 'stock', 'componentes'],
   nestedRelations: {}
 };
 
@@ -33,10 +33,6 @@ export const SELECTED_LIBROS_TODOS: SelectedDeep<Libro> = {
     nombre: true
   },
   especificacionesDefecto:true,
-  propuesta:{
-    id:true,
-    nombre:true
-  }
 }
 
 export const SELECTED_LIBRO: SelectedDeep<Libro> = {
