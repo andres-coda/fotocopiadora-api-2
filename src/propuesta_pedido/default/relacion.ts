@@ -25,6 +25,7 @@ export const PROPUESTA_SELECTED: SelectedDeep<Propuesta> = {
       fechaCreacion:false,
     },
     editorial:true,
-    edicion:true
+    edicion:true,
+    img:true
   }
 }
