@@ -103,7 +103,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
     adhesivos: 2,
     materia: NAMES_MATERIAS.INGLES,
     componentes: [NAMES_COMPONENTE.ENTRY],
-    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ANILLADO, Especificaciones.ADHESIVO]
+    especificacionesDefecto: [Especificaciones.COLOR, Especificaciones.DOBLE_FAZ, Especificaciones.ADHESIVO]
   },
   {
     nombre: NAMES_LIBRO.LEARN,
