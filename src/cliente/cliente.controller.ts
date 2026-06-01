@@ -17,7 +17,7 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
   constructor(
     protected readonly clienteService: ClienteService,
   ) {
-    super(clienteService, Entidad.CLIENTE, 'cliente', [CLIENTE_RELATIONS], 'telefono', CLIENTE_SELECTED_BY_ID, [CLIENTE_RELATIONS_BY_ID], CLIENTE_SELECTED)
+    super(clienteService, Entidad.CLIENTE, 'cliente', [CLIENTE_RELATIONS_BY_ID], 'telefono', CLIENTE_SELECTED_BY_ID, [CLIENTE_RELATIONS], CLIENTE_SELECTED)
   }
 }
 

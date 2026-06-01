@@ -64,6 +64,7 @@ export const CLIENTE_SELECTED_BY_ID: SelectedDeep<Cliente> = {
       id: true,
       estado: true,
       cantidad:true,
+      detalles:true,
       especificaciones: {
         id: true,
         nombre: true
@@ -73,6 +74,7 @@ export const CLIENTE_SELECTED_BY_ID: SelectedDeep<Cliente> = {
         nombre: true,
         nivel: true,
         edicion: true,
+        editorial:true,
         cantidadPg: true,
         adhesivo: true,
         componentes: {

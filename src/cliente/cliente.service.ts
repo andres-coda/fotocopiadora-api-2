@@ -16,6 +16,8 @@ import { Estado } from '../interface/estado.interface';
 import { ClienteResumenService } from '../cliente_resumen/cliente_resumen.service';
 import { ClienteResumen } from '../cliente_resumen/entity/clienteResumen.entity';
 import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
+import { PedidoService } from '../pedido/pedido.service';
+import { DtoPedidoRespuesta } from '@src/pedido/dto/pedidoRetorno.dto';
 
 interface getClientes {
   usuarioId: string;
@@ -30,6 +32,8 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     protected readonly gatewayGateway: GatewayGateway,
     @Inject(forwardRef(() => ClienteResumenService))
     private readonly resumenService: ClienteResumenService,
+    @Inject(forwardRef(() => PedidoService))
+    private readonly pedidoService: PedidoService,
   ) {
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -185,7 +189,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
           entidad: entidad,
-          dato: newCliente
+          dato: this.remplaceToReturn(newCliente)
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -224,7 +228,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
           entidad: entidad,
-          dato: newCliente
+          dato: this.remplaceToReturn(newCliente)
         }
 
         this.gatewayGateway.actualizacionDato(payload);
@@ -242,13 +246,14 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     const resumen = entidad.resumen
       ? this.resumenService.remplaceToReturn(entidad.resumen)
       : undefined;
+    const pedidos:DtoPedidoRespuesta[] = entidad.pedidos?.map(p=> this.pedidoService.remplaceToReturn(p));
     return {
       ...base,
 
       nombre: entidad.nombre,
       telefono: entidad.telefono,
       email: entidad.email,
-
+      pedidos,
       resumen
     };
   };
