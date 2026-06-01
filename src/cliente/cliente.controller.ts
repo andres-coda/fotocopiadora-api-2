@@ -5,7 +5,7 @@ import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
 import { ClienteService } from './cliente.service';
-import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID } from './default/relacion';
+import { CLIENTE_RELATIONS, CLIENTE_RELATIONS_BY_ID, CLIENTE_SELECTED, CLIENTE_SELECTED_BY_ID } from './default/relacion';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import { AdminGuard } from '@src/auth/guard/admin.guard';
 import { UsuarioActual } from '@src/utils/usuarioActual.decorador';
@@ -17,7 +17,7 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
   constructor(
     protected readonly clienteService: ClienteService,
   ) {
-    super(clienteService, Entidad.CLIENTE, 'cliente', [CLIENTE_RELATIONS], 'telefono', CLIENTE_SELECTED_BY_ID, undefined, CLIENTE_SELECTED)
+    super(clienteService, Entidad.CLIENTE, 'cliente', [CLIENTE_RELATIONS], 'telefono', CLIENTE_SELECTED_BY_ID, [CLIENTE_RELATIONS_BY_ID], CLIENTE_SELECTED)
   }
 }
 
