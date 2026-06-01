@@ -16,7 +16,7 @@ import { LibroPedidoService } from '../libro_pedido/libro_pedido.service';
 import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from '../libro_pedido/dto/DtoCrearLibroPedido.dto';
 import { CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
-import { DtoPedidoRespuesta } from './dto/pedidoRetorno.dto';
+import { DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedidoRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.dto';
 import { DtoClienteRespuesta } from '../cliente/dto/clienteRespuesta.dto';
@@ -184,6 +184,26 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       sena: entidad.sena,
       estado,
       cliente,
+      libroPedidos,
+    }
+  }
+
+  remplaceToReturnCliente(entidad: Pedido): DtoPedidoRespuestaCliente {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
+      ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
+      : [];
+    const estado: Estado = this.estadoPedido(libroPedidos);
+
+    return {
+      ...base,
+
+      fechaEntrega: entidad.fechaEntrega,
+      importeTotal: entidad.importeTotal,
+      archivos: entidad.archivos,
+      anillados: entidad.anillados,
+      sena: entidad.sena,
+      estado,
       libroPedidos,
     }
   }

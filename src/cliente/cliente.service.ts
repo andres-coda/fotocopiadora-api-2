@@ -17,7 +17,7 @@ import { ClienteResumenService } from '../cliente_resumen/cliente_resumen.servic
 import { ClienteResumen } from '../cliente_resumen/entity/clienteResumen.entity';
 import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
 import { PedidoService } from '../pedido/pedido.service';
-import { DtoPedidoRespuesta } from '@src/pedido/dto/pedidoRetorno.dto';
+import { DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from '@src/pedido/dto/pedidoRetorno.dto';
 
 interface getClientes {
   usuarioId: string;
@@ -246,7 +246,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     const resumen = entidad.resumen
       ? this.resumenService.remplaceToReturn(entidad.resumen)
       : undefined;
-    const pedidos:DtoPedidoRespuesta[] = entidad.pedidos?.map(p=> this.pedidoService.remplaceToReturn(p));
+    const pedidos:DtoPedidoRespuestaCliente[] = entidad.pedidos?.map(p=> this.pedidoService.remplaceToReturnCliente(p));
     return {
       ...base,
 
