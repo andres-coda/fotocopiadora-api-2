@@ -1,5 +1,5 @@
 import { Base } from "../../base/entity/base.entity";
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from "typeorm";
+import { Column, Entity, Index, JoinTable, ManyToMany, ManyToOne } from "typeorm";
 import { Libro } from "../../libro/entity/libro.entity";
 import { Pedido } from "../../pedido/entity/pedido.entity";
 import { Especificacion } from "../../especificacion/entity/especificacion.entity";
@@ -14,8 +14,12 @@ export class LibroPedido extends Base {
   @Column({ type: 'varchar', nullable: true, length: 255 })
   detalles?: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: false })
+  @Column({ type: 'tinyint' })
   estado!: Estado;
+
+  @Index()
+  @Column({ type: 'varchar', length: 36 })
+  libroId!: string;
 
   @ManyToOne(() => Libro, libro => libro.libroPedidos, {
     nullable: false,

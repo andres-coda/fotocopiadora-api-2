@@ -1,9 +1,9 @@
 export enum Estado {
-  PENDIENTE = "p",
-  IMPRESO_MITAD = "i2",
-  IMPRESO_COMPLETO = "i",
-  LISTO = "l",
-  RETIRADO = "r",
-  CANCELADO = "c",
-  STOCK = "st"
+  PENDIENTE = 0,
+  IMPRESO_MITAD = 1,
+  IMPRESO_COMPLETO = 2,
+  LISTO = 3,
+  RETIRADO = 4,
+  CANCELADO = 5,
+  STOCK = 6
 }

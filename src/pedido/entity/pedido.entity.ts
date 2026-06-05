@@ -2,6 +2,7 @@ import { Base } from "../../base/entity/base.entity";
 import { Cliente } from "../../cliente/entity/cliente.entity";
 import { LibroPedido } from "../../libro_pedido/entity/libroPedido.entity";
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
+import { EstadoPedido } from "../interface/estadoPedido.enum";
 
 @Entity('pedido')
 export class Pedido extends Base {
@@ -23,6 +24,9 @@ export class Pedido extends Base {
 
   @ManyToOne(() => Cliente, cliente => cliente.pedidos)
   cliente!: Cliente;
+
+  @Column({ type: 'tinyint', default: EstadoPedido.PENDIENTE })
+  estado!: EstadoPedido;
 
   @OneToMany(() => LibroPedido, libroPedido => libroPedido.pedido)
   libroPedidos!: LibroPedido[];
