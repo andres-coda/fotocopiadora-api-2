@@ -4,7 +4,7 @@ import { SELECTED_BASE } from "../../utils/relacion";
 
 export const PEDIDO_RELATIONS: RelationsKey<Pedido> = {
   relations:['libroPedidos', 'cliente'],
-  nestedRelations: {}
+  nestedRelations: {'cliente':{'resumen':{}}}
 };
 
 export const PEDIDO_SELECTED: SelectedDeep<Pedido> = {
@@ -14,6 +14,7 @@ export const PEDIDO_SELECTED: SelectedDeep<Pedido> = {
     fechaCreacion:true,
     fechaEntrega:true,
     importeTotal:true,
+    estado:true, 
     sena:true,
     libroPedidos:{
       id:true,
@@ -23,7 +24,10 @@ export const PEDIDO_SELECTED: SelectedDeep<Pedido> = {
       id:true,
       nombre:true,
       telefono:true,
-      email:true
+      email:true,
+      resumen:{
+        id:true
+      }
     }
 }
 

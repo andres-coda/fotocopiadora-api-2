@@ -33,6 +33,10 @@ export class LibroPedido extends Base {
   })
   sede!: Sede;
 
+  @Index()
+  @Column({ name: 'pedidoId', type: 'varchar', length: 36 })
+  pedidoId!: string;
+
   @ManyToOne(() => Pedido, pedido => pedido.libroPedidos, {
     nullable: false,
     onDelete: 'CASCADE'

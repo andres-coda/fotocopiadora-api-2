@@ -1,5 +1,5 @@
 import { Base } from "../../base/entity/base.entity";
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, OneToOne } from "typeorm";
 import { Estado } from "../../interface/estado.interface";
 import { NotFoundException } from "@nestjs/common";
 import { Cliente } from "../../cliente/entity/cliente.entity";
@@ -15,6 +15,13 @@ export class ClienteResumen extends Base {
 
   @Column({ type: 'int', default: 0 })
   retirado!: number;
+
+  @Column({ type: 'int', default: 0 })
+  cancelado!: number;
+
+  @Index() 
+  @Column({ type: 'varchar', length: 36, unique: true }) 
+  clienteId!: string;
 
   @OneToOne(() => Cliente, cliente => cliente.resumen)
   @JoinColumn({ name: 'cliente_id' })

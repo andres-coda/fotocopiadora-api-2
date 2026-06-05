@@ -16,7 +16,7 @@ import { LibroPedidoService } from '../libro_pedido/libro_pedido.service';
 import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
 import { DtoLibroPedidoCrear } from '../libro_pedido/dto/DtoCrearLibroPedido.dto';
 import { CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
-import { DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedidoRetorno.dto';
+import { DtoPedidoEstadoRespuesta, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedidoRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.dto';
 import { DtoClienteRespuesta } from '../cliente/dto/clienteRespuesta.dto';
@@ -159,21 +159,22 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta {
-    console.log('Entre a reemplazo de pedido ')
+  remplaceToEstadoReturn(entidad: Pedido): DtoPedidoEstadoRespuesta {
     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    console.log('base ', base)
+    return {
+      ...base,
+      estado: entidad.estado
+    }
+  }
+
+  remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
     const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
       ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
       : [];
 
-    console.log('libros pedidos:  ', libroPedidos)
     const cliente: DtoClienteRespuesta = this.clienteService.remplaceToReturn(entidad.cliente);
-    
-    console.log('cliente:  ', cliente)
-    const estado: Estado = this.estadoPedido(libroPedidos);
 
-    console.log('Estado pedidos: ', estado)
     return {
       ...base,
 
@@ -182,7 +183,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       archivos: entidad.archivos,
       anillados: entidad.anillados,
       sena: entidad.sena,
-      estado,
+      estado: entidad.estado,
       cliente,
       libroPedidos,
     }
@@ -193,7 +194,6 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
       ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
       : [];
-    const estado: Estado = this.estadoPedido(libroPedidos);
 
     return {
       ...base,
@@ -203,7 +203,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       archivos: entidad.archivos,
       anillados: entidad.anillados,
       sena: entidad.sena,
-      estado,
+      estado:entidad.estado,
       libroPedidos,
     }
   }

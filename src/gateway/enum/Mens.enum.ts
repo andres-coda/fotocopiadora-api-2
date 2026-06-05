@@ -2,5 +2,6 @@ export enum Mens{
   CREAR = "create",
   EDITAR = "updeate",
   ELIMINAR = "deleted",
-  REHACER = "rehacer"
+  REHACER = "rehacer",
+  CAMBIO_ESTADO = "estado"
 }

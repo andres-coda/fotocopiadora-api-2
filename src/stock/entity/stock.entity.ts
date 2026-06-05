@@ -1,6 +1,6 @@
 import { Base } from "../../base/entity/base.entity";
 import { Libro } from "../../libro/entity/libro.entity";
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, OneToOne } from "typeorm";
 import { DtoStockEditar } from "../dto/stockEditar.dto";
 import { Estado } from "../../interface/estado.interface";
 import { NotFoundException } from "@nestjs/common";
@@ -26,6 +26,10 @@ export class Stock extends Base {
   @JoinColumn({ name: 'libro_id' })
   libro!: Libro;
 
+  @Index()
+  @Column({ name: 'libro_id', type: 'varchar', length: 36 })
+  libroId!: string;
+
   constructor() {
     super()
     this.stock = 0;
@@ -36,10 +40,10 @@ export class Stock extends Base {
   }
 
   verificarStock(dto: DtoStockEditar): Stock {
-    console.log('Dto stock',dto);
+    console.log('Dto stock', dto);
     switch (dto.anterior) {
       case Estado.STOCK:
-        console.log('Entre anterior: ',Estado.STOCK);
+        console.log('Entre anterior: ', Estado.STOCK);
         if (this.stock - dto.cantidad <= 0) {
           this.stock = 0;
           break;
@@ -47,7 +51,7 @@ export class Stock extends Base {
         this.stock = this.stock - dto.cantidad;
         break;
       case Estado.PENDIENTE, Estado.IMPRESO_COMPLETO, Estado.IMPRESO_MITAD:
-        console.log('Entre anterior: ',Estado.PENDIENTE);
+        console.log('Entre anterior: ', Estado.PENDIENTE);
         if (this.pendiente - dto.cantidad <= 0) {
           this.pendiente = 0;
           break;
@@ -55,7 +59,7 @@ export class Stock extends Base {
         this.pendiente = this.pendiente - dto.cantidad;
         break;
       case Estado.LISTO:
-        console.log('Entre anterior: ',Estado.LISTO);
+        console.log('Entre anterior: ', Estado.LISTO);
         if (this.listo - dto.cantidad <= 0) {
           this.listo = 0;
           break;
@@ -63,7 +67,7 @@ export class Stock extends Base {
         this.listo = this.listo - dto.cantidad;
         break;
       case Estado.RETIRADO:
-        console.log('Entre anterior: ',Estado.RETIRADO);
+        console.log('Entre anterior: ', Estado.RETIRADO);
         if (this.retirado - dto.cantidad <= 0) {
           this.retirado = 0;
           break;
@@ -71,7 +75,7 @@ export class Stock extends Base {
         this.retirado = this.retirado - dto.cantidad;
         break;
       case Estado.CANCELADO:
-        console.log('Entre anterior: ',Estado.CANCELADO);        
+        console.log('Entre anterior: ', Estado.CANCELADO);
         if (this.cancelado - dto.cantidad <= 0) {
           this.cancelado = 0;
           break;
@@ -83,29 +87,29 @@ export class Stock extends Base {
     }
 
     switch (dto.actual) {
-      case Estado.PENDIENTE: 
+      case Estado.PENDIENTE:
       case Estado.IMPRESO_COMPLETO:
       case Estado.IMPRESO_MITAD:
-        console.log('Entre actual: ',Estado.PENDIENTE);
+        console.log('Entre actual: ', Estado.PENDIENTE);
         this.pendiente += dto.cantidad;
         break;
       case Estado.LISTO:
-        console.log('Entre actual: ',Estado.LISTO);
+        console.log('Entre actual: ', Estado.LISTO);
         this.listo += dto.cantidad;
         break;
       case Estado.RETIRADO:
-        console.log('Entre actual: ',Estado.RETIRADO);
+        console.log('Entre actual: ', Estado.RETIRADO);
         this.retirado += dto.cantidad;
         break;
       case Estado.CANCELADO:
-        console.log('Entre actual: ',Estado.CANCELADO);
+        console.log('Entre actual: ', Estado.CANCELADO);
         this.cancelado += dto.cantidad;
         break
       case Estado.STOCK:
-        console.log('Entre actual: ',Estado.STOCK);
+        console.log('Entre actual: ', Estado.STOCK);
         this.stock += dto.cantidad;
         break;
-      default: 
+      default:
         throw new NotFoundException('No esta desarrollado ese estado');
     }
     return this;
