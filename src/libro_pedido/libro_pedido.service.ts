@@ -39,6 +39,7 @@ import { DtoPedidoEstadoRespuesta, DtoPedidoRespuesta } from '@src/pedido/dto/pe
 import { DtoResumenRespuesta } from '@src/cliente_resumen/dto/clienteResumenRespuesta.dto';
 import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
 import { ClienteResumen } from '@src/cliente_resumen/entity/clienteResumen.entity';
+import { SEDE_RELATIONS, SEDE_SELECTED } from '@src/sede/default/relacion';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.RESUMEN>, "entidad"> {
   pedido: Pedido
@@ -176,12 +177,18 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         selected: SELECTED_LIBRO
       });
 
+      console.log('---- Libro ---- ',libro)
+
       const sede: Sede = await this.sedeService.getDatoByIdOrFail({
         id: dto.sede_id,
         qR,
         entidadError: 'sede',
         usuarioId: usuario.id,
+        relaciones: [SEDE_RELATIONS],
+        selected: SEDE_SELECTED
       });
+
+      console.log('---- Sede ---- ',Sede)
 
       const dtoEsp: Especificaciones[] = dto.especificaciones && dto.especificaciones?.length > 0
         ? dto.especificaciones
@@ -200,8 +207,6 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       libroPedido.cantidad = dto.cantidad || 0;
       libroPedido.detalles = dto.detalles;
       libroPedido.libro = libro;
-      libroPedido.libroId = libro.id;
-      libroPedido.pedidoId = pedido.id,
       libroPedido.pedido = pedido;
       libroPedido.sede = sede;
       if (especificaciones) libroPedido.especificaciones = especificaciones;
@@ -221,23 +226,16 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      const dtoStock: DtoStockEditar = {
-        actual: Estado.PENDIENTE,
-        cantidad: dto.cantidad
-      }
-
-      const stockRetorno: UpdateRetorno<Stock> = await this.stockService.updateDato({
+      console.log('...... libroid .....',libro.stock.id)
+      const stock:Stock = await this.stockService.getDatoByIdOrFail({
+        id:libro.stock.id,
         usuarioId: usuario.id,
         qR,
-        dto: dtoStock,
-        id: libro.stock.id,
-        entidadError: 'stock',
-        relaciones: [STOCK_RELATIONS],
-        selected: STOCK_SELECTED,
-        entidad: Entidad.STOCK
-      });
+        entidadError: 'stock'
+      })
+      
 
-      newLibroPedido.libro.stock = stockRetorno.dato;
+      newLibroPedido.libro.stock = stock;
 
       return newLibroPedido;
 
@@ -279,7 +277,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       const pedido: Pedido = await this.pedidoService.getDatoByIdOrFail({
         usuarioId: usuario.id,
         qR,
-        id: newLibroPedido.pedidoId,
+        id: newLibroPedido.pedido.id,
         entidadError: 'pedido',
         relaciones: [PEDIDO_RELATIONS],
         selected: PEDIDO_SELECTED,

@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateTriggerPedido1717520000001 implements MigrationInterface {
+export class CreateTriggerPedido1749520000001 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
 
@@ -59,25 +59,25 @@ export class CreateTriggerPedido1717520000001 implements MigrationInterface {
                   v_cancelados
 
               FROM libro_pedido
-              WHERE pedidoId = NEW.pedidoId;
+              WHERE pedido_id = NEW.pedido_id;
 
-              IF v_pendientes > 0 THEN
-                  SET v_estado_pedido = 0;
-
-              ELSEIF v_listos > 0 THEN
-                  SET v_estado_pedido = 3;
-
-              ELSEIF v_retirados = v_total THEN
+              IF v_cancelados = v_total THEN
                   SET v_estado_pedido = 4;
 
-              ELSEIF v_cancelados = v_total THEN
-                  SET v_estado_pedido = 5;
+              ELSEIF v_pendientes > 0 THEN
+                  SET v_estado_pedido = 1;
+
+              ELSEIF v_listos > 0 THEN
+                  SET v_estado_pedido = 2;
+
+              ELSEIF v_retirados > 0 THEN
+                  SET v_estado_pedido = 3;
 
               END IF;
 
               UPDATE pedido
               SET estado = v_estado_pedido
-              WHERE id = NEW.pedidoId;
+              WHERE id = NEW.pedido_id;
 
           END IF;
 

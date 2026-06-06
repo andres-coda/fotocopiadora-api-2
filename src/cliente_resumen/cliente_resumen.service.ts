@@ -35,21 +35,15 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
 
   async createDato({ usuario, qR, dto, entidad }: CreateProp<DtoResumenCrear, typeof Entidad.RESUMEN>): Promise<ClienteResumen> {
     try {
-      if (!dto.cliente_id) throw new NotFoundException("Falta el id del cliente para crear el resumen")
 
-      const cliente: Cliente = await this.clienteService.getDatoByIdOrFail({
-        id: dto.cliente_id,
-        qR,
-        usuarioId: usuario.id,
-        entidadError: 'cliente',
-      });
+      const resumen: ClienteResumen = new ClienteResumen();
+      resumen.user = usuario;
+      resumen.cliente = dto.cliente;
 
-      const newClienteResumen: ClienteResumen = await this.createDatoXEntidad({
-        qR,
-        usuario,
-        cliente,
-        dto
-      })
+      const newClienteResumen: ClienteResumen = qR
+        ? await qR.manager.save(ClienteResumen, resumen)
+        : await this.resumenRepository.save(resumen);
+
       return newClienteResumen;
 
     } catch (er) {
@@ -58,74 +52,8 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
   }
 
   async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<ClienteResumen, DtoResumenEditar, typeof Entidad.RESUMEN>): Promise<UpdateRetorno<ClienteResumen>> {
-    try {
-      const resumenExistente: ClienteResumen = await this.getDatoByIdOrFail({
-        id,
-        usuarioId,
-        qR,
-        relaciones,
-        selected,
-        entidadError,
-      });
+    throw new NotFoundException('updateDato para resumenCliente no esta implementado')
 
-      const iguales = dto.anterior
-        ? (estadosPendientes.has(dto.actual) && estadosPendientes.has(dto.anterior))
-        || (estadosRetirados.has(dto.actual) && estadosRetirados.has(dto.anterior))
-        : false;
-
-      if (iguales) return { dato: resumenExistente, isQr: false };
-
-      const resumen: ClienteResumen = resumenExistente.verificarResumen(dto)
-
-      const newClienteResumen: ClienteResumen = qR
-        ? await qR.manager.save(ClienteResumen, resumen)
-        : await this.resumenRepository.save(resumen);
-
-      if (!qR || !qR.manager) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad: entidad,
-          dato: newClienteResumen
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-      return { dato: newClienteResumen, isQr: true };
-
-    } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${id} en el registro de resumen de cliente`)
-    }
-  }
-
-  async createDatoXEntidad({ usuario, cliente, qR, dto }: CreateDatoXEntidadProp): Promise<ClienteResumen> {
-    try {
-      const resumen: ClienteResumen = new ClienteResumen();
-      if (dto.estado) {
-        resumen.listo = dto.estado === Estado.LISTO ? 1 : 0;
-        resumen.pendiente = estadosPendientes.has(dto.estado) ? 1 : 0;
-        resumen.retirado = estadosRetirados.has(dto.estado) ? 1 : 0;
-      }
-      resumen.user = usuario;
-      resumen.cliente = cliente;
-
-      const newClienteResumen: ClienteResumen = qR
-        ? await qR.manager.save(ClienteResumen, resumen)
-        : await this.resumenRepository.save(resumen);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad: Entidad.RESUMEN,
-          dato: newClienteResumen
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
-      return newClienteResumen;
-    } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el resumen`)
-    }
   }
 
   public remplaceToReturn(entidad: ClienteResumen): DtoResumenRespuesta {

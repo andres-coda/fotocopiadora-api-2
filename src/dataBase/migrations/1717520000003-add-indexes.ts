@@ -6,7 +6,7 @@ export class AddIndexes1717520000003 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE INDEX idx_libro_pedido_pedido_estado
-      ON libro_pedido(pedidoId, estado)
+      ON libro_pedido(pedido_id, estado)
     `);
 
   }

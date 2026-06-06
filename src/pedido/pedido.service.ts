@@ -69,7 +69,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return newPedido;
+      return {...newPedido,cliente:cliente};
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.importeTotal} en el registro de ${entidad}`)
@@ -121,6 +121,8 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     try {
       const newPedido: Pedido = await this.createDato({ usuario, dto, qR, entidad });
 
+      console.log('---- Pedido creado ----', newPedido)
+
       const libroPedidos: LibroPedido[] = await Promise.all(
         dto.librosPedidos?.map(lp => {
           const dtoLp: DtoLibroPedidoCrear = {
@@ -128,6 +130,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
             pedido_id: newPedido.id
           };
 
+          console.log('-----Pedido para crear ---- ',lp)
           return this.libroPedidoService.createDatoXEntidad({
             usuario,
             qR,

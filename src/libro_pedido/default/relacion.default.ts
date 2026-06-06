@@ -18,10 +18,6 @@ export const SELECTED_LIBRO_PEDIDO: SelectedDeep<LibroPedido> = {
     id:true,
     nombre:true,
   },
-
-  libroId:true,
-  pedidoId:true,
-
   libro:{
     id:true,
     nombre:true,

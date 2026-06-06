@@ -29,6 +29,7 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
       const stock: Stock = new Stock();
       stock.stock = dto.stock || 0;
       stock.user = usuario;
+      stock.libro = dto.libro;
 
       const newStock: Stock = qR
         ? await qR.manager.save(Stock, stock)

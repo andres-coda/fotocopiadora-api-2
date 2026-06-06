@@ -33,7 +33,7 @@ import { ComponenteModule } from './componente/componente.module';
 import { Componente } from './componente/entity/componente.entity';
 
 @Module({
-   imports: [
+  imports: [
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'client') }),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -61,8 +61,10 @@ import { Componente } from './componente/entity/componente.entity';
         Stock,
         User,
       ],
-      synchronize: true,
-      logging: false,
+      migrations: [__dirname + '/dataBase/migrations/*{.ts,.js}'],
+      migrationsRun: true,
+      synchronize: false,
+      logging: true,
     }),
     ErroresModule,
     GateWayModule,
@@ -83,4 +85,4 @@ import { Componente } from './componente/entity/componente.entity';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

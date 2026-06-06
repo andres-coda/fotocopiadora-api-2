@@ -5196,6 +5196,11 @@ typedarray@^0.0.6:
   resolved "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
+typeorm-ts-node-commonjs@^0.3.20:
+  version "0.3.20"
+  resolved "https://registry.yarnpkg.com/typeorm-ts-node-commonjs/-/typeorm-ts-node-commonjs-0.3.20.tgz#a213b8da958d9306b13e7c3a2a13167e74c3b0af"
+  integrity sha512-lXjve7w7OcF3s5+dHnCsrBjUTukpVeiS0bDe5KDXWcDx8TyRW0GTTg9kjWgHzFgHgBIBBu4WGXM0iuGpEgaV9g==
+
 typeorm@^0.3.28:
   version "0.3.28"
   resolved "https://registry.npmjs.org/typeorm/-/typeorm-0.3.28.tgz"

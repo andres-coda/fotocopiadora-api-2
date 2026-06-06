@@ -176,11 +176,11 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         ? await qR.manager.save(Cliente, cliente)
         : await this.clienteRepository.save(cliente);
 
-      const resumen: ClienteResumen = await this.resumenService.createDatoXEntidad({
+      const resumen: ClienteResumen = await this.resumenService.createDato({
         qR,
         usuario,
-        dto: {},
-        cliente: newCliente
+        dto: {cliente:newCliente},
+        entidad: Entidad.RESUMEN
       });
 
       newCliente.resumen = resumen;

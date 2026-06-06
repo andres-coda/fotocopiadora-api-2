@@ -26,10 +26,6 @@ export class Stock extends Base {
   @JoinColumn({ name: 'libro_id' })
   libro!: Libro;
 
-  @Index()
-  @Column({ name: 'libro_id', type: 'varchar', length: 36 })
-  libroId!: string;
-
   constructor() {
     super()
     this.stock = 0;

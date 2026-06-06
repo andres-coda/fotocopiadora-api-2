@@ -14,7 +14,7 @@ import { Mens } from '../gateway/enum/Mens.enum';
 import { MateriaService } from '../materia/materia.service';
 import { Materia } from '../materia/entity/materia.entity';
 import { StockService } from '../stock/stock.service';
-import { DtoStockCrear } from '../stock/dto/stockCrear.dto';
+import { DtoManipularStock, DtoStockCrear } from '../stock/dto/stockCrear.dto';
 import { Stock } from '../stock/entity/stock.entity';
 import { DtoStockEditar } from '../stock/dto/stockEditar.dto';
 import { Estado } from '../interface/estado.interface';
@@ -97,10 +97,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
         entidad: Entidad.MATERIA,
       });
 
-      const dtoStock: DtoStockCrear = { stock: 0 };
-
-      const stock: Stock = await this.stockService.createDato({ usuario, qR, dto: dtoStock, entidad: Entidad.STOCK })
-
+      
       const libro: Libro = new Libro();
       libro.nombre = dto.nombre;
       libro.descripcion = dto.descripcion ?? undefined;
@@ -114,25 +111,31 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
       libro.img = dto.img ?? undefined;
       libro.especificacionesDefecto = dto.especificacionesDefecto ?? undefined;
       libro.materia = materia;
-      libro.stock = stock;
       libro.componentes = componentes;
       libro.user = usuario;
-
+      
       const newLibro: Libro = qR
-        ? await qR.manager.save(Libro, libro)
-        : await this.libroRepository.save(libro);
+      ? await qR.manager.save(Libro, libro)
+      : await this.libroRepository.save(libro);
+      
+      const dtoStock: DtoStockCrear = { 
+        stock: 0,
+        libro,
+      };
+
+      const stock: Stock = await this.stockService.createDato({ usuario, qR, dto: dtoStock, entidad: Entidad.STOCK })
 
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.CREAR,
           entidad: entidad,
-          dato: newLibro
+          dato: this.remplaceToReturn({...newLibro, stock})
         }
 
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return newLibro;
+      return {...newLibro, stock};
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
@@ -193,7 +196,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
     }
   }
 
-  async agregarStock({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Libro, DtoStockCrear, typeof Entidad.STOCK>): Promise<Stock> {
+  async agregarStock({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Libro, DtoManipularStock, typeof Entidad.STOCK>): Promise<Stock> {
     try {
       const libro: Libro = await this.getDatoByIdOrFail({ id, qR, relaciones, entidadError, selected, usuarioId });
       const dtoStock: DtoStockEditar = {
@@ -239,7 +242,7 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
     await qR.connect();
     await qR.startTransaction();
     try {
-      const newDto: DtoStockCrear = {
+      const newDto: DtoManipularStock = {
         stock: dto.stock * (-1)
       }
       const stock: Stock = await this.agregarStock({ usuarioId, id, dto: newDto, entidadError, relaciones, selected, qR, entidad });
