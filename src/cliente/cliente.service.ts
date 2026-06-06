@@ -1,23 +1,22 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DataSource, FindOneOptions, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, GetDatoProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear } from './dto/clienteCrear.dto';
 import { DtoClienteEditar } from './dto/clienteEditar.dto';
-import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
-import { ClienteRetorno } from './interface/cliente_retorno.interface';
+import {CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
 import { Estado } from '../interface/estado.interface';
 import { ClienteResumenService } from '../cliente_resumen/cliente_resumen.service';
 import { ClienteResumen } from '../cliente_resumen/entity/clienteResumen.entity';
 import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
 import { PedidoService } from '../pedido/pedido.service';
-import { DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from '@src/pedido/dto/pedidoRetorno.dto';
+import { DtoPedidoRespuestaCliente } from '@src/pedido/dto/pedidoRetorno.dto';
 
 interface getClientes {
   usuarioId: string;
@@ -30,7 +29,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    @Inject(forwardRef(() => ClienteResumenService))
     private readonly resumenService: ClienteResumenService,
     @Inject(forwardRef(() => PedidoService))
     private readonly pedidoService: PedidoService,

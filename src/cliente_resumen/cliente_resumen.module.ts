@@ -22,7 +22,6 @@ import { ClienteModule } from '../cliente/cliente.module';
     forwardRef(() => UserModule),
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
-    forwardRef(() => ClienteModule),
   ],
   controllers: [ClienteResumenController],
   providers: [ClienteResumenService],

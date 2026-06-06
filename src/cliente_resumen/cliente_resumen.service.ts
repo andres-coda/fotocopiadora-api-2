@@ -27,8 +27,6 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    @Inject(forwardRef(() => ClienteService))
-    private readonly clienteService: ClienteService,
   ) {
     super(resumenRepository, dataSource, erroresService, gatewayGateway)
   }

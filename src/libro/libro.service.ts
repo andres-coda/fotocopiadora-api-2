@@ -200,8 +200,6 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
     try {
       const libro: Libro = await this.getDatoByIdOrFail({ id, qR, relaciones, entidadError, selected, usuarioId });
       const dtoStock: DtoStockEditar = {
-        anterior: Estado.CANCELADO,
-        actual: Estado.STOCK,
         cantidad: dto.stock
       }
       const stock: UpdateRetorno<Stock> = await this.stockService.updateDato({ usuarioId, dto: dtoStock, qR, id: libro.stock.id, entidadError: 'stock', entidad });

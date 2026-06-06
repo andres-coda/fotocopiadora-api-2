@@ -54,7 +54,7 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
 
   async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Stock, DtoStockEditar, typeof Entidad.STOCK>): Promise<UpdateRetorno<Stock>> {
     try {
-      const stockExistente: Stock = await this.getDatoByIdOrFail({
+      const stock: Stock = await this.getDatoByIdOrFail({
         id,
         usuarioId,
         qR,
@@ -63,9 +63,9 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
         entidadError
       });
 
-      const stock: Stock = stockExistente.verificarStock(dto);
+      if(dto.cantidad=== 0) return { dato: stock, isQr: true };
 
-      console.log('Stock : ', stock)
+      stock.stock = stock.stock + dto.cantidad;
 
       const newStock: Stock = qR
         ? await qR.manager.save(Stock, stock)
@@ -75,7 +75,7 @@ export class StockService extends BaseService<typeof Entidad.STOCK, Stock, DtoSt
         const payload: Mensaje = {
           mensaje: Mens.EDITAR,
           entidad,
-          dato: newStock
+          dato: this.remplaceToReturn(newStock)
         }
 
         this.gatewayGateway.actualizacionDato(payload);
