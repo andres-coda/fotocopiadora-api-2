@@ -9,7 +9,6 @@ import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { ClienteResumen } from './entity/clienteResumen.entity';
 import { DtoResumenCrear } from './dto/clienteResumenCrear.dto';
 import { DtoResumenEditar } from './dto/clienteResumenEditar.dto';
-import { Cliente } from '../cliente/entity/cliente.entity';
 import { DtoResumenRespuesta } from './dto/clienteResumenRespuesta.dto';
 
 @Injectable()
