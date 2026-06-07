@@ -149,20 +149,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         selected: CLIENTE_X_RESUMEN_SELECTED
       });
 
-      if (clienteExistente) {
-        if (dto.vienePedido) {
-          const resumen: UpdateRetorno<ClienteResumen> = await this.resumenService.updateDato({
-            id: clienteExistente.resumen.id,
-            usuarioId: usuario.id,
-            dto: { actual: Estado.PENDIENTE },
-            qR,
-            entidadError: 'resumen de cliente',
-            entidad: Entidad.RESUMEN,
-          });
-          clienteExistente.resumen = resumen.dato;
-        }
-        return clienteExistente;
-      }
+      if(clienteExistente) return clienteExistente;
 
       const cliente: Cliente = new Cliente();
       cliente.nombre = dto.nombre;

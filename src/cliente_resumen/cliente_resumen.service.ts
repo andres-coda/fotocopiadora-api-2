@@ -1,19 +1,15 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
-import { Mens } from '../gateway/enum/Mens.enum';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { ClienteResumen } from './entity/clienteResumen.entity';
-import { Estado } from '../interface/estado.interface';
-import { estadosPendientes, estadosRetirados } from '../utils/estados';
 import { DtoResumenCrear } from './dto/clienteResumenCrear.dto';
 import { DtoResumenEditar } from './dto/clienteResumenEditar.dto';
 import { Cliente } from '../cliente/entity/cliente.entity';
-import { ClienteService } from '../cliente/cliente.service';
 import { DtoResumenRespuesta } from './dto/clienteResumenRespuesta.dto';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoResumenCrear, typeof Entidad.RESUMEN>, "entidad"> {
@@ -42,6 +38,7 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
         ? await qR.manager.save(ClienteResumen, resumen)
         : await this.resumenRepository.save(resumen);
 
+      console.log('----- Resumen ----- ',newClienteResumen)
       return newClienteResumen;
 
     } catch (er) {

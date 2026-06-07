@@ -17,7 +17,6 @@ import { StockService } from '../stock/stock.service';
 import { DtoManipularStock, DtoStockCrear } from '../stock/dto/stockCrear.dto';
 import { Stock } from '../stock/entity/stock.entity';
 import { DtoStockEditar } from '../stock/dto/stockEditar.dto';
-import { Estado } from '../interface/estado.interface';
 import { Componente } from '../componente/entity/componente.entity';
 import { ComponenteService } from '../componente/componente.service';
 import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from '../componente/default/relacion.default';
