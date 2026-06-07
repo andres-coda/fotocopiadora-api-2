@@ -12,10 +12,6 @@ import { DtoResumenEditar } from './dto/clienteResumenEditar.dto';
 import { Cliente } from '../cliente/entity/cliente.entity';
 import { DtoResumenRespuesta } from './dto/clienteResumenRespuesta.dto';
 
-interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoResumenCrear, typeof Entidad.RESUMEN>, "entidad"> {
-  cliente: Cliente
-}
-
 @Injectable()
 export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, ClienteResumen, DtoResumenCrear, DtoResumenEditar> {
   constructor(
@@ -59,6 +55,7 @@ export class ClienteResumenService extends BaseService<typeof Entidad.RESUMEN, C
       pendiente: entidad.pendiente,
       listo: entidad.listo,
       retirado: entidad.retirado,
+      cancelado: entidad.cancelado
 
     };
   }

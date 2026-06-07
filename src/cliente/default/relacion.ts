@@ -60,6 +60,7 @@ export const CLIENTE_SELECTED_BY_ID: SelectedDeep<Cliente> = {
     fechaEntrega: true,
     importeTotal: true,
     sena: true,
+    estado:true,
     libroPedidos: {
       id: true,
       estado: true,

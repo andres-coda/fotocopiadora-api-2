@@ -4,4 +4,5 @@ export class DtoResumenRespuesta extends DtoBaseRetorno{
   pendiente!: number;
   listo!: number;
   retirado!: number;  
+  cancelado!: number;
 }
