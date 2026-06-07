@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
@@ -177,7 +177,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         selected: SELECTED_LIBRO
       });
 
-      console.log('---- Libro ---- ',libro)
+      console.log('---- Libro ---- ', libro)
 
       const sede: Sede = await this.sedeService.getDatoByIdOrFail({
         id: dto.sede_id,
@@ -188,7 +188,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         selected: SEDE_SELECTED
       });
 
-      console.log('---- Sede ---- ',Sede)
+      console.log('---- Sede ---- ', Sede)
 
       const dtoEsp: Especificaciones[] = dto.especificaciones && dto.especificaciones?.length > 0
         ? dto.especificaciones
@@ -226,14 +226,14 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      console.log('...... libroid .....',libro.stock.id)
-      const stock:Stock = await this.stockService.getDatoByIdOrFail({
-        id:libro.stock.id,
+      console.log('...... libroid .....', libro.stock.id)
+      const stock: Stock = await this.stockService.getDatoByIdOrFail({
+        id: libro.stock.id,
         usuarioId: usuario.id,
         qR,
         entidadError: 'stock'
       })
-      
+
 
       newLibroPedido.libro.stock = stock;
 
@@ -258,24 +258,15 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         entidadError
       });
 
-      let newLibroPedido: LibroPedido = libroPedido;
+      const newLibroPedido: LibroPedido = libroPedido.estado === dto.estado
+        ? libroPedido
+        : qR
+          ? await qR.manager.save(LibroPedido, { ...libroPedido, estado: dto.estado })
+          : await this.libroPedidoRepository.save({ ...libroPedido, estado: dto.estado });
 
-      if (libroPedido.estado != dto.estado) {        
-        libroPedido.estado = dto.estado;
-        newLibroPedido = qR
-        ? await qR.manager.save(LibroPedido, libroPedido)
-        : await this.libroPedidoRepository.save(libroPedido);
-        
-      }
-      const stock: Stock = await this.stockService.getDatoByIdOrFail({
-        usuarioId: usuario.id,
-        qR,
-        id: newLibroPedido.libro.stock.id,
-        entidadError: 'stock',
-        relaciones: [STOCK_RELATIONS],
-        selected: STOCK_SELECTED,
-      });
-      
+      if (!newLibroPedido) throw new NotFoundException('El cambio de estado no pudo efectuarse')
+
+
       const pedido: Pedido = await this.pedidoService.getDatoByIdOrFail({
         usuarioId: usuario.id,
         qR,
@@ -285,17 +276,23 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         selected: PEDIDO_SELECTED,
       });
 
-      const resumen: ClienteResumen =await this.resumenService.getDatoByIdOrFail({
-          usuarioId: usuario.id,
-          qR,
-          id: pedido.cliente.resumen.id,
-          entidadError: 'pedido',
-        });
+      const resumen: ClienteResumen = await this.resumenService.getDatoByIdOrFail({
+        usuarioId: usuario.id,
+        qR,
+        id: pedido.cliente.resumen.id,
+        entidadError: 'pedido',
+      });
+      const stock: Stock = await this.stockService.getDatoByIdOrFail({
+        usuarioId: usuario.id,
+        qR,
+        id: newLibroPedido.libro.stock.id,
+        entidadError: 'stock'
+      });
 
       await qR.commitTransaction();
 
       const retorno: DtoLibroPedidoRespuesta = this.remplaceToCambioEstadoReturn(
-        newLibroPedido, stock,  pedido, resumen
+        newLibroPedido, stock, pedido, resumen
       );
 
       const payload: Mensaje = {
@@ -342,11 +339,11 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  remplaceToCambioEstadoReturn(entidad:LibroPedido, stock:Stock | undefined, pedido:Pedido| undefined, resumen:ClienteResumen| undefined):DtoCambioEstadoLibroPedidoRespuesta{
-    const base:DtoBaseRetorno = this.remplaceToBase(entidad);
+  remplaceToCambioEstadoReturn(entidad: LibroPedido, stock: Stock | undefined, pedido: Pedido | undefined, resumen: ClienteResumen | undefined): DtoCambioEstadoLibroPedidoRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
     return {
       ...base,
-      estado:entidad.estado,
+      estado: entidad.estado,
       stock: stock ? this.stockService.remplaceToReturn(stock) : undefined,
       pedido: pedido ? this.pedidoService.remplaceToEstadoReturn(pedido) : undefined,
       resumen: resumen ? this.resumenService.remplaceToReturn(resumen) : undefined,
