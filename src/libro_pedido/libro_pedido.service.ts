@@ -258,13 +258,15 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         entidadError
       });
 
-      if (libroPedido.estado === dto.estado) return this.remplaceToCambioEstadoReturn(libroPedido, undefined, undefined, undefined);
+      let newLibroPedido: LibroPedido = libroPedido;
 
-      libroPedido.estado = dto.estado;
-      const newLibroPedido: LibroPedido = qR
+      if (libroPedido.estado != dto.estado) {        
+        libroPedido.estado = dto.estado;
+        newLibroPedido = qR
         ? await qR.manager.save(LibroPedido, libroPedido)
         : await this.libroPedidoRepository.save(libroPedido);
-
+        
+      }
       const stock: Stock = await this.stockService.getDatoByIdOrFail({
         usuarioId: usuario.id,
         qR,
@@ -283,22 +285,17 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         selected: PEDIDO_SELECTED,
       });
 
-      let resumen: ClienteResumen | undefined = undefined;
-      let cambioPedido: boolean = false;
-      if (libroPedido.pedido.estado != pedido.estado) {
-        cambioPedido = true;
-        resumen = await this.resumenService.getDatoByIdOrFail({
+      const resumen: ClienteResumen =await this.resumenService.getDatoByIdOrFail({
           usuarioId: usuario.id,
           qR,
           id: pedido.cliente.resumen.id,
           entidadError: 'pedido',
         });
-      }
 
       await qR.commitTransaction();
 
       const retorno: DtoLibroPedidoRespuesta = this.remplaceToCambioEstadoReturn(
-        newLibroPedido, stock, cambioPedido ? pedido : undefined, resumen
+        newLibroPedido, stock,  pedido, resumen
       );
 
       const payload: Mensaje = {
