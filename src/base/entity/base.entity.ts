@@ -1,24 +1,30 @@
-import { Column, CreateDateColumn, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { User } from "../../user/entity/user.entity";
-import { Transform } from "class-transformer";
+import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+
+/**
+ * Clase base para todas las entidades del sistema.
+ *
+ * Cambios respecto a la versión anterior (MySQL):
+ * - Se eliminó la relación ManyToOne a User.
+ *   El filtrado por empresa/usuario lo realiza el Row-Level Security
+ *   de PostgreSQL automáticamente usando los GUCs de sesión
+ *   (app.user_id, app.empresa_id) inyectados por DbContextInterceptor.
+ *
+ * - Los nombres de columna siguen la convención snake_case de la BD
+ *   mediante el parámetro `name` de cada decorador.
+ */
 
 export abstract class Base {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @CreateDateColumn()
-  fechaCreacion!: Date;
+  @CreateDateColumn({ name: 'fecha_creacion' })
+  fechaCreacion?: Date;
 
-  @UpdateDateColumn()
-  fechaActualizacion!: Date;
+  @UpdateDateColumn({ name: 'fecha_actualizacion' })
+  fechaActualizacion?: Date;
 
-  @Column()
-  deleted!: boolean;
-
-  @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  @Transform(({ value }) => ({ id: value?.id }), { toPlainOnly: true })
-  user!: User;
+  @Column({ default: false })
+  deleted?: boolean;
 
   constructor() {
     this.deleted = false;

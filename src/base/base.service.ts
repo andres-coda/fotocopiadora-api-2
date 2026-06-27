@@ -1,15 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityTarget, FindManyOptions, FindOneOptions, In, Repository } from 'typeorm';
 import { Base } from './entity/base.entity';
-import { CreateDefaultProp, CreateElementoControllerProp, CreateProp, CriterioProp, DeletProp, EditarElementoControllerProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetNombresProp, GetProp, RelationsKey, SelectedDeep, UpdateRetorno } from './interface/base.interface';
+import { CreateDefaultProp, CreateProp, CriterioProp, DeletProp, EditarProp, GetDatoProp, GetIdProp, GetIdsProp, GetNombresProp, GetProp, RelationsKey, RetornoGet, SelectedDeep, UpdateRetorno } from './interface/base.interface';
 import { EntidadDatoMapType, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { BaseDto } from './dto/baseDto';
 import { BASE_RELATIONS, mergeNestedRelations, mergeRelationsBase, mergeSimpleRelations, relacionesAString } from '../utils/relacion';
-import { QueryRunner } from 'typeorm/browser';
 import { DtoBaseRetorno } from './dto/baseRetorno.dto';
+
+/**
+ * Servicio base genérico para todas las entidades del sistema.
+ *
+ * Cambios respecto a la versión anterior (MySQL):
+ *
+ * 1. Se eliminó `usuarioId` de todas las props.
+ *    El filtrado por empresa/usuario lo realiza el Row-Level Security
+ *    de PostgreSQL automáticamente. No es necesario pasarlo en cada query.
+ *
+ * 2. `createDatoCx` y `updateElementoController` ya NO crean su propio
+ *    QueryRunner. Reciben el qR inyectado por DbContextInterceptor, que
+ *    ya tiene la transacción abierta y el GUC seteado.
+ *    El commit/rollback lo maneja el interceptor.
+ *
+ * 3. `crearCriterio` ya no agrega `where.user = { id: usuarioId }`.
+ *    PostgreSQL aplica RLS automáticamente en cada query.
+ *
+ * 4. Los métodos que antes creaban su propia transacción (createDatoCx,
+ *    updateElementoController) ahora delegan ese manejo al interceptor.
+ */
 
 @Injectable()
 export abstract class BaseService<
@@ -29,18 +49,18 @@ export abstract class BaseService<
   /**
    * Crea un nuevo dato que extiende de Base.
    * La implementación concreta queda a cargo del servicio que herede.
-   * @param params - Parámetros necesarios para crear el dato, incluyendo usuario, DTO, QueryRunner y entidad.
+   * @param params - Parámetros necesarios para crear el dato, DTO, QueryRunner y entidad.
    * @returns Una promesa que resuelve al dato creado.
    */
-  abstract createDato({ usuario, dto, qR, entidad }: CreateProp<CrearDto, K>): Promise<T>;
+  abstract createDato({ dto, qR, entidad }: CreateProp<CrearDto, K>): Promise<T>;
 
   /**
    * Actualiza un dato existente que extiende de Base.
    * La implementación concreta queda a cargo del servicio que herede.
-   * @param params - Parámetros necesarios para actualizar el dato, incluyendo usuarioId, DTO, QueryRunner, id, entidadError, relaciones y selected.
+   * @param params - Parámetros necesarios para actualizar el dato, DTO, QueryRunner, id, entidadError, relaciones y selected.
    * @returns Una promesa que resuelve a un objeto UpdateRetorno con el dato actualizado.
    */
-  abstract updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected }: EditarProp<T, EditarDto, K>): Promise<UpdateRetorno<T>>;
+  abstract updateDato({ dto, qR, id, entidadError, relaciones, selected }: EditarProp<T, EditarDto, K>): Promise<UpdateRetorno<T>>;
 
   abstract remplaceToReturn(entidad: T): EntidadDatoMapType[K];
 
@@ -49,7 +69,7 @@ export abstract class BaseService<
       id: entidad.id,
       fechaCreacion: entidad.fechaCreacion,
       fechaActualizacion: entidad.fechaActualizacion,
-      deleted: entidad.deleted,
+      deleted: entidad.deleted ?? false,
     }
   }
 
@@ -63,9 +83,9 @@ export abstract class BaseService<
    * @returns El objeto merged resultante.
    */
   protected mergeSelected<T>(
-      base: SelectedDeep<T> | undefined,
-      override: SelectedDeep<T>
-    ): SelectedDeep<T> {
+    base: SelectedDeep<T> | undefined,
+    override: SelectedDeep<T>
+  ): SelectedDeep<T> {
     if (!base) return override;
 
     const result: any = { ...base };
@@ -140,13 +160,13 @@ export abstract class BaseService<
 
   /**
    * Construye un criterio base de búsqueda para entidades.
-   * Permite definir relaciones, selección de campos, orden y filtrado por usuario.
+   * Permite definir relaciones, selección de campos, orden.
    * Es reutilizado tanto para búsquedas simples como múltiples.
    * @param params - Parámetros para construir el criterio.
    * @returns El criterio construido para FindOneOptions o FindManyOptions.
    */
   protected crearCriterio<TOptions extends FindOneOptions | FindManyOptions>(
-    { relaciones, selected, orden, where, usuarioId, relacionBase, selectedBase }: CriterioProp<T>
+    { relaciones, selected, orden, where, relacionBase, selectedBase, limite, offset }: CriterioProp<T>
   ): TOptions {
     const mergeRelaciones = mergeRelationsBase(this.mergeRelations<T>(relaciones, relacionBase));
     const selectedBaseObservaciones: SelectedDeep<T> = this.mergeSelected(
@@ -156,10 +176,6 @@ export abstract class BaseService<
     const finalSelected = selected
       ? this.mergeSelected(selected, selectedBaseObservaciones)
       : selectedBase;
-
-    if (usuarioId) {
-      where.user = { id: usuarioId };
-    }
 
     const relationStrings = relacionesAString(mergeRelaciones);
 
@@ -171,34 +187,38 @@ export abstract class BaseService<
       ...(finalSelected && { select: finalSelected }),
       where,
       ...(orden && { order: { [orden]: 'ASC' } }),
+      take: limite ?? 50,
+      skip: offset ?? 0,
     } as TOptions;
   }
 
 
   /**
-   * Obtiene todos los datos activos (no eliminados) asociados a un usuario.
+   * Obtiene todos los datos activos (no eliminados) asociados a una empresa.
    * Permite definir relaciones, orden y selección de campos.
    * Si se recibe un QueryRunner, la consulta se ejecuta dentro de la transacción.
    * @param params - Parámetros para la consulta.
    * @returns Una promesa que resuelve a un arreglo de datos.
    */
-  async getDato({ qR, relaciones = [], entidadError = undefined, usuarioId = '', orden = undefined, selected = undefined }: GetProp<T>): Promise<T[]> {
+  async getDato({ qR, relaciones = [], entidadError = undefined, orden = undefined, selected = undefined, limite, offset }: GetProp<T>): Promise<{ datos: T[], total: number }> {
     try {
       const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
         relaciones,
         selected,
-        usuarioId,
         where: { deleted: false },
         orden,
       });
 
       if (qR) {
         const target: EntityTarget<T> = this.baseRepository.target;
-        return await qR.manager.find<T>(target, criterio);
+        const [datos, total] = await qR.manager.findAndCount<T>(target, criterio);
+        return {
+          datos, total
+        }
       }
 
-      const dato: T[] = await this.baseRepository.find(criterio);
-      return dato;
+      const [datos, total] = await this.baseRepository.findAndCount(criterio);
+      return { datos, total };
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar leer los datos ${entidadError && `de ${entidadError}`}`)
     }
@@ -212,21 +232,24 @@ export abstract class BaseService<
    * @param params - Parámetros para la consulta.
    * @returns Una promesa que resuelve a un arreglo de datos.
    */
-  async getDatoTodos({ qR, relaciones = [], entidadError, usuarioId, orden = undefined, selected }: GetProp<T>): Promise<T[]> {
+  async getDatoTodos({ qR, relaciones = [], entidadError, orden = undefined, selected, limite, offset }: GetProp<T>): Promise<{ datos: T[], total: number }> {
     try {
       const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
         relaciones,
         selected,
         where: {},
         orden,
-        usuarioId,
+        limite,
+        offset
       });
       if (qR) {
         const target: EntityTarget<T> = this.baseRepository.target;
-        return await qR.manager.find<T>(target, criterio);
+        const [datos, total] = await qR.manager.findAndCount<T>(target, criterio);
+        return { datos, total };
       }
 
-      return await this.baseRepository.find(criterio);
+      const [datos, total] = await this.baseRepository.findAndCount(criterio);
+      return { datos, total };
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar leer los datos ${entidadError && `de ${entidadError}`}`)
     }
@@ -236,14 +259,14 @@ export abstract class BaseService<
    * Obtiene múltiples datos a partir de un arreglo de ids.
    * Cada dato se valida individualmente utilizando getDatoByIdOrFail.
    * Lanza excepción si alguno de los ids no existe o está eliminado.
-   * @param params - Parámetros incluyendo ids, entidadError, relaciones, qR, usuarioId y selected.
+   * @param params - Parámetros incluyendo ids, entidadError, relaciones, qR y selected.
    * @returns Una promesa que resuelve a un arreglo de datos.
    */
-  async getDatosByIds({ ids, entidadError, relaciones, qR, usuarioId, selected }: GetIdsProp<T>): Promise<T[]> {
+  async getDatosByIds({ ids, entidadError, relaciones, qR, selected }: GetIdsProp<T>): Promise<T[]> {
     try {
       const datos: T[] = await Promise.all(
         ids.map(id =>
-          this.getDatoByIdOrFail({ id, qR, relaciones, entidadError, usuarioId, selected })
+          this.getDatoByIdOrFail({ id, qR, relaciones, entidadError, selected })
         )
       );
       return datos;
@@ -255,12 +278,12 @@ export abstract class BaseService<
   /**
    * Obtiene un dato por id.
    * Si no existe o se encuentra eliminado, lanza una excepción.
-   * @param params - Parámetros incluyendo id, qR, relaciones, entidadError, usuarioId y selected.
+   * @param params - Parámetros incluyendo id, qR, relaciones, entidadError y selected.
    * @returns Una promesa que resuelve al dato encontrado.
    */
-  async getDatoByIdOrFail({ id, qR, relaciones, entidadError, usuarioId, selected }: GetIdProp<T>): Promise<T> {
+  async getDatoByIdOrFail({ id, qR, relaciones, entidadError, selected }: GetIdProp<T>): Promise<T> {
     try {
-      const dato: T | null = await this.getDatoById({ id, qR, relaciones, entidadError, usuarioId, selected });
+      const dato: T | null = await this.getDatoById({ id, qR, relaciones, entidadError, selected });
       if (!dato) throw new NotFoundException(`No se encontro el ${entidadError ? entidadError : 'dato'} en la base de datos`);
       if (dato.deleted) throw new NotFoundException(`El ${entidadError ? entidadError : 'dato'} ha sido eliminado con anterioridad`);
       return dato;
@@ -272,17 +295,16 @@ export abstract class BaseService<
   /**
    * Obtiene un dato por id sin validar su estado de eliminación.
    * Devuelve null si el dato no existe.
-   * Permite definir relaciones, selección de campos y filtrado por usuario.
-   * @param params - Parámetros incluyendo id, qR, relaciones, entidadError, usuarioId y selected.
+   * Permite definir relaciones, selección de campos.
+   * @param params - Parámetros incluyendo id, qR, relaciones, entidadError y selected.
    * @returns Una promesa que resuelve al dato encontrado o null.
    */
-  async getDatoById({ id, qR, relaciones = [], entidadError, usuarioId, selected = undefined }: GetIdProp<T>): Promise<T | null> {
+  async getDatoById({ id, qR, relaciones = [], entidadError, selected = undefined }: GetIdProp<T>): Promise<T | null> {
     try {
       const criterio: FindOneOptions = this.crearCriterio<FindOneOptions>({
         relaciones,
         selected,
         where: { id: id },
-        usuarioId,
       });
 
       if (qR) {
@@ -306,16 +328,15 @@ export abstract class BaseService<
    * Devuelve el elemento encontrado o null si no existe.
    * No lanza excepción cuando el dato no existe, únicamente ante errores
    * inesperados de acceso a datos.
-   * @param params - Parámetros incluyendo dato (nombre), usuarioId, qR, relaciones, selected y entidadError.
+   * @param params - Parámetros incluyendo dato (nombre), qR, relaciones, selected y entidadError.
    * @returns Una promesa que resuelve al dato encontrado o null.
    */
-  async getDatoByName({ dato, usuarioId, qR, relaciones, selected, entidadError }: GetDatoProp<T>): Promise<T | null> {
+  async getDatoByName({ dato, qR, relaciones, selected, entidadError }: GetDatoProp<T>): Promise<T | null> {
     try {
       const criterio: FindOneOptions = this.crearCriterio<FindOneOptions>({
         relaciones,
         selected,
         where: { nombre: dato },
-        usuarioId,
       });
       if (qR) {
         const target: EntityTarget<T> = this.baseRepository.target;
@@ -329,14 +350,13 @@ export abstract class BaseService<
     }
   }
 
-  async getDatosByNombres({ nombres, usuarioId, qR, relaciones, selected, entidadError }: GetNombresProp<T>): Promise<T[]> {
+  async getDatosByNombres({ nombres, qR, relaciones, selected, entidadError }: GetNombresProp<T>): Promise<T[]> {
     try {
       if (nombres.length == 0) return [];
       const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
         relaciones,
         selected,
         where: { nombre: In(nombres) },
-        usuarioId,
       });
 
       const target = this.baseRepository.target;
@@ -358,12 +378,12 @@ export abstract class BaseService<
    * Valida la existencia previa del dato.
    * Emite un evento de actualización mediante gateway si no se ejecuta
    * dentro de una transacción.
-   * @param params - Parámetros incluyendo id, qR, entidadError, entidad y usuarioId.
+   * @param params - Parámetros incluyendo id, qR, entidadError, entidad.
    * @returns Una promesa que resuelve a true si el borrado fue exitoso.
    */
-  async softDelete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T, K>): Promise<boolean> {
+  async softDelete({ id, qR, entidadError, entidad }: DeletProp<T, K>): Promise<boolean> {
     try {
-      const dato: T = await this.getDatoByIdOrFail({ id, qR, entidadError, usuarioId });
+      const dato: T = await this.getDatoByIdOrFail({ id, qR, entidadError });
       dato.deleted = true;
 
       const saved = qR
@@ -389,9 +409,9 @@ export abstract class BaseService<
   // Valida la existencia del dato antes de restaurarlo.
   // Emite un evento de actualización mediante gateway si no se ejecuta
   // dentro de una transacción.
-  async undoDelete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T, K>): Promise<boolean> {
+  async undoDelete({ id, qR, entidadError, entidad }: DeletProp<T, K>): Promise<boolean> {
     try {
-      const dato: T | null = await this.getDatoById({ id, qR, entidadError, usuarioId });
+      const dato: T | null = await this.getDatoById({ id, qR, entidadError });
       if (!dato) throw new NotFoundException(`No existe dato con id ${id} en la base de datos`);
 
       dato.deleted = false;
@@ -402,7 +422,7 @@ export abstract class BaseService<
 
       if (!saved) throw new NotFoundException(`No se pudo reactivar el dato con id ${id}${entidadError ? ` de ${entidadError}` : ''}`);
 
-      const retorno:  EntidadDatoMapType[K] = this.remplaceToReturn(saved);
+      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(saved);
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.REHACER,
@@ -422,9 +442,9 @@ export abstract class BaseService<
   // Esta operación es irreversible.
   // Emite un evento de actualización mediante gateway si no se ejecuta
   // dentro de una transacción.
-  async delete({ id, qR, entidadError, entidad, usuarioId }: DeletProp<T, K>): Promise<boolean> {
+  async delete({ id, qR, entidadError, entidad }: DeletProp<T, K>): Promise<boolean> {
     try {
-      const dato: T = await this.getDatoByIdOrFail({ id, qR, entidadError, usuarioId });
+      const dato: T = await this.getDatoByIdOrFail({ id, qR, entidadError });
 
       const saved = qR
         ? await qR.manager.remove<T>(dato)
@@ -447,77 +467,88 @@ export abstract class BaseService<
     }
   }
 
+  /**
+  * Crea un elemento usando el QueryRunner del interceptor.
+  *
+  * CAMBIO IMPORTANTE: ya no crea su propio QueryRunner ni hace commit/rollback.
+  * Recibe el qR inyectado por DbContextInterceptor que ya tiene:
+  * - La transacción abierta
+  * - El GUC app.user_id seteado (para que RLS funcione)
+  * El commit/rollback lo maneja el interceptor al terminar el request.
+  */
+
   // Método utilizado por los controladores para crear elementos.
   // Gestiona explícitamente la transacción mediante QueryRunner,
   // asegurando commit o rollback según el resultado de la operación.
-  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<CrearDto, K>): Promise< EntidadDatoMapType[K]> {
-    const qR: QueryRunner = this.dataSource.createQueryRunner();
-    await qR.connect();
-    await qR.startTransaction();
+  async createDatoCx({ dto, entidad, qR }: CreateProp<CrearDto, K>): Promise<EntidadDatoMapType[K]> {
     try {
-      console.log('Antes de crear el elemento')
-      const newElemento: T = await this.createDato({ usuario, dto, qR, entidad });
-      console.log('Despues de crear el elemento')
-      await qR.commitTransaction();
-      console.log('New elemento: ', newElemento)
+      const newElemento: T = await this.createDato({ dto, qR, entidad });
+      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(newElemento);
 
-      const retorno:  EntidadDatoMapType[K] = this.remplaceToReturn(newElemento);
-      const payload: Mensaje = {
+      this.gateway.actualizacionDato({
         mensaje: Mens.CREAR,
-        entidad: entidad,
-        dato: retorno
-      }
-      this.gateway.actualizacionDato(payload);
+        entidad,
+        dato: retorno,
+      } as Mensaje);
 
       return retorno;
-    } catch (er) {
-      await qR.rollbackTransaction();
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el elemento en la entidad`)
-    } finally {
-      await qR.release();
+    } catch (error) {
+      throw this.erroresService.handleExceptions(
+        error,
+        `Error al intentar crear el elemento en la entidad`,
+      );
     }
   }
+
+  /**
+   * Actualiza un elemento usando el QueryRunner del interceptor.
+   *
+   * CAMBIO IMPORTANTE: igual que createDatoCx, delega el manejo
+   * de la transacción al interceptor. No hace commit/rollback propio.
+   */
 
   // Método utilizado por los controladores para editar elementos.
   // Gestiona explícitamente la transacción mediante QueryRunner
   // y asegura la consistencia del versionado.
-  async updateElementoController({ usuario, dto, entidad, id, relaciones, selected, entidadError }: EditarElementoControllerProp<T, EditarDto, K>): Promise< EntidadDatoMapType[K]> {
-    const qR: QueryRunner = this.dataSource.createQueryRunner();
-    await qR.connect();
-    await qR.startTransaction();
+  async updateElementoController({ dto, entidad, id, relaciones, selected, entidadError, qR }: EditarProp<T, EditarDto, K>): Promise<EntidadDatoMapType[K]> {
     try {
-      const newElemento: UpdateRetorno<T> = await this.updateDato({ usuarioId: usuario.id, dto, qR, id, relaciones, selected, entidadError, entidad });
+      const newElemento: UpdateRetorno<T> = await this.updateDato({
+        dto,
+        qR,
+        id,
+        relaciones,
+        selected,
+        entidadError,
+        entidad,
+      });
 
-      if (!newElemento) throw new NotFoundException(`No se pudo actualizar el elemento ${id} en concepto`)
-      await qR.commitTransaction();
+      if (!newElemento)
+        throw new NotFoundException(`No se pudo actualizar el elemento ${id}`);
 
-      
-      const retorno:EntidadDatoMapType[K] = this.remplaceToReturn(newElemento.dato);
+      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(newElemento.dato);
 
       if (newElemento.isQr) {
-        const payload: Mensaje = {
+        this.gateway.actualizacionDato({
           mensaje: Mens.EDITAR,
-          entidad: entidad,
-          dato: retorno
-        }
-        this.gateway.actualizacionDato(payload);
+          entidad,
+          dato: retorno,
+        } as Mensaje);
       }
 
-      
       return retorno;
-    } catch (er) {
-      await qR.rollbackTransaction();
-      throw this.erroresService.handleExceptions(er, `Error al intentar actualizar el elemento en la entidad ${entidad}`)
-    } finally {
-      await qR.release();
+    } catch (error) {
+      throw this.erroresService.handleExceptions(
+        error,
+        `Error al intentar actualizar el elemento en la entidad ${entidad}`,
+      );
     }
   }
 
-  async createElementoDefault({ usuario, qR, entidad, defecto, entidadError }: CreateDefaultProp<K, CrearDto>): Promise<T[]> {
+  async createElementoDefault({ qR, entidad, defecto, entidadError }: CreateDefaultProp<K, CrearDto>): Promise<T[]> {
     try {
       const defaults: T[] = await Promise.all(
         defecto.map(d =>
-          this.createDato({ usuario, qR, dto: d, entidad })
+          this.createDato({ qR, dto: d, entidad })
         )
       );
       return defaults;
@@ -526,20 +557,25 @@ export abstract class BaseService<
     }
   }
 
-  async getDatoCx({ qR, relaciones = [], entidadError = undefined, usuarioId = '', orden = undefined, selected = undefined }: GetProp<T>): Promise<EntidadDatoMapType[K][]>{
-    try{
-      const datos: T[] = await this.getDato({qR, usuarioId, entidadError, relaciones, orden, selected});
-    
-      const retorno: EntidadDatoMapType[K][] = datos.map(d => this.remplaceToReturn(d));
-      return retorno;
+  async getDatoCx({ qR, relaciones = [], entidadError = undefined, orden = undefined, selected = undefined, limite = 50, offset = 0 }: GetProp<T>): Promise<RetornoGet<K>> {
+    try {
+      const find: { datos: T[], total: number } = await this.getDato({ qR, entidadError, relaciones, orden, selected, limite, offset });
+
+      const retorno: EntidadDatoMapType[K][] = find.datos.map(d => this.remplaceToReturn(d));
+      return {
+        datos: retorno,
+        total: find.total,
+        limite: limite,
+        pagina: offset + 1
+      };
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer todos los  ${entidadError} de la base de datos`)
     }
   }
 
-  async getDatoByIdCx({ id, qR, relaciones, entidadError, usuarioId, selected }: GetIdProp<T>): Promise<EntidadDatoMapType[K]>{
-    try{
-      const dato: T = await this.getDatoByIdOrFail({qR, usuarioId, entidadError, relaciones, id, selected});
+  async getDatoByIdCx({ id, qR, relaciones, entidadError, selected }: GetIdProp<T>): Promise<EntidadDatoMapType[K]> {
+    try {
+      const dato: T = await this.getDatoByIdOrFail({ qR, entidadError, relaciones, id, selected });
       const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(dato);
       return retorno;
     } catch (er) {

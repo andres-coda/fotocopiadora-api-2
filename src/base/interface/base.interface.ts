@@ -4,8 +4,13 @@ import { Base } from "../entity/base.entity";
 import { BaseDto } from "../dto/baseDto";
 import { User } from "../../user/entity/user.entity";
 
+/**
+ * Props genéricas base.
+ * Se eliminó usuarioId: el filtrado por usuario/empresa lo hace
+ * el RLS de PostgreSQL usando el GUC seteado por DbContextInterceptor.
+ */
+
 export interface GenericoProp {
-  usuarioId: string;
   qR?: QueryRunner;
 }
 
@@ -13,43 +18,42 @@ export interface GetProp<T extends Base> extends GenericoProp {
   relaciones?: RelationsKey<T>[];
   entidadError?: string;
   orden?: keyof T & string;
-  selected?: SelectedDeep<T>
+  selected?: SelectedDeep<T>;
+  limite?: number;
+  offset?: number;
 }
 
-export interface GetIdProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+export interface GetIdProp<T extends Base> extends Omit<GetProp<T>, 'orden' | 'limite' | 'offset'> {
   id: string;
 }
 
-export interface GetDatoProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+export interface GetDatoProp<T extends Base> extends Omit<GetProp<T>, 'orden' | 'limite' | 'offset'> {
   dato: string;
 }
 
-export interface GetNombresProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+export interface GetNombresProp<T extends Base> extends Omit<GetProp<T>, 'orden' | 'limite' | 'offset'> {
   nombres: string[];
 }
 
-export interface GetIdsProp<T extends Base> extends Omit<GetProp<T>, 'orden'> {
+export interface GetIdsProp<T extends Base> extends Omit<GetProp<T>, 'orden' | 'limite' | 'offset'> {
   ids: string[];
 }
 
-export interface DeletProp<T extends Base, K extends keyof EntidadDatoMapType> extends Omit<GetIdProp<T>, 'relaciones'> {
+export interface DeletProp<T extends Base, K extends keyof EntidadDatoMapType> extends Omit<GetIdProp<T>, 'relaciones' > {
   entidad: K;
 }
 
-export interface EditarProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<GetProp<T>, 'orden'> {
+export interface EditarProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<GetProp<T>, 'orden' | 'limite' | 'offset'> {
   dto: P;
   id: string;
   entidad: K;
 }
 
-export interface EditarElementoProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends EditarProp<T,P, K> {
-  usuario: User;
-}
+export interface EditarElementoProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends EditarProp<T,P, K> {}
 
 export interface EditarElementoControllerProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<EditarElementoProp<T,P, K>, 'qR'>{}
 
 export interface CreateProp<P extends BaseDto, K extends keyof EntidadDatoMapType> extends Pick<GenericoProp, 'qR'> {
-  usuario: User;
   dto: P;
   entidad: K;
 }
@@ -58,8 +62,6 @@ export interface CreateDefaultProp<K extends keyof EntidadDatoMapType, P extends
   defecto: P[];
 }
 
-
-export interface CreateElementoControllerProp<P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<CreateProp<P, K>, 'qR'> { }
 
 
 export type RelationKeys<T> = {
@@ -97,10 +99,18 @@ export interface CriterioProp<T extends Base> {
   relacionBase?: RelationsKey<T>;
   orden?: keyof T & string;
   where: any;
-  usuarioId?: string;
+  limite?: number;
+  offset?: number;
 }
 
 export interface UpdateRetorno <T extends Base>{
   dato: T,
   isQr?: boolean,
+}
+
+export interface RetornoGet < K extends keyof EntidadDatoMapType> {
+  datos: EntidadDatoMapType[K][],
+  total: number,
+  pagina: number,
+  limite: number,
 }

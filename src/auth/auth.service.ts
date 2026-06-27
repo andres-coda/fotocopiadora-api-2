@@ -3,35 +3,56 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthParcialDto } from './dto/authParcial.dto';
 import { Request } from 'express';
 import { UserService } from '../user/user.service';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { Role } from './rol/rol.enum';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UserService, private jwtService: JwtService) { }
-  async signIn(email: string, pass: string): Promise<{ access_token: string }> {
-    const user = await this.usersService.getUserByEmail(email);
-    if (!user || user.password !== pass) throw new UnauthorizedException();
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    private jwtService: JwtService
+  ) { }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    async signIn(nombre: string, password: string): Promise<{ access_token: string }> {
+    const rows = await this.dataSource.query(
+      `SELECT id, nombre, rol, id_empresa
+       FROM usuario
+       WHERE nombre = $1
+         AND password_hash = $2
+         AND deleted = false`,
+      [nombre, password],
+    );
+
+    if (!rows.length) throw new UnauthorizedException('Credenciales inválidas');
+
+    const user = rows[0];
+
+    const payload: AuthParcialDto = {
+      sub: user.id,
+      nombre: user.nombre,
+      role: user.rol as Role,
+      idEmpresa: user.id_empresa ?? null,
+    };
+
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
   }
 
-  //método utilizado para UsuarioGuard
-  async getUserFromRequest(request: Request): Promise<AuthParcialDto> {
+  getUserFromRequest(request: Request): AuthParcialDto {
     const authHeader = request.headers['authorization'];
-    if (!authHeader) throw new UnauthorizedException();
-    // El encabezado de autorización debería tener el formato "Bearer token"
+    if (!authHeader) throw new UnauthorizedException('Token no provisto');
+
     const [bearer, token] = authHeader.split(' ');
     if (bearer !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Formato de token no válido');
+      throw new UnauthorizedException('Formato de token inválido');
     }
+
     try {
-      // Decodificar el token JWT para obtener los datos del usuario
-      const user = this.jwtService.verify(token);
-      return user;
-    } catch (error) {
-      throw new UnauthorizedException('Token inválido');
+      return this.jwtService.verify<AuthParcialDto>(token);
+    } catch {
+      throw new UnauthorizedException('Token inválido o expirado');
     }
   }
 }

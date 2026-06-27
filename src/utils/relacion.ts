@@ -1,22 +1,24 @@
 import { Base } from "../base/entity/base.entity";
 import { NestedRelations, RelationKeys, RelationsKey, SelectedDeep } from "@src/base/interface/base.interface";
 
+/**
+ * Relaciones base por defecto.
+ * Se eliminó 'user' porque ya no existe en Base.
+ * El filtrado de tenant lo hace el RLS de PostgreSQL.
+ */
 export const BASE_RELATIONS: RelationsKey<any> = {
-  relations: ['user'],
-  nestedRelations: {}
+  relations: [],
+  nestedRelations: {},
 };
 
 export const SELECTED_BASE: SelectedDeep<Base> = {
-  id:true,
-  deleted:true,
-  'user': {
-    id: true,
-  },
-}
+  id: true,
+  deleted: true,
+};
 
 export function mergeSimpleRelations<T>(
   base: Array<RelationKeys<T>> | undefined,
-  input: Array<RelationKeys<T>> | undefined
+  input: Array<RelationKeys<T>> | undefined,
 ): Array<RelationKeys<T>> {
   const baseRels = base || [];
   const inputRels = input || [];
@@ -25,7 +27,7 @@ export function mergeSimpleRelations<T>(
 
 export function mergeNestedRelations<T>(
   base: NestedRelations<T> | undefined,
-  input: NestedRelations<T> | undefined
+  input: NestedRelations<T> | undefined,
 ): NestedRelations<T> | undefined {
   if (!base && !input) return undefined;
   if (!base) return input;
@@ -38,11 +40,14 @@ export function mergeNestedRelations<T>(
       const baseValue = base[key as keyof typeof base];
       const inputValue = input[key as keyof typeof input];
 
-      if (baseValue && inputValue && typeof baseValue === 'object' && typeof inputValue === 'object') {
-        // Mergear recursivamente
+      if (
+        baseValue &&
+        inputValue &&
+        typeof baseValue === 'object' &&
+        typeof inputValue === 'object'
+      ) {
         result[key] = mergeNestedRelations(baseValue as any, inputValue as any);
       } else {
-        // Si no existe en base o no es objeto, usar el valor de input
         result[key] = inputValue;
       }
     }
@@ -52,7 +57,7 @@ export function mergeNestedRelations<T>(
 }
 
 export function mergeRelationsBase<T extends Base>(
-  input?: RelationsKey<T> | readonly RelationsKey<T>[]
+  input?: RelationsKey<T> | readonly RelationsKey<T>[],
 ): RelationsKey<T> {
   if (!input) return BASE_RELATIONS;
 
@@ -65,38 +70,33 @@ export function mergeRelationsBase<T extends Base>(
     mergedRelations = mergeSimpleRelations(mergedRelations, item.relations);
     mergedNestedRelations = mergeNestedRelations(mergedNestedRelations, item.nestedRelations);
   }
+
   return {
     relations: mergedRelations,
-    nestedRelations: mergedNestedRelations
+    nestedRelations: mergedNestedRelations,
   };
 }
 
-export function relacionesAString<T extends Base>(
-  relationsKey?: RelationsKey<T>
-): string[] {
+export function relacionesAString<T extends Base>(relationsKey?: RelationsKey<T>): string[] {
   if (!relationsKey) return [];
 
   const result: string[] = [];
 
-  // 1. Agregar las relaciones simples
   if (relationsKey.relations) {
-    result.push(...relationsKey.relations as string[]);
+    result.push(...(relationsKey.relations as string[]));
   }
 
-  // 2. Procesar y agregar las relaciones anidadas
   if (relationsKey.nestedRelations) {
     const nestedFlattened = flattenNestedRelations(relationsKey.nestedRelations);
     result.push(...nestedFlattened);
   }
 
-  // 3. Eliminar duplicados y retornar
   return Array.from(new Set(result));
 }
 
-// Función auxiliar para aplanar las relaciones anidadas
 function flattenNestedRelations<T>(
   nested?: NestedRelations<T>,
-  prefix: string = ''
+  prefix: string = '',
 ): string[] {
   if (!nested) return [];
 
@@ -108,13 +108,9 @@ function flattenNestedRelations<T>(
       result.push(currentPath);
 
       const nestedValue = nested[key as keyof NestedRelations<T>];
-
       if (nestedValue && typeof nestedValue === 'object') {
         result.push(
-          ...flattenNestedRelations<unknown>(
-            nestedValue as NestedRelations<unknown>,
-            currentPath
-          )
+          ...flattenNestedRelations<unknown>(nestedValue as NestedRelations<unknown>, currentPath),
         );
       }
     }

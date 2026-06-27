@@ -6,16 +6,16 @@ import type { RequestWithUser } from "./dto/RequestWhitUser.interface";
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) { }
-  
-    @HttpCode(HttpStatus.OK)
-    @Post('login')
-    async signIn(@Body() signInDto: LoginDto): Promise<{ access_token: string }> {
-      return await this.authService.signIn(signInDto.email, signInDto.password);
-    }  
-  
-    @Get('profile')
-    async getUserFromRequest(@Request() req: RequestWithUser):Promise<AuthParcialDto> {
-      return await this.authService.getUserFromRequest(req);
-    }  
+  constructor(private authService: AuthService) { }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('login')
+  async signIn(@Body() dto: LoginDto): Promise<{ access_token: string }> {
+    return this.authService.signIn(dto.nombre, dto.password);
   }
+
+  @Get('profile')
+  getProfile(@Request() req: RequestWithUser): AuthParcialDto {
+    return req.user;
+  }
+}

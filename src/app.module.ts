@@ -31,6 +31,8 @@ import { Propuesta } from './propuesta_pedido/entity/propuesta_pedido.entity';
 import { ClienteResumen } from './cliente_resumen/entity/clienteResumen.entity';
 import { ComponenteModule } from './componente/componente.module';
 import { Componente } from './componente/entity/componente.entity';
+import { DbContextInterceptor } from './common/interceptors/db-context.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
    imports: [
@@ -39,13 +41,13 @@ import { Componente } from './componente/entity/componente.entity';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '3306', 10),
-      username: process.env.DB_USERNAME || 'root',
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'root',
-      database: process.env.DB_NAME || 'fotocopiadora2',
-      ssl: false,
+      database: process.env.DB_NAME || 'fotocopiadora',
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
       entities: [
         Cliente,
         ClienteResumen,
@@ -61,7 +63,7 @@ import { Componente } from './componente/entity/componente.entity';
         Stock,
         User,
       ],
-      synchronize: true,
+      synchronize: false,
       logging: false,
     }),
     ErroresModule,
@@ -81,6 +83,11 @@ import { Componente } from './componente/entity/componente.entity';
     ComponenteModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DbContextInterceptor,
+    }
+  ],
 })
 export class AppModule {}

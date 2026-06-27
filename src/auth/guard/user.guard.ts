@@ -1,32 +1,24 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "../auth.service";
 import { AuthParcialDto } from "../dto/authParcial.dto";
-import { UserService } from "../../user/user.service";
-import { User } from "../../user/entity/user.entity";
-
+/**
+ * Guard base: verifica que el request tenga un JWT válido
+ * y puebla request.user con el payload.
+ * El DbContextInterceptor luego usará request.user.id para
+ * setear el GUC en la transacción.
+ */
 @Injectable()
 export class UsuarioGuard implements CanActivate {
-  constructor(
-    private authService: AuthService,
-    private usuarioService: UserService
-  ) {}
+  constructor(private authService: AuthService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-    
     try {
-      // Obtener los datos parciales del token JWT
-      const usuarioParcial: AuthParcialDto = await this.authService.getUserFromRequest(request);
-      
-      // Obtener el usuario completo de la base de datos
-      const usuarioCompleto:User = await this.usuarioService.getDatoByIdOrFail(usuarioParcial.sub);
-      
-      // Agregar tanto los datos parciales como el usuario completo al request
-      request.user = usuarioParcial; // Para compatibilidad hacia atrás
-      request.usuarioCompleto = usuarioCompleto; // Usuario completo
-      
+      const usuario: AuthParcialDto = this.authService.getUserFromRequest(request);
+      // Normalizamos sub → id para que el interceptor lo encuentre como request.user.id
+      request.user = { ...usuario, id: usuario.sub };
       return true;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Token inválido o usuario no encontrado');
     }
   }

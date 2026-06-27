@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Patch, Post, Put, Query, Request } from '@nestjs/common';
 import { Base } from './entity/base.entity';
 import { BaseService } from './base.service';
 import { Get, Param, HttpCode, UseGuards } from '@nestjs/common';
@@ -6,14 +6,34 @@ import { UsuarioGuard } from '../auth/guard/user.guard';
 import { AdminGuard } from '../auth/guard/admin.guard';
 import { BaseDto } from './dto/baseDto';
 import { EntidadDatoMapType } from '../gateway/dto/gatewayDto.dto';
-import type { SelectedDeep } from './interface/base.interface';
-import { CreateProp, DeletProp, EditarElementoControllerProp, RelationsKey } from './interface/base.interface';
-import { UsuarioActual, UsuarioCompleto } from '../utils/usuarioActual.decorador';
-import { AuthParcialDto } from '../auth/dto/authParcial.dto';
+import type { CreateElementoControllerProp, RetornoGet, SelectedDeep } from './interface/base.interface';
+import { DeletProp, EditarElementoControllerProp, RelationsKey } from './interface/base.interface';
 import { User } from '../user/entity/user.entity';
+import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
+
+/**
+ * Controlador base genérico.
+ *
+ * Cambios respecto a la versión anterior:
+ *
+ * 1. Se eliminó `usuarioId` de todas las llamadas al servicio.
+ *    El RLS de PostgreSQL filtra automáticamente por empresa/usuario.
+ *
+ * 2. Se eliminó `UsuarioCompleto` (que resolvía el User completo desde la BD).
+ *    Ahora el `qR` del interceptor se pasa directamente desde `req.queryRunner`.
+ *
+ * 3. `createDato` y `updateDato` reciben el QueryRunner del request para
+ *    operar dentro de la transacción abierta por DbContextInterceptor.
+ */
 
 @Controller('base')
-export abstract class BaseController<K extends keyof EntidadDatoMapType, T extends Base, CrearDto extends BaseDto, EditarDto extends BaseDto, Servicio extends BaseService<K, T, CrearDto, EditarDto>> {
+export abstract class BaseController<
+  K extends keyof EntidadDatoMapType,
+  T extends Base,
+  CrearDto extends BaseDto,
+  EditarDto extends BaseDto,
+  Servicio extends BaseService<K, T, CrearDto, EditarDto>,
+> {
   protected constructor(
     protected readonly baseService: Servicio,
     protected readonly entidad: K,
@@ -23,28 +43,32 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
     protected readonly selected?: SelectedDeep<T>,
     protected readonly relacionesGenerales?: RelationsKey<T>[],
     protected readonly selectedGeneral?: SelectedDeep<T>,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todos los elementos activos asociados al usuario autenticado.
    * Aplica filtros por usuario, relaciones y selección de campos configurados.
    * Requiere autenticación de usuario y permisos de administrador.
-   * @param user - Información del usuario autenticado.
    * @returns Una promesa que resuelve a un arreglo de elementos.
    */
   @Get()
   @HttpCode(200)
   @UseGuards(UsuarioGuard, AdminGuard)
   async findAll(
-    @UsuarioActual() user: AuthParcialDto,
-  ): Promise<EntidadDatoMapType[K][]> {
-    return await this.baseService.getDatoCx({
-      usuarioId: user.sub,
+    @Query('pagina') pagina = 1,
+    @Query('limite') limite = 20,
+  ): Promise<RetornoGet<K>> {
+    const offset = (pagina - 1) * limite;
+    const datoRetorno:RetornoGet<K>= await this.baseService.getDatoCx({
       entidadError: this.entidadError,
       relaciones: this.relacionesGenerales ?? this.relaciones,
       selected: this.selectedGeneral ?? this.selected,
-      orden: this.orden
+      orden: this.orden,
+      limite, 
+      offset
     });
+
+    return datoRetorno
   }
 
 
@@ -53,121 +77,104 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
    * Valida que el elemento exista y no esté eliminado.
    * Requiere autenticación de usuario y permisos de administrador.
    * @param id - ID del elemento a obtener.
-   * @param user - Información del usuario autenticado.
    * @returns Una promesa que resuelve al elemento encontrado.
    */
   @Get(':id')
   @HttpCode(200)
   @UseGuards(UsuarioGuard, AdminGuard)
-  async findOne(
-    @Param('id') id: string,
-    @UsuarioActual() user: AuthParcialDto,
-  ): Promise<EntidadDatoMapType[K]> {
-    const item = await this.baseService.getDatoByIdCx({
+  async findOne(@Param('id') id: string): Promise<EntidadDatoMapType[K]> {
+    return this.baseService.getDatoByIdCx({
       id,
-      usuarioId: user.sub,
       entidadError: this.entidadError,
       relaciones: this.relaciones,
       selected: this.selected,
     });
-    return item;
   }
 
 
   /**
    * Deshace el borrado lógico de un elemento (restaura deleted = false).
-   * Requiere autenticación de usuario y permisos de administrador.
-   * @param user - Información del usuario autenticado.
    * @param id - ID del elemento a restaurar.
    * @returns Una promesa que resuelve a true si la operación fue exitosa.
    */
   @Patch(':id/rehacer')
   @UseGuards(UsuarioGuard, AdminGuard)
   async undoDeleteConstante(
-    @UsuarioActual() user: AuthParcialDto,
-    @Param('id') id: string
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
   ): Promise<boolean> {
     const dto: DeletProp<T, K> = {
-      usuarioId: user.sub,
       id,
       entidadError: this.entidadError,
-      entidad: this.entidad
-    }
-    return await this.baseService.undoDelete(dto);
+      entidad: this.entidad,
+      qR: req.queryRunner,
+    };
+    return this.baseService.undoDelete(dto);
   }
   
   /**
    * Elimina permanentemente un elemento de la base de datos.
-   * Requiere autenticación de usuario y permisos de administrador.
-   * @param user - Información del usuario autenticado.
    * @param id - ID del elemento a eliminar.
    * @returns Una promesa que resuelve a true si la eliminación fue exitosa.
    */
   @Delete(':id/eliminar')
   @UseGuards(UsuarioGuard, AdminGuard)
   async deleteConstante(
-    @UsuarioActual() user: AuthParcialDto,
-    @Param('id') id: string
-  ): Promise<Boolean> {
-    const dto: DeletProp<T,K> = {
-      usuarioId: user.sub,
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<boolean> {
+    const dto: DeletProp<T, K> = {
       id,
       entidadError: this.entidadError,
-      entidad: this.entidad
-    }
-    return await this.baseService.delete(dto);
+      entidad: this.entidad,
+      qR: req.queryRunner,
+    };
+    return this.baseService.delete(dto);
   }
 
   /**
    * Realiza un borrado lógico del elemento (marca como eliminado).
-   * Requiere autenticación de usuario y permisos de administrador.
-   * @param user - Información del usuario autenticado.
    * @param id - ID del elemento a marcar como eliminado.
    * @returns Una promesa que resuelve a true si el borrado lógico fue exitoso.
    */
   @Delete(':id')
   @UseGuards(UsuarioGuard, AdminGuard)
   async softDeleteConstante(
-    @UsuarioActual() user: AuthParcialDto,
-    @Param('id') id: string
-  ): Promise<Boolean> {
-    const dto: DeletProp<T,K> = {
-      usuarioId: user.sub,
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<boolean> {
+    const dto: DeletProp<T, K> = {
       id,
       entidadError: this.entidadError,
-      entidad: this.entidad
-    }
-    return await this.baseService.softDelete(dto);
+      entidad: this.entidad,
+      qR: req.queryRunner,
+    };
+    return this.baseService.softDelete(dto);
   }
 
   /**
    * Crea un nuevo elemento en la base de datos.
    * Requiere autenticación de usuario y permisos de administrador.
-   * @param user - Información completa del usuario autenticado.
    * @param datos - Datos del DTO para crear el elemento.
    * @returns Una promesa que resuelve a true si la creación fue exitosa.
    */
   @Post()
   @UseGuards(UsuarioGuard, AdminGuard)
   async createDato(
-    @UsuarioCompleto() user: User,
-    @Body() datos: CrearDto
-  ): Promise< EntidadDatoMapType[K]> {
-    console.log('Metodo POST, BaseController')
-    const dto: CreateProp<CrearDto,K> = {
+    @Body() datos: CrearDto,
+    @Request() req: RequestWithUser,
+  ): Promise<EntidadDatoMapType[K]> {
+    const dto: CreateElementoControllerProp<CrearDto, K> & { qR: any } = {
       dto: datos,
-      usuario:user,
-      entidad:this.entidad
-    }
-    console.log('Despues de la creación de la dto')
-    const retorno:  EntidadDatoMapType[K] = await this.baseService.createDatoCx(dto);
-    return retorno;
+      entidad: this.entidad,
+      qR: req.queryRunner,
+    };
+    return this.baseService.createDatoCx(dto);
   }
 
   /**
    * Actualiza un elemento existente en la base de datos.
    * Requiere autenticación de usuario y permisos de administrador.
-   * @param user - Información completa del usuario autenticado.
    * @param id - ID del elemento a actualizar.
    * @param datos - Datos del DTO para editar el elemento.
    * @returns Una promesa que resuelve a true si la actualización fue exitosa.
@@ -175,21 +182,18 @@ export abstract class BaseController<K extends keyof EntidadDatoMapType, T exten
   @Put(':id')
   @UseGuards(UsuarioGuard, AdminGuard)
   async updateDato(
-    @UsuarioCompleto() user: User,
     @Param('id') id: string,
-    @Body() datos: EditarDto
-  ): Promise< EntidadDatoMapType[K]> {
-    const dto: EditarElementoControllerProp<T, EditarDto,K> = {
+    @Body() datos: EditarDto,
+    @Request() req: RequestWithUser,
+  ): Promise<EntidadDatoMapType[K]> {
+    const dto: EditarElementoControllerProp<T, EditarDto, K> & { qR: any } = {
       dto: datos,
-      usuarioId: user.id,
       id,
       entidad: this.entidad,
-      usuario: user,
-      relaciones:this.relaciones,
-      selected: this.selected
-    }
-    const retorno:  EntidadDatoMapType[K]= await this.baseService.updateElementoController(dto);
-    return retorno;
+      relaciones: this.relaciones,
+      selected: this.selected,
+      qR: req.queryRunner,
+    };
+    return this.baseService.updateElementoController(dto);
   }
-
 }

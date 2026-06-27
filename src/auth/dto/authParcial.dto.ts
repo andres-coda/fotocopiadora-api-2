@@ -1,15 +1,18 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 import { Role } from "../rol/rol.enum";
 
-export class AuthParcialDto{
+export class AuthParcialDto {
     @IsNotEmpty()
-    @IsString()
-    sub!:string;
-    
-    @IsNotEmpty()
-    @IsEmail()
-    @IsString()
-    email!:string;
+    @IsUUID()
+    sub!: string;
 
-    role!:Role;
+    @IsNotEmpty()
+    @IsString()
+    nombre!: string;
+
+    role!: Role;
+
+    @IsOptional()
+    @IsUUID()
+    idEmpresa?: string | null;
 }

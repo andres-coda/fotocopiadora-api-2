@@ -1,37 +1,27 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { jwtConstants } from "../constants";
 import { Role } from "../rol/rol.enum";
-import { JwtService } from "@nestjs/jwt";
-
+import { AuthService } from "../auth.service";
+import { AuthParcialDto } from "../dto/authParcial.dto";
+/**
+ * Requiere rol admin o super_admin.
+ */
 @Injectable()
 export class AdminGuard implements CanActivate {
-  constructor(private jwtService: JwtService) { }
+  constructor(private authService: AuthService) {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
-
     try {
-      if (!token) throw new UnauthorizedException('No tiene autorización para acceder a esa información');
+      const usuario: AuthParcialDto =this.authService.getUserFromRequest(request);
 
-      const payload = this.jwtService.verify(token, { secret: jwtConstants.secret });
-
-      if (payload.role !== Role.Admin) {
-        throw new UnauthorizedException('Acceso denegado: se requiere rol de administrador.');
+      if (usuario.role !== Role.Admin && usuario.role !== Role.SuperAdmin) {
+        throw new UnauthorizedException('Se requiere rol de administrador.');
       }
 
-      request.user = payload;
+      request.user = { ...usuario, id: usuario.sub };
       return true;
-    } catch (error) {
-      throw new UnauthorizedException('Token de autorización inválido. Debe loguearse');
+    } catch {
+      throw new UnauthorizedException('Token inválido o permisos insuficientes');
     }
-  }
-
-  private extractTokenFromHeader(request: any): string | null {
-    const authHeader = request.headers.authorization;
-    if (authHeader && authHeader.split(' ')[0] === 'Bearer') {
-      return authHeader.split(' ')[1];
-    }
-    return null;
   }
 }
