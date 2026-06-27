@@ -1,6 +1,6 @@
 import { Base } from "../../base/entity/base.entity";
 import { Componente } from "../../componente/entity/componente.entity";
-import { LibroPedido } from "../../libro_pedido/entity/libroPedido.entity";
+import { LibroPedido } from "../../libro_pedido/entity/pedido_item.entity";
 import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
 import { Materia } from "../../materia/entity/materia.entity";
 import { Propuesta } from "../../propuesta_pedido/entity/propuesta_pedido.entity";

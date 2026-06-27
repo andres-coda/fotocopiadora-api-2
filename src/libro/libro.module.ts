@@ -10,7 +10,7 @@ import { GateWayModule } from '../gateway/gateway.module';
 import { Materia } from '../materia/entity/materia.entity';
 import { MateriaModule } from '../materia/materia.module';
 import { Libro } from './entity/libro.entity';
-import { LibroPedido } from '../libro_pedido/entity/libroPedido.entity';
+import { LibroPedido } from '../libro_pedido/entity/pedido_item.entity';
 import { Stock } from '../stock/entity/stock.entity';
 import { StockModule } from '../stock/stock.module';
 import { Componente } from '../componente/entity/componente.entity';

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource, QueryRunner, EntityManager } from 'typeorm';
-import { LibroPedido } from '../entity/libroPedido.entity';
+import { LibroPedido } from '../entity/pedido_item.entity';
 import { mockLibro, mockLibroService } from 'test/mock/libro.mock';
 import { mockPedido, mockPedidoService } from 'test/mock/pedido.mock';
 import { mockSede, mockSedeService } from 'test/mock/sede.mock';

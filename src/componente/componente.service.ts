@@ -25,11 +25,10 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
     super(componenteRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoComponenteCrear, typeof Entidad.COMPONENTE>): Promise<Componente> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoComponenteCrear, typeof Entidad.COMPONENTE>): Promise<Componente> {
     try {
       const componenteExistente: Componente | null = await this.getDatoByName({
         dato: dto.nombre,
-        usuarioId: usuario.id,
         qR,
         relaciones: [COMPONENTE_RELATIONS],
         selected: SELECTED_COMPONENTE,
@@ -40,21 +39,10 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
 
       const componente: Componente = new Componente();
       componente.nombre = dto.nombre;
-      componente.user = usuario;
 
       const newComponente: Componente = qR
         ? await qR.manager.save(Componente, componente)
         : await this.componenteRepository.save(componente);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad,
-          dato: newComponente
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return newComponente;
 
@@ -63,44 +51,22 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Componente, DtoComponenteEditar, typeof Entidad.COMPONENTE>): Promise<UpdateRetorno<Componente>> {
+  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Componente, DtoComponenteEditar, typeof Entidad.COMPONENTE>): Promise<UpdateRetorno<Componente>> {
     try {
-      const componenteExistente: Componente | null = await this.getDatoByName({
-        dato: dto.nombre,
-        usuarioId: usuarioId,
-        qR,
-        relaciones: [COMPONENTE_RELATIONS],
-        selected: SELECTED_COMPONENTE,
-        entidadError: 'componente'
-      });
-
-      if (componenteExistente)
-        throw new NotFoundException('El nombre con el que intenta editar el componente ya existe en otro componente. Por favor elija otro nombre o deje el mismo nombre si no desea cambiarlo.')
-
       const componente: Componente = await this.getDatoByIdOrFail({
         id,
-        usuarioId,
         qR,
         relaciones,
         selected,
         entidadError
       });
 
+      if(componente.nombre === dto.nombre) return {dato:componente, isQr:false};
       componente.nombre = dto.nombre || componente.nombre;
 
       const newComponente: Componente = qR
         ? await qR.manager.save(Componente, componente)
         : await this.componenteRepository.save(componente);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad,
-          dato: newComponente
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return { dato: newComponente, isQr: true }
 

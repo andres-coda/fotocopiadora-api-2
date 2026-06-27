@@ -1,23 +1,16 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DataSource, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
-import { Mens } from '../gateway/enum/Mens.enum';
+import { CreateProp, EditarProp, GetDatoProp,  UpdateRetorno } from '../base/interface/base.interface';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
-import { DtoClienteCrear } from './dto/clienteCrear.dto';
-import { DtoClienteEditar } from './dto/clienteEditar.dto';
-import { CLIENTE_RELATIONS, CLIENTE_SELECTED, CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
-import { ClienteRetorno } from './interface/cliente_retorno.interface';
-import { Estado } from '../interface/estado.interface';
-import { ClienteResumenService } from '../cliente_resumen/cliente_resumen.service';
-import { ClienteResumen } from '../cliente_resumen/entity/clienteResumen.entity';
-import { DtoClienteRespuesta } from './dto/clienteRespuesta.dto';
+import { DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta } from './dto/cliente.dto';
+import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
 import { PedidoService } from '../pedido/pedido.service';
-import { DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from '@src/pedido/dto/pedidoRetorno.dto';
+import { clienteResumenRespuesta } from './dto/cliente_resumen.dto';
 
 interface getClientes {
   usuarioId: string;
@@ -30,8 +23,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    @Inject(forwardRef(() => ClienteResumenService))
-    private readonly resumenService: ClienteResumenService,
     @Inject(forwardRef(() => PedidoService))
     private readonly pedidoService: PedidoService,
   ) {
@@ -47,13 +38,12 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
   // Devuelve el elemento encontrado o null si no existe.
   // No lanza excepción cuando el dato no existe, únicamente ante errores
   // inesperados de acceso a datos.
-  async getDatoByTelefono({ dato, usuarioId, qR, relaciones, selected }: GetDatoProp<Cliente>): Promise<Cliente | null> {
+  async getDatoByTelefono({ dato, qR, relaciones, selected }: GetDatoProp<Cliente>): Promise<Cliente | null> {
     try {
       const criterio: FindOneOptions = this.crearCriterio<FindOneOptions>({
         relaciones,
         selected,
         where: { telefono: dato },
-        usuarioId,
       });
 
       return qR
@@ -74,13 +64,12 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
   // Devuelve el elemento encontrado o null si no existe.
   // No lanza excepción cuando el dato no existe, únicamente ante errores
   // inesperados de acceso a datos.
-  async getDatoByEmail({ dato, usuarioId, qR, relaciones, selected }: GetDatoProp<Cliente>): Promise<Cliente | null> {
+  async getDatoByEmail({ dato, qR, relaciones, selected }: GetDatoProp<Cliente>): Promise<Cliente | null> {
     try {
       const criterio: FindOneOptions = this.crearCriterio<FindOneOptions>({
         relaciones,
         selected,
         where: { email: dato },
-        usuarioId,
       });
 
       return qR
@@ -92,15 +81,46 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     }
   }
 
-  async clienteExistente({ dato, usuarioId, qR, relaciones, selected }: GetDatoProp<Cliente>): Promise<Cliente | null> {
+  async clienteExistente({ dato, qR, relaciones, selected }: GetDatoProp<Cliente>): Promise<Cliente | null> {
     try {
-      const cliente: Cliente | null = await this.getDatoByTelefono({ dato, usuarioId, qR, relaciones, selected });
+      const cliente: Cliente | null = await this.getDatoByTelefono({ dato, qR, relaciones, selected });
       if (cliente) return cliente;
 
-      return await this.getDatoByEmail({ dato, usuarioId, qR, relaciones, selected });
+      return await this.getDatoByEmail({ dato, qR, relaciones, selected });
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar encontrar el cliente ${dato} `)
+    }
+  }
+
+  /**
+   * Búsqueda flexible de clientes usando fc_busqueda_cliente() de la BD.
+   * Detecta automáticamente si la búsqueda es por nombre o teléfono.
+   */
+  async buscarClientes(
+    busqueda: string,
+    limite = 20,
+    offset = 0,
+    qR?: QueryRunner,
+  ): Promise<DtoClienteRespuesta[]> {
+    try {
+      const runner = qR ?? this.dataSource.createQueryRunner();
+      if (!qR) {
+        await runner.connect();
+        // El GUC no está seteado fuera del interceptor,
+        // así que este path solo se usa internamente con cuidado.
+      }
+
+      const rows = await runner.query(
+        `SELECT * FROM fc_busqueda_cliente($1, $2, $3)`,
+        [busqueda, limite, offset],
+      );
+
+      if (!qR) await runner.release();
+
+      return rows.map((r: Cliente) => this.remplaceToReturn(r));
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al buscar clientes`);
     }
   }
 
@@ -125,7 +145,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
  * Manejo de errores:
  * - Cualquier error es capturado y transformado mediante erroresService.
  *
- * @param usuario - Usuario propietario del cliente
  * @param dto - Datos para crear el cliente
  * @param entidad - Nombre de la entidad para logging/eventos
  * @param qR - QueryRunner opcional para transacciones
@@ -134,7 +153,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
  *
  * @throws HttpException - Si ocurre un error en la operación
  */
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<Cliente> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<Cliente> {
     try {
       dto.telefono = dto.telefono?.trim() || undefined;
       dto.email = dto.email?.trim() || undefined;
@@ -144,56 +163,22 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
 
       const clienteExistente: Cliente | null = await this.clienteExistente({
         dato,
-        usuarioId: usuario.id,
         qR,
         entidadError: 'cliente',
-        relaciones: [CLIENTE_X_RESUMEN_RELATIONS],
+        relaciones: [CLIENTE_RELATIONS],
         selected: CLIENTE_X_RESUMEN_SELECTED
       });
 
-      if (clienteExistente) {
-        if (dto.vienePedido) {
-          const resumen: UpdateRetorno<ClienteResumen> = await this.resumenService.updateDato({
-            id: clienteExistente.resumen.id,
-            usuarioId: usuario.id,
-            dto: { actual: Estado.PENDIENTE },
-            qR,
-            entidadError: 'resumen de cliente',
-            entidad: Entidad.RESUMEN,
-          });
-          clienteExistente.resumen = resumen.dato;
-        }
-        return clienteExistente;
-      }
+      if (clienteExistente) return clienteExistente;
 
       const cliente: Cliente = new Cliente();
       cliente.nombre = dto.nombre;
       cliente.telefono = dto.telefono;
       cliente.email = dto.email;
-      cliente.user = usuario;
 
       const newCliente: Cliente = qR
         ? await qR.manager.save(Cliente, cliente)
         : await this.clienteRepository.save(cliente);
-
-      const resumen: ClienteResumen = await this.resumenService.createDatoXEntidad({
-        qR,
-        usuario,
-        dto: {},
-        cliente: newCliente
-      });
-
-      newCliente.resumen = resumen;
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad: entidad,
-          dato: this.remplaceToReturn(newCliente)
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return newCliente;
 
@@ -202,11 +187,10 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Cliente, DtoClienteEditar, typeof Entidad.CLIENTE>): Promise<UpdateRetorno<Cliente>> {
+  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Cliente, DtoClienteEditar, typeof Entidad.CLIENTE>): Promise<UpdateRetorno<Cliente>> {
     try {
       const cliente: Cliente = await this.getDatoByIdOrFail({
         id,
-        usuarioId,
         qR,
         entidadError,
         relaciones,
@@ -224,16 +208,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         ? await qR.manager.save(Cliente, cliente)
         : await this.clienteRepository.save(cliente);
 
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad: entidad,
-          dato: this.remplaceToReturn(newCliente)
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
       return { dato: newCliente, isQr: true }
 
     } catch (er) {
@@ -241,20 +215,15 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     }
   }
 
+
   remplaceToReturn(entidad: Cliente): DtoClienteRespuesta {
     const base = this.remplaceToBase(entidad);
-    const resumen = entidad.resumen
-      ? this.resumenService.remplaceToReturn(entidad.resumen)
-      : undefined;
-    const pedidos:DtoPedidoRespuestaCliente[] = entidad.pedidos?.map(p=> this.pedidoService.remplaceToReturnCliente(p));
     return {
       ...base,
-
       nombre: entidad.nombre,
       telefono: entidad.telefono,
       email: entidad.email,
-      pedidos,
-      resumen
+      resumen: clienteResumenRespuesta(entidad.resumen)
     };
   };
 }

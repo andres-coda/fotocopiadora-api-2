@@ -3,12 +3,8 @@ import { Cliente } from "../entity/cliente.entity";
 import { SELECTED_BASE } from "../../utils/relacion";
 
 export const CLIENTE_RELATIONS: RelationsKey<Cliente> = {
-  relations: ['pedidos', 'resumen'],
-  nestedRelations: {
-    'pedidos': {
-      'libroPedidos': {}
-    }
-  }
+  relations: ['resumen'],
+  nestedRelations: {}
 };
 
 export const CLIENTE_X_RESUMEN_SELECTED: SelectedDeep<Cliente> = {
@@ -17,14 +13,14 @@ export const CLIENTE_X_RESUMEN_SELECTED: SelectedDeep<Cliente> = {
   email: true,
   nombre: true,
   resumen: {
-    id: true,
     pendiente: true,
     listo: true,
     retirado: true,
+    cancelado:true
   }
 }
 
-export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
+/* export const CLIENTE_SELECTED: SelectedDeep<Cliente> = {
   ...CLIENTE_X_RESUMEN_SELECTED,
   pedidos: {
     libroPedidos: {
@@ -89,5 +85,5 @@ export const CLIENTE_SELECTED_BY_ID: SelectedDeep<Cliente> = {
 export const CLIENTE_X_RESUMEN_RELATIONS: RelationsKey<Cliente> = {
   relations: ['resumen'],
   nestedRelations: {}
-};
+}; */
 

@@ -3,7 +3,7 @@ import { mockResumen } from "./resumen.mock";
 import { mockUser } from "./user.mock";
 import { jest } from '@jest/globals';
 import { createMockBaseService } from "./base.mock";
-import { DtoClienteCrear } from "@src/cliente/dto/clienteCrear.dto";
+import { DtoClienteCrear } from "@src/cliente/dto/cliente.dto";
 import { DtoClienteEditar } from "@src/cliente/dto/clienteEditar.dto";
 import { CreateProp, EditarProp } from "@src/base/interface/base.interface";
 

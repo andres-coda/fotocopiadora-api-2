@@ -3,7 +3,7 @@ import { LibroPedidoController } from './libro_pedido.controller';
 import { LibroPedidoService } from './libro_pedido.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entity/user.entity';
-import { LibroPedido } from './entity/libroPedido.entity';
+import { LibroPedido } from './entity/pedido_item.entity';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { ErroresModule } from '../error/error.module';

@@ -23,7 +23,7 @@ import { Pedido } from './pedido/entity/pedido.entity';
 import { Sede } from './sede/entity/sede.entity';
 import { Cliente } from './cliente/entity/cliente.entity';
 import { Stock } from './stock/entity/stock.entity';
-import { LibroPedido } from './libro_pedido/entity/libroPedido.entity';
+import { LibroPedido } from './libro_pedido/entity/pedido_item.entity';
 import { Especificacion } from './especificacion/entity/especificacion.entity';
 import { PropuestaPedidoModule } from './propuesta_pedido/propuesta_pedido.module';
 import { ClienteResumenModule } from './cliente_resumen/cliente_resumen.module';

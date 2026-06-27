@@ -1,8 +1,8 @@
 import { Precio } from "@src/precio/entity/precio.entity";
 import { mockUser } from "./user.mock";
-import { DtoPrecioCrear } from "@src/precio/dto/precioCrear.dto";
+import { DtoPrecioCrear } from "@src/precio/dto/precio.dto";
 import { createMockBaseService } from "./base.mock";
-import { DtoPrecioEditar } from "@src/precio/dto/precioEditar.dto";
+import { DtoPrecioEditar } from "@src/precio/dto/precio_empresa.dto";
 import { CreateProp, EditarProp } from "@src/base/interface/base.interface";
 import { jest } from '@jest/globals';
 

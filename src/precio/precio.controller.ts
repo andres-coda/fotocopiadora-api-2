@@ -2,8 +2,7 @@ import { Controller } from '@nestjs/common';
 import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Precio } from './entity/precio.entity';
-import { DtoPrecioCrear } from './dto/precioCrear.dto';
-import { DtoPrecioEditar } from './dto/precioEditar.dto';
+import { DtoPrecioCrear, DtoPrecioEditar } from './dto/precio.dto';
 import { PrecioService } from './precio.service';
 import { PRECIO_RELATIONS, PRECIO_SELECTED, PRECIO_SELECTED_BY_ID } from './default/relacion';
 

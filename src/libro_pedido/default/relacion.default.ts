@@ -1,6 +1,6 @@
 import { RelationsKey, SelectedDeep } from "../../base/interface/base.interface";
 import { SELECTED_BASE } from "../../utils/relacion";
-import { LibroPedido } from "../entity/libroPedido.entity";
+import { LibroPedido } from "../entity/pedido_item.entity";
 
 export const LIBRO_PEDIDO_RELATIONS: RelationsKey<LibroPedido> = {
   relations: ['libro', 'pedido', 'sede', 'especificaciones'],

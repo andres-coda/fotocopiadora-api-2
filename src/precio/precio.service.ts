@@ -7,10 +7,8 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Precio } from './entity/precio.entity';
-import { DtoPrecioCrear } from './dto/precioCrear.dto';
-import { DtoPrecioEditar } from './dto/precioEditar.dto';
+import { DtoPrecioCrear, DtoPrecioEditar, DtoPrecioRespuesta } from './dto/precio.dto';
 import { PRECIO_RELATIONS, PRECIO_SELECTED } from './default/relacion';
-import { DtoPrecioRespuesta } from './dto/precioRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 
 @Injectable()
