@@ -1,7 +1,7 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { PrecioAbareviatura } from "../interface/precio.interface";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
+/*
 export class DtoPrecioCrear extends BaseDto {
   @IsNotEmpty()
   @IsString()
@@ -15,4 +15,16 @@ export class DtoPrecioCrear extends BaseDto {
   @IsArray()
   @IsEnum(PrecioAbareviatura, { each: true })
   abreviatura?: PrecioAbareviatura[];
+}
+*/
+
+
+export class DtoPrecioCrear extends BaseDto {
+  @IsNotEmpty({message:'El nombre es obligatorio para crear un nuevo precio'})
+  @IsString({ message: 'El nombre debe ser un texto' })
+  nombre!: string;
+  
+  @IsOptional()
+  @IsString({ message: 'La descripción debe ser un texto' })
+  descripcion?: string;
 }

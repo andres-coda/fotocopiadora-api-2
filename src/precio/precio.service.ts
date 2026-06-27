@@ -1,12 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
-import { Mens } from '../gateway/enum/Mens.enum';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Precio } from './entity/precio.entity';
 import { DtoPrecioCrear } from './dto/precioCrear.dto';
 import { DtoPrecioEditar } from './dto/precioEditar.dto';
@@ -25,40 +24,25 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
     super(precioRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPrecioCrear, typeof Entidad.PRECIO>): Promise<Precio> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoPrecioCrear, typeof Entidad.PRECIO>): Promise<Precio> {
     try {
       const precioExistente: Precio | null = await this.getDatoByName({
         dato: dto.nombre,
-        usuarioId: usuario.id,
         qR,
         relaciones: [PRECIO_RELATIONS],
         selected: PRECIO_SELECTED,
         entidadError: 'precio'
       });
 
-      console.log(`Precio de ${dto.nombre} existente: ${precioExistente?.nombre || 'no existe'}`)
-
       if (precioExistente) return precioExistente;
 
       const precio: Precio = new Precio();
       precio.nombre = dto.nombre;
-      precio.importe = dto.importe;
-      precio.abreviatura = dto.abreviatura ?? [];
-      precio.user = usuario;
+      precio.descripcion = dto.descripcion;
 
       const newPrecio: Precio = qR
         ? await qR.manager.save(Precio, precio)
         : await this.precioRepository.save(precio);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad,
-          dato: newPrecio
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return newPrecio;
 
@@ -67,35 +51,25 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Precio, DtoPrecioEditar, typeof Entidad.PRECIO>): Promise<UpdateRetorno<Precio>> {
+  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Precio, DtoPrecioEditar, typeof Entidad.PRECIO>): Promise<UpdateRetorno<Precio>> {
     try {
       const precio: Precio = await this.getDatoByIdOrFail({
         id,
-        usuarioId,
         qR,
         relaciones,
         selected,
         entidadError
       });
-      if(!precio.abreviatura || precio.abreviatura.length === 0 ) {
-        precio.nombre = dto.nombre || precio.nombre;
+      if(precio.descripcion && precio.descripcion.length != 0 ) {
+        throw new NotFoundException('No puede editar el nombre de los precios usados para calcular el valor de los libros');
       }
+      if(!dto.nombre || precio.nombre === dto.nombre) return {dato:precio, isQr:false};
       
-      precio.importe = dto.importe || precio.importe;
+      precio.nombre = dto.nombre;
 
       const newPrecio: Precio = qR
         ? await qR.manager.save(Precio, precio)
         : await this.precioRepository.save(precio);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad,
-          dato: newPrecio
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return { dato: newPrecio, isQr: true }
 
@@ -110,8 +84,7 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
     return {
       ...base,
       nombre: entidad.nombre,
-      importe: entidad.importe,
-      abreviatura: entidad.abreviatura
+      descripcion: entidad.descripcion,
     }
   }
 }

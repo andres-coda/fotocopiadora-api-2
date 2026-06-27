@@ -4,7 +4,6 @@ import { PrecioService } from './precio.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entity/user.entity';
 import { AuthModule } from '../auth/auth.module';
-import { UserModule } from '../user/user.module';
 import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
 import { Precio } from './entity/precio.entity';
@@ -16,7 +15,6 @@ import { Precio } from './entity/precio.entity';
       Precio
     ]),
     forwardRef(() => AuthModule),
-    forwardRef(() => UserModule),
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
   ],

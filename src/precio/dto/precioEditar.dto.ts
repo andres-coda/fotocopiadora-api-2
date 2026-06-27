@@ -1,12 +1,8 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class DtoPrecioEditar extends BaseDto {
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'El nombre debe ser un texto' })
   nombre?: string;
-
-  @IsOptional()
-  @IsNumber()
-  importe?: number;
 }
