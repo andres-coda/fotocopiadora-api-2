@@ -1,8 +1,8 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class DtoSedeEditar extends BaseDto {
-  @IsOptional()
-  @IsString()
-  nombre?: string;
+  @IsNotEmpty({message:'El nombre es obligatorio para editar sede'})
+  @IsString({ message: 'El nombre debe ser un texto' })
+  nombre!: string;
 }

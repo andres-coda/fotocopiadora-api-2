@@ -25,11 +25,10 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
     super(sedeRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoSedeCrear, typeof Entidad.SEDE>): Promise<Sede> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoSedeCrear, typeof Entidad.SEDE>): Promise<Sede> {
     try {
       const sedeExistente: Sede | null = await this.getDatoByName({
         dato: dto.nombre,
-        usuarioId: usuario.id,
         qR,
         relaciones: [SEDE_RELATIONS],
         selected: SEDE_SELECTED,
@@ -40,21 +39,10 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
 
       const sede: Sede = new Sede();
       sede.nombre = dto.nombre;
-      sede.user = usuario;
 
       const newSede: Sede = qR
         ? await qR.manager.save(Sede, sede)
         : await this.sedeRepository.save(sede);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad,
-          dato: newSede
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return newSede;
 
@@ -63,32 +51,22 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Sede, DtoSedeEditar, typeof Entidad.SEDE>): Promise<UpdateRetorno<Sede>> {
+  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Sede, DtoSedeEditar, typeof Entidad.SEDE>): Promise<UpdateRetorno<Sede>> {
     try {
       const sede: Sede = await this.getDatoByIdOrFail({
         id,
-        usuarioId,
         qR,
         relaciones,
         selected,
         entidadError
       });
+      if(sede.nombre === dto.nombre) return {dato: sede, isQr: false};
 
-      sede.nombre = dto.nombre || sede.nombre;
+      sede.nombre = dto.nombre;
 
       const newSede: Sede = qR
         ? await qR.manager.save(Sede, sede)
         : await this.sedeRepository.save(sede);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad,
-          dato: newSede
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return { dato: newSede, isQr: true };
 
@@ -102,7 +80,7 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
 
     return {
       ...base,
-      nombre:entidad.nombre
+      nombre: entidad.nombre
     }
   }
 }
