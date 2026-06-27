@@ -33,6 +33,7 @@ import { ComponenteModule } from './componente/componente.module';
 import { Componente } from './componente/entity/componente.entity';
 import { DbContextInterceptor } from './common/interceptors/db-context.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { PrecioEmpresaModule } from './precio_empresa/precio_empresa.module';
 
 @Module({
    imports: [
@@ -81,6 +82,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     PropuestaPedidoModule,
     ClienteResumenModule,
     ComponenteModule,
+    PrecioEmpresaModule,
   ],
   controllers: [],
   providers: [

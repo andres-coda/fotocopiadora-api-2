@@ -5,8 +5,7 @@ import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
-import { Mens } from '../gateway/enum/Mens.enum';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Materia } from './entity/materia.entity';
 import { DtoMateriaCrear } from './dto/materiaCrear.dto';
 import { DtoMateriaEditar } from './dto/materiaEditar.dto';
@@ -25,11 +24,10 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
     super(materiaRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoMateriaCrear, typeof Entidad.MATERIA>): Promise<Materia> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoMateriaCrear, typeof Entidad.MATERIA>): Promise<Materia> {
     try {
       const materiaExistente: Materia | null = await this.getDatoByName({
         dato: dto.nombre,
-        usuarioId: usuario.id,
         qR,
         relaciones: [MATERIA_RELATIONS],
         selected: MATERIA_SELECTED,
@@ -40,21 +38,10 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
 
       const materia: Materia = new Materia();
       materia.nombre = dto.nombre;
-      materia.user = usuario;
 
       const newMateria: Materia = qR
         ? await qR.manager.save(Materia, materia)
         : await this.materiaRepository.save(materia);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad,
-          dato: newMateria
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return newMateria;
 
@@ -63,32 +50,23 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Materia, DtoMateriaEditar, typeof Entidad.MATERIA>): Promise<UpdateRetorno<Materia>> {
+  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Materia, DtoMateriaEditar, typeof Entidad.MATERIA>): Promise<UpdateRetorno<Materia>> {
     try {
       const materia: Materia = await this.getDatoByIdOrFail({
         id,
-        usuarioId,
         qR,
         relaciones,
         selected,
         entidadError
       });
 
+      if(dto.nombre === materia.nombre) return {dato:materia, isQr:false};
+      
       materia.nombre = dto.nombre || materia.nombre;
 
       const newMateria: Materia = qR
         ? await qR.manager.save(Materia, materia)
         : await this.materiaRepository.save(materia);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad,
-          dato: newMateria
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return { dato: newMateria, isQr: true }
 
