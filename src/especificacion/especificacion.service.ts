@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, In, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, GetIdsProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
-import { Mens } from '../gateway/enum/Mens.enum';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Especificacion } from './entity/especificacion.entity';
 import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
@@ -30,11 +29,10 @@ export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especi
     super(especificacionRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoEspecificacionCrear,typeof Entidad.ESP>): Promise<Especificacion> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoEspecificacionCrear,typeof Entidad.ESP>): Promise<Especificacion> {
     try {
       const espExiste: Especificacion | null = await this.getDatoByName({
         dato: dto.nombre,
-        usuarioId: usuario.id,
         qR,
         relaciones: [ESPECIFICACION_RELATIONS],
         selected: SELECTED_ESPECIFICACION,
@@ -45,21 +43,10 @@ export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especi
 
       const especificacion: Especificacion = new Especificacion();
       especificacion.nombre = dto.nombre;
-      especificacion.user = usuario;
 
       const newEspecificacion: Especificacion = qR
         ? await qR.manager.save(Especificacion, especificacion)
         : await this.especificacionRepository.save(especificacion);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad: entidad,
-          dato: newEspecificacion
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return newEspecificacion;
 
@@ -68,16 +55,17 @@ export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especi
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Especificacion, DtoEspecificacionEditar, typeof Entidad.ESP>): Promise<UpdateRetorno<Especificacion>> {
+  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Especificacion, DtoEspecificacionEditar, typeof Entidad.ESP>): Promise<UpdateRetorno<Especificacion>> {
     try {
       const especificacion: Especificacion = await this.getDatoByIdOrFail({
         id,
-        usuarioId,
         qR,
         relaciones,
         selected,
         entidadError
       });
+
+      if(dto.nombre === especificacion.nombre) return {dato:especificacion, isQr:false};
 
       especificacion.nombre = dto.nombre;
 
@@ -85,42 +73,10 @@ export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especi
         ? await qR.manager.save(Especificacion, especificacion)
         : await this.especificacionRepository.save(especificacion);
 
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad: entidad,
-          dato: newEspecificacion
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
       return {dato: especificacion, isQr:true };
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre} en el registro de especificacions`)
-    }
-  }
-
-  async getDatosByNombres({ nombres, entidadError, relaciones, qR, usuarioId, selected }: GetEspNombres): Promise<Especificacion[]> {
-    try {
-      if (nombres.length == 0) return [];
-      const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
-        relaciones,
-        selected,
-        where: { nombre: In(nombres) },
-        usuarioId,
-      });
-
-      const target = this.especificacionRepository.target;
-
-      const esp: Especificacion[] = qR
-        ? await qR.manager.find(target, criterio)
-        : await this.especificacionRepository.find(criterio)
-
-      return esp;
-    } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar leer las especificaciones en base de datos`)
     }
   }
 

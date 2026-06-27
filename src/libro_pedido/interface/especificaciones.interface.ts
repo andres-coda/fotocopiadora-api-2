@@ -1,5 +1,5 @@
 export enum Especificaciones {
-  BLANCO_Y_NEGRO = "byn",
+  BLANCO_Y_NEGRO = "b_n",
   COLOR = "color",
   ADHESIVO = "adhes",
   SUELTO = "suelto",

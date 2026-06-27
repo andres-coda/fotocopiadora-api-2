@@ -43,9 +43,6 @@ export class Libro extends Base {
   @Column({ type: 'json', nullable: true })
   especificacionesDefecto?: Especificaciones[];
 
-  @ManyToOne(() => Materia, materia => materia.libros)
-  materia!: Materia;
-
   @OneToOne(() => Stock, stock => stock.libro)
   stock!: Stock;
 
