@@ -32,6 +32,7 @@ import { DtoSedeRespuesta } from '../sede/dto/sedeRetorno.dto';
 import { DtoLibroRespuesta } from '../libro/dto/libroRetorno.dto';
 import { DtoEspecificaionRetorno } from '../especificacion/dto/DtoEspecificacionRetorno.dto';
 import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
+import { GetPedidoItemBusqueda } from './interface/pedido_item_busqueda.interface';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.RESUMEN>, "entidad"> {
   pedido: Pedido
@@ -50,26 +51,26 @@ export class LibroPedidoService {
     private readonly espService: EspecificacionService,
     private readonly stockService: StockService,
     private readonly sedeService: SedeService,
-  ) {}
+  ) { }
 
-  async createDato({ dto, qR, entidad }: CreateProp<DtoLibroPedidoCrear, typeof Entidad.LIBRO_PEDIDO>): Promise<PedidoItem> {
+  async getPedidoItemById(
+    id_pedido: string,
+    nro_item: number,
+    qR?: QueryRunner,
+  ): Promise<DtoPedidoRespuesta[]> {
     try {
+      const runner = qR ?? this.dataSource.createQueryRunner();
+      if (!qR) await runner.connect();
 
-      const pedido: Pedido = await this.pedidoService.getDatoByIdOrFail({
-        id: dto.pedido_id,
-        qR,
-        relaciones: [PEDIDO_RELATIONS],
-        entidadError: 'pedido',
-        selected: PEDIDO_SELECTED
-      });
+      const rows = await runner.query(
+        `SELECT * FROM vw_pedidos_item where id_pedido = ${id_pedido} ${nro_item ? `and nro_pedido = ${nro_item}`:''}`,
+      );
 
-      const newLibroPedido: PedidoItem = await this.createDatoXEntidad({
-        qR, dto, pedido
-      })
-      return newLibroPedido;
+      if (!qR) await runner.release();
 
+      return rows.map((r: GetPedidoItemBusqueda) => this.toRespuestaBusqueda(r));
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el item del pedido en el registro de ${entidad}`)
+      throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido id ${id_pedido} nro ${nro_item}`);
     }
   }
 
@@ -155,15 +156,16 @@ export class LibroPedidoService {
 
   async createDatoXEntidad({ dto, qR, pedido }: CreateDatoXEntidadProp): Promise<PedidoItem> {
     try {
-      if(!qR) throw new NotFoundException('Para crear un item de pedido debe iniciar una transacción');
-      
+      if (!qR) throw new NotFoundException('Para crear un item de pedido debe iniciar una transacción');
+      const libro: Libro = await this.libroService.getDatoByIdOrFail({ id: dto.libro_id, qR, entidadError: 'libro' });
+
       const [pedido_item] = await qR.query(
         `INSERT INTO pedido_item (id_pedido, id_libro, id_sede, id_empresa, cantidad, detalles, estado)
          VALUES ($1, $2, $3, current_setting('app.empresa_id', true)::uuid, $4, $5, $6)
          RETURNING id_pedido, id`,
         [
-          dto.pedido_id,
-          dto.libro_id,
+          pedido.id,
+          libro.id,
           dto.sede_id,
           dto.cantidad,
           dto.detalles ?? null,
@@ -171,76 +173,49 @@ export class LibroPedidoService {
         ],
       );
 
-      const dtoEsp: Especificaciones[] = dto.especificaciones && dto.especificaciones?.length > 0
-        ? dto.especificaciones
-        : !libro.especificacionesDefecto ? [] : libro.especificacionesDefecto;
+      const especificaciones: Especificacion[] = await this.createEspecificacionXpedido(pedido_item, qR, libro, dto.especificaciones);
+      pedido_item.libro = libro;
+      pedido_item.especificacion = especificaciones;
 
-      const especificaciones: Especificacion[] = await this.espService.getDatosByNombres({
-        nombres: dtoEsp,
-        qR,
-        relaciones: [ESPECIFICACION_RELATIONS],
-        entidadError: 'pedido',
-        selected: SELECTED_ESPECIFICACION
-      });
-
-      const libroPedido: PedidoItem = new PedidoItem();
-      libroPedido.cantidad = dto.cantidad || 0;
-      libroPedido.detalles = dto.detalles;
-      libroPedido.libro = libro;
-      libroPedido.libroId = libro.id;
-      libroPedido.pedidoId = pedido.id,
-      libroPedido.pedido = pedido;
-      libroPedido.sede = sede;
-      if (especificaciones) libroPedido.especificaciones = especificaciones;
-      libroPedido.user = usuario;
-
-      const newLibroPedido: PedidoItem = qR
-        ? await qR.manager.save(PedidoItem, libroPedido)
-        : await this.libroPedidoRepository.save(libroPedido);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad: Entidad.PEDIDO,
-          dato: newLibroPedido
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
-      const dtoStock: DtoStockEditar = {
-        actual: Estado.PENDIENTE,
-        cantidad: dto.cantidad
-      }
-
-      const stockRetorno: UpdateRetorno<Stock> = await this.stockService.updateDato({
-        usuarioId: usuario.id,
-        qR,
-        dto: dtoStock,
-        id: libro.stock.id,
-        entidadError: 'stock',
-        relaciones: [STOCK_RELATIONS],
-        selected: STOCK_SELECTED,
-        entidad: Entidad.STOCK
-      });
-
-      newLibroPedido.libro.stock = stockRetorno.dato;
-
-      return newLibroPedido;
-
+      return pedido_item;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el item del pedido en el registro de pedidos`)
     }
   }
 
-  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<PedidoItem, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<DtoCambioEstadoLibroPedidoRespuesta> {
-    const qR: QueryRunner = this.dataSource.createQueryRunner();
-    await qR.connect();
-    await qR.startTransaction();
+  async createEspecificacionXpedido(pi: PedidoItem, qR: QueryRunner, libro: Libro, esp?: Especificaciones[]): Promise<Especificacion[]> {
+    try {
+      const dtoEsp: Especificaciones[] = !esp || esp.length === 0
+        ? libro.especificacionesDefecto || []
+        : esp;
+
+      let especificaciones: Especificacion[] = [];
+      if (dtoEsp.length) {
+        especificaciones = await this.espService.getDatosByNombres({
+          nombres: dtoEsp,
+          qR,
+          relaciones: [ESPECIFICACION_RELATIONS],
+          entidadError: 'especificación',
+          selected: SELECTED_ESPECIFICACION
+        });
+        for (const idEsp of especificaciones) {
+          await qR.query(
+            `INSERT INTO pedido_item_especificacion (id_pedido, nro_item, id_especificacion)
+             VALUES ($1, $2, $3)`,
+            [pi.idPedido, pi.id, idEsp.id],
+          );
+        }
+      }
+      return especificaciones;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar agregar las especificaciones al pedido_item id: ${pi.id}`);
+    }
+  }
+
+  async cambiarEstadoCx({ dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<PedidoItem, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<DtoCambioEstadoLibroPedidoRespuesta> {
     try {
       const libroPedido: PedidoItem = await this.getDatoByIdOrFail({
         id,
-        usuarioId: usuario.id,
         qR,
         relaciones: [LIBRO_PEDIDO_ESTADO_RELATIONS],
         selected: SELECTED_LIBRO_PEDIDO_ESTADO,
@@ -262,7 +237,7 @@ export class LibroPedidoService {
         relaciones: [STOCK_RELATIONS],
         selected: STOCK_SELECTED,
       });
-      
+
       const pedido: Pedido = await this.pedidoService.getDatoByIdOrFail({
         usuarioId: usuario.id,
         qR,
@@ -334,11 +309,11 @@ export class LibroPedidoService {
     }
   }
 
-  remplaceToCambioEstadoReturn(entidad:PedidoItem, stock:Stock | undefined, pedido:Pedido| undefined, resumen:ClienteResumen| undefined):DtoCambioEstadoLibroPedidoRespuesta{
-    const base:DtoBaseRetorno = this.remplaceToBase(entidad);
+  remplaceToCambioEstadoReturn(entidad: PedidoItem, stock: Stock | undefined, pedido: Pedido | undefined, resumen: ClienteResumen | undefined): DtoCambioEstadoLibroPedidoRespuesta {
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
     return {
       ...base,
-      estado:entidad.estado,
+      estado: entidad.estado,
       stock: stock ? this.stockService.remplaceToReturn(stock) : undefined,
       pedido: pedido ? this.pedidoService.remplaceToEstadoReturn(pedido) : undefined,
       resumen: resumen ? this.resumenService.remplaceToReturn(resumen) : undefined,

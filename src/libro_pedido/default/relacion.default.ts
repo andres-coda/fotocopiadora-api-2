@@ -1,13 +1,13 @@
 import { RelationsKey, SelectedDeep } from "../../base/interface/base.interface";
 import { SELECTED_BASE } from "../../utils/relacion";
-import { LibroPedido } from "../entity/pedido_item.entity";
+import { PedidoItem } from "../entity/pedido_item.entity";
 
-export const LIBRO_PEDIDO_RELATIONS: RelationsKey<LibroPedido> = {
-  relations: ['libro', 'pedido', 'sede', 'especificaciones'],
+export const LIBRO_PEDIDO_RELATIONS: RelationsKey<PedidoItem> = {
+  relations: ['libro', 'pedido', 'sede', 'especificacion'],
   nestedRelations: {'pedido':{'cliente':{}}, 'libro':{componentes:{}}}
 };
 
-export const SELECTED_LIBRO_PEDIDO: SelectedDeep<LibroPedido> = {
+export const SELECTED_LIBRO_PEDIDO: SelectedDeep<PedidoItem> = {
   ...SELECTED_BASE,
   fechaCreacion:true,
   fechaActualizacion:true,
@@ -51,12 +51,12 @@ export const SELECTED_LIBRO_PEDIDO: SelectedDeep<LibroPedido> = {
   }
 }
 
-export const LIBRO_PEDIDO_ESTADO_RELATIONS: RelationsKey<LibroPedido> = {
+export const LIBRO_PEDIDO_ESTADO_RELATIONS: RelationsKey<PedidoItem> = {
   relations: ['libro', 'pedido'],
   nestedRelations: {'pedido':{'cliente':{}}, 'libro':{'stock':{}}}
 };
 
-export const SELECTED_LIBRO_PEDIDO_ESTADO:SelectedDeep<LibroPedido> = {
+export const SELECTED_LIBRO_PEDIDO_ESTADO:SelectedDeep<PedidoItem> = {
   ...SELECTED_LIBRO_PEDIDO,
   libro:{
     id:true,
