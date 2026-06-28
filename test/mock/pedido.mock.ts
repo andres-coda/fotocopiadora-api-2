@@ -2,7 +2,7 @@ import { Pedido } from "@src/pedido/entity/pedido.entity";
 import { mockCliente } from "./cliente.mock";
 import { mockUser } from "./user.mock";
 import { createMockBaseService } from "./base.mock";
-import { DtoPedidoCrear } from "@src/pedido/dto/pedidoCrear.dto";
+import { DtoPedidoCrear } from "@src/pedido/dto/pedido.dto";
 import { DtoPedidoEditar } from "@src/pedido/dto/pedidoEditar.dto";
 import { jest } from '@jest/globals';
 import { CreateProp, EditarProp } from "@src/base/interface/base.interface";

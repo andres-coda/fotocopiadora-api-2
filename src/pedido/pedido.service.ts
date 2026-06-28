@@ -4,24 +4,20 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateElementoControllerProp, CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear } from './dto/pedidoCrear.dto';
-import { DtoPedidoEditar } from './dto/pedidoEditar.dto';
+import { DtoPedidoCrear, DtoPedidoEditar } from './dto/pedido.dto';
 import { Cliente } from '../cliente/entity/cliente.entity';
 import { ClienteService } from '../cliente/cliente.service';
 import { LibroPedidoService } from '../libro_pedido/libro_pedido.service';
-import { LibroPedido } from '../libro_pedido/entity/pedido_item.entity';
 import { DtoLibroPedidoCrear } from '../libro_pedido/dto/pedido_item.dto';
-import { CLIENTE_X_RESUMEN_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
-import { DtoPedidoEstadoRespuesta, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedidoRetorno.dto';
+import {  CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.dto';
-import { DtoClienteRespuesta } from '../cliente/dto/clienteRespuesta.dto';
 import { GetPedidoXLibro } from './interface/pedido.interface';
-import { PEDIDO_RELATIONS, PEDIDO_RELATIONS_BY_ID, PEDIDO_RELATIONS_LIBRO_ID, PEDIDO_SELECTED, PEDIDO_SELECTED_BY_ID, PEDIDO_SELECTED_LIBRO_ID } from './default/relacion';
+import { PEDIDO_RELATIONS_LIBRO_ID, PEDIDO_SELECTED_LIBRO_ID } from './default/relacion';
 import { Estado } from '@src/interface/estado.interface';
 
 @Injectable()
@@ -38,12 +34,12 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     super(pedidoRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoPedidoCrear, typeof Entidad.PEDIDO>): Promise<Pedido> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoPedidoCrear, typeof Entidad.PEDIDO>): Promise<Pedido> {
     try {
       if (!dto.cliente && !dto.clienteDatos) throw new NotFoundException('Requiere datos del cliente');
       const cliente: Cliente = dto.cliente
-        ? await this.clienteService.getDatoByIdOrFail({ id: dto.cliente, qR, entidadError: 'cliente', usuarioId: usuario.id, relaciones: [CLIENTE_X_RESUMEN_RELATIONS], selected: CLIENTE_X_RESUMEN_SELECTED })
-        : await this.clienteService.createDato({ usuario, dto: dto.clienteDatos!, qR, entidad: Entidad.CLIENTE });
+        ? await this.clienteService.getDatoByIdOrFail({ id: dto.cliente, qR, entidadError: 'cliente', relaciones: [CLIENTE_X_RESUMEN_SELECTED], selected: CLIENTE_X_RESUMEN_SELECTED })
+        : await this.clienteService.createDato({ dto: dto.clienteDatos!, qR, entidad: Entidad.CLIENTE });
 
       const pedido: Pedido = new Pedido();
       pedido.fechaEntrega = dto.fechaEntrega;

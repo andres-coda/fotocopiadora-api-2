@@ -4,10 +4,10 @@
  * Reemplaza el enum anterior (tinyint con valores distintos).
  */
 export enum EstadoPedido {
-  PENDIENTE   = 1,
-  EN_PROCESO  = 2,
-  EN_REVISION = 3,
-  LISTO       = 4,
-  RETIRADO    = 5,
-  CANCELADO   = 6,
+  PENDIENTE = 1,
+  IMPRIMIENDO = 2,
+  IMPRESO = 3,
+  LISTO = 4,
+  RETIRADO = 5,
+  CANCELADO = 6,
 }

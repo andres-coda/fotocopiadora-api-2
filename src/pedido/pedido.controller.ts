@@ -3,7 +3,7 @@ import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { PedidoService } from './pedido.service';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta } from './dto/pedidoCrear.dto';
+import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta } from './dto/pedido.dto';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 

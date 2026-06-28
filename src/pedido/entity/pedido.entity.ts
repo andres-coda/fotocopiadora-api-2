@@ -14,7 +14,7 @@ import { EstadoPedido } from "../interface/estadoPedido.enum";
 @Entity('pedido')
 export class Pedido extends Base {
   @Column({ type: 'date', nullable: true, name: 'fecha_entrega' })
-  fechaEntrega!: string;
+  fechaEntrega!: Date;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'importe_total' })
   importeTotal!: number;
