@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
@@ -7,9 +7,8 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarElementoControllerProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
-import { LibroPedido } from './entity/pedido_item.entity';
+import { PedidoItem } from './entity/pedido_item.entity';
 import { DtoLibroPedidoCrear } from './dto/pedido_item.dto';
-import { DtoLibroPedidoEditar } from './dto/DtoEditarLibroPedido.dto';
 import { LIBRO_PEDIDO_ESTADO_RELATIONS, SELECTED_LIBRO_PEDIDO_ESTADO } from './default/relacion.default';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
@@ -21,7 +20,6 @@ import { EspecificacionService } from '../especificacion/especificacion.service'
 import { Especificacion } from '../especificacion/entity/especificacion.entity';
 import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from '../especificacion/default/relacion.default';
 import { Especificaciones } from './interface/especificaciones.interface';
-import { DtoCambiarEstado } from './dto/DtoCambiarEstado.dto';
 import { Stock } from '../stock/entity/stock.entity';
 import { StockService } from '../stock/stock.service';
 import { DtoStockEditar } from '../stock/dto/stockEditar.dto';
@@ -29,25 +27,20 @@ import { STOCK_RELATIONS, STOCK_SELECTED } from '../stock/default/relacion';
 import { Sede } from '../sede/entity/sede.entity';
 import { SedeService } from '../sede/sede.service';
 import { Estado } from '../interface/estado.interface';
-import { DtoCambioEstadoLibroPedidoRespuesta, DtoLibroPedidoRespuesta } from './dto/libroPedidoRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { DtoSedeRespuesta } from '../sede/dto/sedeRetorno.dto';
 import { DtoLibroRespuesta } from '../libro/dto/libroRetorno.dto';
 import { DtoEspecificaionRetorno } from '../especificacion/dto/DtoEspecificacionRetorno.dto';
-import { DtoStockRespuesta } from '@src/stock/dto/stockRetorno.dto';
-import { DtoPedidoEstadoRespuesta, DtoPedidoRespuesta } from '@src/pedido/dto/pedidoRetorno.dto';
-import { DtoResumenRespuesta } from '@src/cliente_resumen/dto/clienteResumenRespuesta.dto';
-import { ClienteResumenService } from '@src/cliente_resumen/cliente_resumen.service';
-import { ClienteResumen } from '@src/cliente_resumen/entity/clienteResumen.entity';
+import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.RESUMEN>, "entidad"> {
   pedido: Pedido
 }
 
 @Injectable()
-export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO, LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar> {
+export class LibroPedidoService {
   constructor(
-    @InjectRepository(LibroPedido) private readonly libroPedidoRepository: Repository<LibroPedido>,
+    @InjectRepository(PedidoItem) private readonly libroPedidoRepository: Repository<PedidoItem>,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
@@ -57,12 +50,9 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     private readonly espService: EspecificacionService,
     private readonly stockService: StockService,
     private readonly sedeService: SedeService,
-    private readonly resumenService: ClienteResumenService,
-  ) {
-    super(libroPedidoRepository, dataSource, erroresService, gatewayGateway)
-  }
+  ) {}
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoLibroPedidoCrear, typeof Entidad.LIBRO_PEDIDO>): Promise<LibroPedido> {
+  async createDato({ dto, qR, entidad }: CreateProp<DtoLibroPedidoCrear, typeof Entidad.LIBRO_PEDIDO>): Promise<PedidoItem> {
     try {
 
       const pedido: Pedido = await this.pedidoService.getDatoByIdOrFail({
@@ -70,12 +60,11 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         qR,
         relaciones: [PEDIDO_RELATIONS],
         entidadError: 'pedido',
-        usuarioId: usuario.id,
         selected: PEDIDO_SELECTED
       });
 
-      const newLibroPedido: LibroPedido = await this.createDatoXEntidad({
-        usuario, qR, dto, pedido
+      const newLibroPedido: PedidoItem = await this.createDatoXEntidad({
+        qR, dto, pedido
       })
       return newLibroPedido;
 
@@ -84,9 +73,9 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<LibroPedido, DtoLibroPedidoEditar, typeof Entidad.LIBRO_PEDIDO>): Promise<UpdateRetorno<LibroPedido>> {
+  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<PedidoItem, DtoLibroPedidoEditar, typeof Entidad.LIBRO_PEDIDO>): Promise<UpdateRetorno<PedidoItem>> {
     try {
-      const libroPedido: LibroPedido = await this.getDatoByIdOrFail({
+      const libroPedido: PedidoItem = await this.getDatoByIdOrFail({
         id,
         usuarioId,
         qR,
@@ -143,8 +132,8 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       libroPedido.estado = dto.estado ?? libroPedido.estado;
       libroPedido.especificaciones = especificaciones;
 
-      const newLibroPedido: LibroPedido = qR
-        ? await qR.manager.save(LibroPedido, libroPedido)
+      const newLibroPedido: PedidoItem = qR
+        ? await qR.manager.save(PedidoItem, libroPedido)
         : await this.libroPedidoRepository.save(libroPedido);
 
       if (!qR) {
@@ -164,24 +153,23 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  async createDatoXEntidad({ dto, usuario, qR, pedido }: CreateDatoXEntidadProp): Promise<LibroPedido> {
+  async createDatoXEntidad({ dto, qR, pedido }: CreateDatoXEntidadProp): Promise<PedidoItem> {
     try {
-
-      const libro: Libro = await this.libroService.getDatoByIdOrFail({
-        id: dto.libro_id,
-        qR,
-        relaciones: [LIBRO_RELATIONS],
-        entidadError: 'libro',
-        usuarioId: usuario.id,
-        selected: SELECTED_LIBRO
-      });
-
-      const sede: Sede = await this.sedeService.getDatoByIdOrFail({
-        id: dto.sede_id,
-        qR,
-        entidadError: 'sede',
-        usuarioId: usuario.id,
-      });
+      if(!qR) throw new NotFoundException('Para crear un item de pedido debe iniciar una transacción');
+      
+      const [pedido_item] = await qR.query(
+        `INSERT INTO pedido_item (id_pedido, id_libro, id_sede, id_empresa, cantidad, detalles, estado)
+         VALUES ($1, $2, $3, current_setting('app.empresa_id', true)::uuid, $4, $5, $6)
+         RETURNING id_pedido, id`,
+        [
+          dto.pedido_id,
+          dto.libro_id,
+          dto.sede_id,
+          dto.cantidad,
+          dto.detalles ?? null,
+          EstadoPedido.PENDIENTE,
+        ],
+      );
 
       const dtoEsp: Especificaciones[] = dto.especificaciones && dto.especificaciones?.length > 0
         ? dto.especificaciones
@@ -192,11 +180,10 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
         qR,
         relaciones: [ESPECIFICACION_RELATIONS],
         entidadError: 'pedido',
-        usuarioId: usuario.id,
         selected: SELECTED_ESPECIFICACION
       });
 
-      const libroPedido: LibroPedido = new LibroPedido();
+      const libroPedido: PedidoItem = new PedidoItem();
       libroPedido.cantidad = dto.cantidad || 0;
       libroPedido.detalles = dto.detalles;
       libroPedido.libro = libro;
@@ -207,8 +194,8 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       if (especificaciones) libroPedido.especificaciones = especificaciones;
       libroPedido.user = usuario;
 
-      const newLibroPedido: LibroPedido = qR
-        ? await qR.manager.save(LibroPedido, libroPedido)
+      const newLibroPedido: PedidoItem = qR
+        ? await qR.manager.save(PedidoItem, libroPedido)
         : await this.libroPedidoRepository.save(libroPedido);
 
       if (!qR) {
@@ -246,12 +233,12 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<DtoCambioEstadoLibroPedidoRespuesta> {
+  async cambiarEstadoCx({ usuario, dto, id, entidadError, relaciones, selected, entidad }: EditarElementoControllerProp<PedidoItem, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO>): Promise<DtoCambioEstadoLibroPedidoRespuesta> {
     const qR: QueryRunner = this.dataSource.createQueryRunner();
     await qR.connect();
     await qR.startTransaction();
     try {
-      const libroPedido: LibroPedido = await this.getDatoByIdOrFail({
+      const libroPedido: PedidoItem = await this.getDatoByIdOrFail({
         id,
         usuarioId: usuario.id,
         qR,
@@ -263,8 +250,8 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
       if (libroPedido.estado === dto.estado) return this.remplaceToCambioEstadoReturn(libroPedido, undefined, undefined, undefined);
 
       libroPedido.estado = dto.estado;
-      const newLibroPedido: LibroPedido = qR
-        ? await qR.manager.save(LibroPedido, libroPedido)
+      const newLibroPedido: PedidoItem = qR
+        ? await qR.manager.save(PedidoItem, libroPedido)
         : await this.libroPedidoRepository.save(libroPedido);
 
       const stock: Stock = await this.stockService.getDatoByIdOrFail({
@@ -320,7 +307,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  remplaceToReturn(entidad: LibroPedido): DtoLibroPedidoRespuesta {
+  remplaceToReturn(entidad: PedidoItem): DtoLibroPedidoRespuesta {
     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
     const especificaciones: DtoEspecificaionRetorno[] = entidad.especificaciones?.length > 0
       ? entidad.especificaciones.map(esp => this.espService.remplaceToReturn(esp))
@@ -347,7 +334,7 @@ export class LibroPedidoService extends BaseService<typeof Entidad.LIBRO_PEDIDO,
     }
   }
 
-  remplaceToCambioEstadoReturn(entidad:LibroPedido, stock:Stock | undefined, pedido:Pedido| undefined, resumen:ClienteResumen| undefined):DtoCambioEstadoLibroPedidoRespuesta{
+  remplaceToCambioEstadoReturn(entidad:PedidoItem, stock:Stock | undefined, pedido:Pedido| undefined, resumen:ClienteResumen| undefined):DtoCambioEstadoLibroPedidoRespuesta{
     const base:DtoBaseRetorno = this.remplaceToBase(entidad);
     return {
       ...base,

@@ -5,7 +5,7 @@ import { LIBRO_PEDIDO_RELATIONS, SELECTED_LIBRO_PEDIDO } from './default/relacio
 import { LibroPedido } from './entity/pedido_item.entity';
 import { DtoLibroPedidoCrear } from './dto/pedido_item.dto';
 import { DtoLibroPedidoEditar } from './dto/DtoEditarLibroPedido.dto';
-import { LibroPedidoService } from './libro_pedido.service';
+import { LibroPedidoService } from './pedido_item.service';
 import { DtoCambiarEstado } from './dto/DtoCambiarEstado.dto';
 import { User } from '../user/entity/user.entity';
 import { UsuarioGuard } from '../auth/guard/user.guard';

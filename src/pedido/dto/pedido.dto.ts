@@ -85,7 +85,7 @@ export class DtoPedidoEstadoRespuesta extends DtoBaseRetorno {
 }
 
 export class DtoPedidoRespuestaCliente extends DtoPedidoEstadoRespuesta {
-  fechaEntrega!: Date;
+  fechaEntrega!: string;
   importeTotal!: number;
   archivos!: number;
   anillados!: number;

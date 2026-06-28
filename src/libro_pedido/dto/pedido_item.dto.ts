@@ -2,6 +2,10 @@ import { BaseDto } from "../../base/dto/baseDto";
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator";
 import { Especificaciones } from "../interface/especificaciones.interface";
 import { EstadoPedido } from "@src/pedido/interface/estadoPedido.enum";
+import { DtoPedidoRespuesta } from "@src/pedido/dto/pedido.dto";
+import { DtoLibroRespuesta } from "@src/libro/dto/libroRetorno.dto";
+import { DtoSedeRespuesta } from "@src/sede/dto/sedeRetorno.dto";
+import { DtoEspecificaionRetorno } from "@src/especificacion/dto/DtoEspecificacionRetorno.dto";
 
 // ------------ Dto Pedido_Item Crear ------------ //
 
@@ -53,7 +57,7 @@ export class DtoPedidoItemEditar {
   cantidad?: number;
 
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Los detalles del libro pedido deben estar en formato string' })
   detalles?: string;
 
   @IsOptional()
@@ -88,3 +92,14 @@ export class DtoPedidoItemRespuesta {
   especificaciones?: string[];
 }
 
+
+export class DtoPedidoItemRespuestaCompleto {
+  id!: number;
+  cantidad!: number;
+  detalles?: string;
+  estado!: EstadoPedido;
+  pedido!: DtoPedidoRespuesta;
+  libro!:DtoLibroRespuesta;
+  sede!:DtoSedeRespuesta;
+  especificaciones!:DtoEspecificaionRetorno[];
+}

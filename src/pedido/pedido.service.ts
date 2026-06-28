@@ -8,17 +8,19 @@ import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.in
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear, DtoPedidoEditar } from './dto/pedido.dto';
+import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
 import { Cliente } from '../cliente/entity/cliente.entity';
 import { ClienteService } from '../cliente/cliente.service';
-import { LibroPedidoService } from '../libro_pedido/libro_pedido.service';
+import { LibroPedidoService } from '../libro_pedido/pedido_item.service';
 import { DtoLibroPedidoCrear } from '../libro_pedido/dto/pedido_item.dto';
-import {  CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
+import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.dto';
-import { GetPedidoXLibro } from './interface/pedido.interface';
+import { GetPedidoBusqueda, GetPedidoXLibro } from './interface/pedido.interface';
 import { PEDIDO_RELATIONS_LIBRO_ID, PEDIDO_SELECTED_LIBRO_ID } from './default/relacion';
 import { Estado } from '@src/interface/estado.interface';
+import { PedidoItem } from '@src/libro_pedido/entity/pedido_item.entity';
+import { DtoClienteRespuesta } from '@src/cliente/dto/cliente.dto';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -29,7 +31,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     protected readonly gatewayGateway: GatewayGateway,
     private readonly clienteService: ClienteService,
     @Inject(forwardRef(() => LibroPedidoService))
-    private readonly libroPedidoService: LibroPedidoService,
+    private readonly pedidoItemService: LibroPedidoService,
   ) {
     super(pedidoRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -38,7 +40,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     try {
       if (!dto.cliente && !dto.clienteDatos) throw new NotFoundException('Requiere datos del cliente');
       const cliente: Cliente = dto.cliente
-        ? await this.clienteService.getDatoByIdOrFail({ id: dto.cliente, qR, entidadError: 'cliente', relaciones: [CLIENTE_X_RESUMEN_SELECTED], selected: CLIENTE_X_RESUMEN_SELECTED })
+        ? await this.clienteService.getDatoByIdOrFail({ id: dto.cliente, qR, entidadError: 'cliente', relaciones: [CLIENTE_RELATIONS], selected: CLIENTE_X_RESUMEN_SELECTED })
         : await this.clienteService.createDato({ dto: dto.clienteDatos!, qR, entidad: Entidad.CLIENTE });
 
       const pedido: Pedido = new Pedido();
@@ -48,22 +50,10 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       pedido.anillados = dto.anillados;
       pedido.sena = dto.sena;
       pedido.cliente = cliente;
-      pedido.user = usuario;
 
       const newPedido: Pedido = qR
         ? await qR.manager.save(Pedido, pedido)
         : await this.pedidoRepository.save(pedido);
-
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad,
-          dato: this.remplaceToReturn(newPedido)
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
 
       return newPedido;
 
@@ -72,11 +62,10 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Pedido, DtoPedidoEditar, typeof Entidad.PEDIDO>): Promise<UpdateRetorno<Pedido>> {
+  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Pedido, DtoPedidoEditar, typeof Entidad.PEDIDO>): Promise<UpdateRetorno<Pedido>> {
     try {
       const pedido: Pedido = await this.getDatoByIdOrFail({
         id,
-        usuarioId,
         qR,
         relaciones,
         selected,
@@ -93,16 +82,6 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         ? await qR.manager.save(Pedido, pedido)
         : await this.pedidoRepository.save(pedido);
 
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad,
-          dato: this.remplaceToReturn(newPedido)
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
       return { dato: newPedido, isQr: true }
 
     } catch (er) {
@@ -110,22 +89,19 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  async createDatoCx({ usuario, dto, entidad }: CreateElementoControllerProp<DtoPedidoCrear, "pedido">): Promise<DtoPedidoRespuesta> {
-    const qR: QueryRunner = this.dataSource.createQueryRunner();
-    await qR.connect();
-    await qR.startTransaction();
+  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoPedidoCrear, "pedido">): Promise<DtoPedidoRespuesta> {
     try {
-      const newPedido: Pedido = await this.createDato({ usuario, dto, qR, entidad });
+      if (!dto.pedidoItems || dto.pedidoItems.length === 0) throw new NotFoundException('No se puede crear un pedido sin sus items');
+      const newPedido: Pedido = await this.createDato({ dto, qR, entidad });
 
-      const libroPedidos: LibroPedido[] = await Promise.all(
-        dto.librosPedidos?.map(lp => {
+      const pedidoItems: PedidoItem[] = await Promise.all(
+        dto.pedidoItems?.map(lp => {
           const dtoLp: DtoLibroPedidoCrear = {
             ...lp,
             pedido_id: newPedido.id
           };
 
-          return this.libroPedidoService.createDatoXEntidad({
-            usuario,
+          return this.pedidoItemService.createDatoXEntidad({
             qR,
             dto: dtoLp,
             pedido: newPedido
@@ -133,9 +109,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         })
       );
 
-      newPedido.libroPedidos = libroPedidos;
-
-      await qR.commitTransaction();
+      newPedido.pedidoItems = pedidoItems;
 
       const retorno: DtoPedidoRespuesta = this.remplaceToReturn(newPedido);
 
@@ -148,25 +122,14 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
 
       return retorno;
     } catch (er) {
-      await qR.rollbackTransaction();
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el elemento en la entidad`)
-    } finally {
-      await qR.release();
-    }
-  }
-
-  remplaceToEstadoReturn(entidad: Pedido): DtoPedidoEstadoRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    return {
-      ...base,
-      estado: entidad.estado
     }
   }
 
   remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta {
     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
-      ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
+    const pedidoItems: DtoLibroPedidoRespuesta[] = entidad.pedidoItems?.length > 0
+      ? entidad.pedidoItems.map(lp => this.pedidoItemService.remplaceToReturn(lp))
       : [];
 
     const cliente: DtoClienteRespuesta = this.clienteService.remplaceToReturn(entidad.cliente);
@@ -181,14 +144,14 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       sena: entidad.sena,
       estado: entidad.estado,
       cliente,
-      libroPedidos,
+      pedidoItems
     }
   }
 
   remplaceToReturnCliente(entidad: Pedido): DtoPedidoRespuestaCliente {
     const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    const libroPedidos: DtoLibroPedidoRespuesta[] = entidad.libroPedidos?.length > 0
-      ? entidad.libroPedidos.map(lp => this.libroPedidoService.remplaceToReturn(lp))
+    const pedidoItems: DtoLibroPedidoRespuesta[] = entidad.pedidoItems?.length > 0
+      ? entidad.pedidoItems.map(lp => this.pedidoItemService.remplaceToReturn(lp))
       : [];
 
     return {
@@ -199,71 +162,56 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       archivos: entidad.archivos,
       anillados: entidad.anillados,
       sena: entidad.sena,
-      estado:entidad.estado,
-      libroPedidos,
+      estado: entidad.estado,
+      pedidoItems,
     }
   }
 
-  async getDatoXLibro({ estado, id_libro, usuarioId, qR }: GetPedidoXLibro): Promise<Pedido[]> {
+  async buscarPedidos(
+    busqueda: string,
+    estado: number | null,
+    limite = 20,
+    offset = 0,
+    qR?: QueryRunner,
+  ): Promise<DtoPedidoRespuesta[]> {
     try {
-      if (!id_libro || !estado) return [];
-      const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
-        relaciones: [PEDIDO_RELATIONS_LIBRO_ID],
-        selected: PEDIDO_SELECTED_LIBRO_ID,
-        where: {
-          libroPedidos: {
-            libro: {
-              id: id_libro
-            },
-            estado: estado
-          },
-        },
-        usuarioId,
-        orden: 'fechaEntrega'
+      const runner = qR ?? this.dataSource.createQueryRunner();
+      if (!qR) await runner.connect();
 
-      });
+      const rows = await runner.query(
+        `SELECT * FROM fc_buscar_pedido($1, $2, $3, $4)`,
+        [busqueda, estado, limite, offset],
+      );
 
-      const datos: Pedido[] = qR
-        ? await qR.manager.find(Pedido, criterio)
-        : await this.baseRepository.find(criterio)
+      if (!qR) await runner.release();
 
-      return datos;
-
-    } catch (error) {
-      throw this.erroresService.handleExceptions(error, `Error al intentar leer los pedidos del libro con id ${id_libro} y el estado ${estado}`)
+      return rows.map((r: GetPedidoBusqueda) => this.toRespuestaBusqueda(r));
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, 'Error al buscar pedidos');
     }
-
   }
 
-  private estadoPedido(libroPedidos?: DtoLibroPedidoRespuesta[]): Estado {
-    if (!libroPedidos?.length) {
-      return Estado.PENDIENTE;
+  toRespuestaBusqueda(busqueda: GetPedidoBusqueda): DtoPedidoRespuesta {
+    return {
+      id: busqueda.id,
+      fechaCreacion: busqueda.fecha_creacion,
+      fechaActualizacion: busqueda.fecha_actualizacion,
+      deleted: busqueda.delete,
+      estado: busqueda.estado,
+      fechaEntrega: busqueda.fecha_entrega.toISOString().split('T')[0],
+      importeTotal: busqueda.importe_total,
+      archivos: busqueda.archivos,
+      anillados: busqueda.anillados,
+      sena: busqueda.sena,
+      pedidoItems: [],
+      cliente: {
+        id: busqueda.id_cliente,
+        telefono: busqueda.telefono,
+        email: busqueda.email,
+        nombre: busqueda.nombre,
+        deleted: busqueda.delete_cliente
+      }
     }
-
-    const estados = new Set(libroPedidos.map(lp => lp.estado));
-
-    // Cualquier pedido no terminado => pendiente
-    if (
-      estados.has(Estado.PENDIENTE) ||
-      estados.has(Estado.IMPRESO_COMPLETO) ||
-      estados.has(Estado.IMPRESO_MITAD)
-    ) {
-      return Estado.PENDIENTE;
-    }
-
-    if (estados.has(Estado.LISTO)) {
-      return Estado.LISTO;
-    }
-
-    if (estados.has(Estado.RETIRADO)) {
-      return Estado.RETIRADO;
-    }
-
-    if (estados.has(Estado.CANCELADO)) {
-      return Estado.CANCELADO;
-    }
-
-    return Estado.RETIRADO;
   }
 
 }

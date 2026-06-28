@@ -22,4 +22,5 @@ export interface GetPedidoBusqueda{
   email:string;
   nombre:string;
   id_cliente:string;
+  delete_cliente: boolean;
 }

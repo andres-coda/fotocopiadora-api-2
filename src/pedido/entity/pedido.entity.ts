@@ -14,7 +14,7 @@ import { EstadoPedido } from "../interface/estadoPedido.enum";
 @Entity('pedido')
 export class Pedido extends Base {
   @Column({ type: 'date', nullable: true, name: 'fecha_entrega' })
-  fechaEntrega!: Date;
+  fechaEntrega!: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'importe_total' })
   importeTotal!: number;
@@ -33,10 +33,6 @@ export class Pedido extends Base {
 
   @Column({ type: 'uuid', name: 'id_empresa' })
   idEmpresa!: string;
-
-  @Index()
-  @Column({ type: 'uuid', name: 'id_cliente' })
-  idCliente!: string;
 
   @ManyToOne(() => Cliente, { nullable: false })
   @JoinColumn({ name: 'id_cliente' })

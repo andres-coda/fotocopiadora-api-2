@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LibroPedidoController } from '../libro_pedido.controller';
+import { LibroPedidoController } from '../pedido_item.controller';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { LibroPedidoService } from '../libro_pedido.service';
+import { LibroPedidoService } from '../pedido_item.service';
 import { mockLibroPedido, mockLibroPedidoService } from 'test/mock/libro_pedido.mock';
 import { Estado } from '@src/interface/estado.interface';
 import { mockUser } from 'test/mock/user.mock';

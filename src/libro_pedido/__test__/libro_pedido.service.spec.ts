@@ -10,7 +10,7 @@ import { mockErrores } from 'test/mock/error.mocks';
 import { mockGateway } from 'test/mock/gateway.mocks';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { jest, describe, beforeEach, afterEach, it, expect } from '@jest/globals';
-import { LibroPedidoService } from '../libro_pedido.service';
+import { LibroPedidoService } from '../pedido_item.service';
 import { createMockRepository } from 'test/mock/repo.mocks';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
