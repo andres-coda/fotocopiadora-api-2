@@ -94,5 +94,5 @@ export class DtoPedidoRespuestaCliente extends DtoPedidoEstadoRespuesta {
 }
 
 export class DtoPedidoRespuesta extends DtoPedidoRespuestaCliente {  
-  cliente!: DtoClienteRespuesta;
+  cliente?: DtoClienteRespuesta;
 }

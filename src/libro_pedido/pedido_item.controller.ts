@@ -1,42 +1,57 @@
-import { Body, Controller, Param, Patch, UseGuards } from '@nestjs/common';
-import { BaseController } from '../base/base.controller';
-import { Entidad } from '../gateway/dto/gatewayDto.dto';
-import { LIBRO_PEDIDO_RELATIONS, SELECTED_LIBRO_PEDIDO } from './default/relacion.default';
-import { LibroPedido } from './entity/pedido_item.entity';
-import { DtoLibroPedidoCrear } from './dto/pedido_item.dto';
-import { DtoLibroPedidoEditar } from './dto/DtoEditarLibroPedido.dto';
-import { LibroPedidoService } from './pedido_item.service';
-import { DtoCambiarEstado } from './dto/DtoCambiarEstado.dto';
-import { User } from '../user/entity/user.entity';
-import { UsuarioGuard } from '../auth/guard/user.guard';
-import { AdminGuard } from '../auth/guard/admin.guard';
-import { UsuarioCompleto } from '../utils/usuarioActual.decorador';
-import { EditarElementoControllerProp } from '../base/interface/base.interface';
-import { DtoCambioEstadoLibroPedidoRespuesta, DtoLibroPedidoRespuesta } from './dto/libroPedidoRetorno.dto';
+import { Body, Controller, Delete, HttpCode, Param, Patch, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { UsuarioGuard } from '@src/auth/guard/user.guard';
+import { PedidoItemService } from './pedido_item.service';
+import { DtoCambiarEstadoItem, DtoLibroPedidoCrear, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
+import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 
-@Controller('libro-pedido')
-export class LibroPedidoController extends BaseController<typeof Entidad.LIBRO_PEDIDO,LibroPedido, DtoLibroPedidoCrear, DtoLibroPedidoEditar, LibroPedidoService> {
-  constructor(
-    protected readonly libroPedidoService: LibroPedidoService,
-  ) {
-    super(libroPedidoService, Entidad.LIBRO_PEDIDO, Entidad.LIBRO_PEDIDO, [LIBRO_PEDIDO_RELATIONS], 'cantidad', SELECTED_LIBRO_PEDIDO, undefined, SELECTED_LIBRO_PEDIDO)
+@Controller('pedido/:idPedido/item')
+@UseGuards(UsuarioGuard)
+export class PedidoItemController {
+  constructor(private readonly itemService: PedidoItemService) {}
+
+  @Post()
+  @HttpCode(201)
+  async create(
+    @Param('idPedido') idPedido: string,
+    @Body() dto: DtoLibroPedidoCrear,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoPedidoItemRespuesta> {
+    const item = await this.itemService.createItemCx(
+      { ...dto, pedido_id: idPedido },
+      req.queryRunner,
+    );
+    return item ;
   }
-  @Patch(':id')
-  @UseGuards(UsuarioGuard, AdminGuard)
+
+  @Put(':nroItem')
+  @HttpCode(200)
+  async update(
+    @Param('idPedido') idPedido: string,
+    @Param('nroItem') nroItem: number,
+    @Body() dto: DtoPedidoItemEditar,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoPedidoItemRespuesta> {
+    return this.itemService.updateDatoCx({id_pedido:idPedido, nro_pedido:Number(nroItem), dto, qR:req.queryRunner});
+  }
+
+  @Patch(':nroItem/estado')
+  @HttpCode(200)
   async cambiarEstado(
-    @Param('id') id: string,
-    @UsuarioCompleto() user: User,
-    @Body() datos: DtoCambiarEstado
-  ): Promise<DtoCambioEstadoLibroPedidoRespuesta> {
-    const dto: EditarElementoControllerProp<LibroPedido, DtoCambiarEstado, typeof Entidad.LIBRO_PEDIDO> = {
-      dto: datos,
-      usuario: user,
-      entidad: this.entidad,
-      id: id,
-      usuarioId:user.id
-    }
-    const retorno: DtoCambioEstadoLibroPedidoRespuesta = await this.libroPedidoService.cambiarEstadoCx(dto);
-    return retorno;
+    @Param('idPedido') idPedido: string,
+    @Param('nroItem') nroItem: number,
+    @Body() dto: DtoCambiarEstadoItem,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoPedidoItemRespuesta> {
+    return this.itemService.cambiarEstadoCx({id_pedido:idPedido, nro_pedido:Number(nroItem), estado:dto.estado, qR:req.queryRunner});
   }
 
+  @Delete(':nroItem')
+  @HttpCode(200)
+  async delete(
+    @Param('idPedido') idPedido: string,
+    @Param('nroItem') nroItem: number,
+    @Request() req: RequestWithUser,
+  ): Promise<boolean> {
+    return this.itemService.deleteItem({id_pedido:idPedido, nro_pedido:Number(nroItem), qR:req.queryRunner});
+  }
 }

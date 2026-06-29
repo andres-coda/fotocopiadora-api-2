@@ -5,6 +5,13 @@ import { Especificaciones } from "../../libro_pedido/interface/especificaciones.
 import { DtoMateriaRespuesta } from "../../materia/dto/materiaRetorno.dto";
 import { DtoStockRespuesta } from "../../stock/dto/stockRetorno.dto";
 
+interface Resumen{
+    listo:number,
+    pendiente:number,
+    retirado: number,
+    cancelado: number
+}
+
 export class DtoLibroRespuesta extends DtoBaseRetorno {
   nombre!: string;
   descripcion?: string;
@@ -17,8 +24,14 @@ export class DtoLibroRespuesta extends DtoBaseRetorno {
   autor?: string;
   img?: string;
   especificacionesDefecto?: Especificaciones[];
-  componentes!: DtoComponenteRespuesta[]; 
+  componentes?: DtoComponenteRespuesta[]; 
   materia?: DtoMateriaRespuesta;
   stock?: DtoStockRespuesta;
   propuesta?: DtoPropuestaLibroRetorno[];
+  componentes_texto?: string;
+  resumen?: Resumen;
 }
+
+
+
+

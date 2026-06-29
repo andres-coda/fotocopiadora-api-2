@@ -15,7 +15,7 @@ export interface GetPedidoItemBusqueda{
   edicion?: number;
   anio?: string;
   nivel?: string;
-  componentes: string[];
+  componentes: string;
   materia: string;
   editorial: string;
   pendiente:number;
@@ -35,4 +35,5 @@ export interface GetPedidoItemBusqueda{
   sede: string;
   id_sede: string;
   id_libro: string;
+  id_materia: string;
 }

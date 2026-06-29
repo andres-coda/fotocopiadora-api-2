@@ -35,6 +35,9 @@ export class PedidoItem {
   @PrimaryColumn({ type: 'uuid', name: 'id_libro' })
   libro_id!: string;
 
+  @Column({ type: 'uuid', name: 'id_sede' })
+  sede_id!: string;
+
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion?: Date;
 
@@ -77,7 +80,7 @@ export class PedidoItem {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id_especificacion' })
-  especificacion!: Especificacion;
+  especificacion!: Especificacion[];
 
   constructor() {
     this.estado = EstadoPedido.PENDIENTE;

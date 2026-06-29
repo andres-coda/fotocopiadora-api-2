@@ -1,26 +1,22 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
+import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta } from './dto/pedido.dto';
 import { Cliente } from '../cliente/entity/cliente.entity';
 import { ClienteService } from '../cliente/cliente.service';
 import { LibroPedidoService } from '../libro_pedido/pedido_item.service';
-import { DtoLibroPedidoCrear } from '../libro_pedido/dto/pedido_item.dto';
+import { DtoLibroPedidoCrear, DtoPedidoItemRespuesta } from '../libro_pedido/dto/pedido_item.dto';
 import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from '../cliente/default/relacion';
-import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
-import { DtoLibroPedidoRespuesta } from '../libro_pedido/dto/libroPedidoRetorno.dto';
-import { GetPedidoBusqueda, GetPedidoXLibro } from './interface/pedido.interface';
-import { PEDIDO_RELATIONS_LIBRO_ID, PEDIDO_SELECTED_LIBRO_ID } from './default/relacion';
-import { Estado } from '@src/interface/estado.interface';
 import { PedidoItem } from '@src/libro_pedido/entity/pedido_item.entity';
-import { DtoClienteRespuesta } from '@src/cliente/dto/cliente.dto';
+import { toRespuestaPedido, toRespuestaPedidoItemCompleto } from '@src/utils/toRespuesta.function';
+import { GetPedidoItemBusqueda } from '@src/libro_pedido/interface/pedido_item_busqueda.interface';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -111,7 +107,9 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
 
       newPedido.pedidoItems = pedidoItems;
 
-      const retorno: DtoPedidoRespuesta = this.remplaceToReturn(newPedido);
+      const retorno: DtoPedidoRespuesta | undefined = this.remplaceToReturn(newPedido);
+
+      if(!retorno) throw new NotFoundException(`No se pudo preparar el pedido para su retorno`);
 
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
@@ -126,45 +124,8 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    const pedidoItems: DtoLibroPedidoRespuesta[] = entidad.pedidoItems?.length > 0
-      ? entidad.pedidoItems.map(lp => this.pedidoItemService.remplaceToReturn(lp))
-      : [];
-
-    const cliente: DtoClienteRespuesta = this.clienteService.remplaceToReturn(entidad.cliente);
-
-    return {
-      ...base,
-
-      fechaEntrega: entidad.fechaEntrega,
-      importeTotal: entidad.importeTotal,
-      archivos: entidad.archivos,
-      anillados: entidad.anillados,
-      sena: entidad.sena,
-      estado: entidad.estado,
-      cliente,
-      pedidoItems
-    }
-  }
-
-  remplaceToReturnCliente(entidad: Pedido): DtoPedidoRespuestaCliente {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    const pedidoItems: DtoLibroPedidoRespuesta[] = entidad.pedidoItems?.length > 0
-      ? entidad.pedidoItems.map(lp => this.pedidoItemService.remplaceToReturn(lp))
-      : [];
-
-    return {
-      ...base,
-
-      fechaEntrega: entidad.fechaEntrega,
-      importeTotal: entidad.importeTotal,
-      archivos: entidad.archivos,
-      anillados: entidad.anillados,
-      sena: entidad.sena,
-      estado: entidad.estado,
-      pedidoItems,
-    }
+  remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta | undefined{
+    return toRespuestaPedido(entidad);
   }
 
   async buscarPedidos(
@@ -173,7 +134,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     limite = 20,
     offset = 0,
     qR?: QueryRunner,
-  ): Promise<DtoPedidoRespuesta[]> {
+  ): Promise<DtoPedidoItemRespuesta[]> {
     try {
       const runner = qR ?? this.dataSource.createQueryRunner();
       if (!qR) await runner.connect();
@@ -185,32 +146,9 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
 
       if (!qR) await runner.release();
 
-      return rows.map((r: GetPedidoBusqueda) => this.toRespuestaBusqueda(r));
+      return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
     } catch (er) {
       throw this.erroresService.handleExceptions(er, 'Error al buscar pedidos');
-    }
-  }
-
-  toRespuestaBusqueda(busqueda: GetPedidoBusqueda): DtoPedidoRespuesta {
-    return {
-      id: busqueda.id,
-      fechaCreacion: busqueda.fecha_creacion,
-      fechaActualizacion: busqueda.fecha_actualizacion,
-      deleted: busqueda.delete,
-      estado: busqueda.estado,
-      fechaEntrega: busqueda.fecha_entrega.toISOString().split('T')[0],
-      importeTotal: busqueda.importe_total,
-      archivos: busqueda.archivos,
-      anillados: busqueda.anillados,
-      sena: busqueda.sena,
-      pedidoItems: [],
-      cliente: {
-        id: busqueda.id_cliente,
-        telefono: busqueda.telefono,
-        email: busqueda.email,
-        nombre: busqueda.nombre,
-        deleted: busqueda.delete_cliente
-      }
     }
   }
 

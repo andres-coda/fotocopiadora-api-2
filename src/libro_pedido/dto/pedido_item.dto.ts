@@ -6,11 +6,13 @@ import { DtoPedidoRespuesta } from "@src/pedido/dto/pedido.dto";
 import { DtoLibroRespuesta } from "@src/libro/dto/libroRetorno.dto";
 import { DtoSedeRespuesta } from "@src/sede/dto/sedeRetorno.dto";
 import { DtoEspecificaionRetorno } from "@src/especificacion/dto/DtoEspecificacionRetorno.dto";
+import { GetPedidoItemBusqueda } from "../interface/pedido_item_busqueda.interface";
+import { DtoClienteRespuesta } from "@src/cliente/dto/cliente.dto";
 
 // ------------ Dto Pedido_Item Crear ------------ //
 
 export class DtoLibroPedidoCrearParcial extends BaseDto {
-  @IsNotEmpty({ message: 'El libro pedido debe tener una cantidad' })  
+  @IsNotEmpty({ message: 'El libro pedido debe tener una cantidad' })
   @IsInt()
   @Min(1)
   cantidad!: number;
@@ -88,18 +90,9 @@ export class DtoPedidoItemRespuesta {
   detalles?: string;
   estado!: EstadoPedido;
   idLibro!: string;
-  idSede!: string;
+  pedido?: DtoPedidoRespuesta;
+  libro?: DtoLibroRespuesta;
+  sede?: DtoSedeRespuesta;
+  idSede?: string;
   especificaciones?: string[];
-}
-
-
-export class DtoPedidoItemRespuestaCompleto {
-  id!: number;
-  cantidad!: number;
-  detalles?: string;
-  estado!: EstadoPedido;
-  pedido!: DtoPedidoRespuesta;
-  libro!:DtoLibroRespuesta;
-  sede!:DtoSedeRespuesta;
-  especificaciones!:DtoEspecificaionRetorno[];
 }

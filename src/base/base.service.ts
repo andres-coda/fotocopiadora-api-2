@@ -62,7 +62,7 @@ export abstract class BaseService<
    */
   abstract updateDato({ dto, qR, id, entidadError, relaciones, selected }: EditarProp<T, EditarDto, K>): Promise<UpdateRetorno<T>>;
 
-  abstract remplaceToReturn(entidad: T): EntidadDatoMapType[K];
+  abstract remplaceToReturn(entidad: T): EntidadDatoMapType[K] | undefined;
 
   protected remplaceToBase(entidad: T): DtoBaseRetorno {
     return {
