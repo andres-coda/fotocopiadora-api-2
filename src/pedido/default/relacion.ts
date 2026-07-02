@@ -3,7 +3,7 @@ import { Pedido } from "../entity/pedido.entity";
 import { SELECTED_BASE } from "../../utils/relacion";
 
 export const PEDIDO_RELATIONS: RelationsKey<Pedido> = {
-  relations:['libroPedidos', 'cliente'],
+  relations:['pedidoItems', 'cliente'],
   nestedRelations: {'cliente':{'resumen':{}}}
 };
 
@@ -16,7 +16,7 @@ export const PEDIDO_SELECTED: SelectedDeep<Pedido> = {
     importeTotal:true,
     estado:true, 
     sena:true,
-    libroPedidos:{
+    pedidoItems:{
       id:true,
       estado:true,
     },
@@ -32,9 +32,9 @@ export const PEDIDO_SELECTED: SelectedDeep<Pedido> = {
 }
 
 export const PEDIDO_RELATIONS_BY_ID: RelationsKey<Pedido> = {
-  relations:['libroPedidos', 'cliente'],
+  relations:['pedidoItems', 'cliente'],
   nestedRelations: {
-    'libroPedidos': {
+    'pedidoItems': {
       'libro':{
         'componentes':{}, 
         'materia':{}
@@ -53,11 +53,11 @@ export const PEDIDO_SELECTED_BY_ID: SelectedDeep<Pedido> = {
       nombre:true,
       email:true
     },
-    libroPedidos:{
+    pedidoItems:{
       id:true,
       estado:true,
       cantidad:true,
-      especificaciones:{
+      especificacion:{
         id:true,
         nombre:true,
       },
@@ -77,11 +77,11 @@ export const PEDIDO_SELECTED_BY_ID: SelectedDeep<Pedido> = {
 }
 
 export const PEDIDO_RELATIONS_LIBRO_ID: RelationsKey<Pedido> = {
-  relations:['libroPedidos', 'cliente'],
+  relations:['pedidoItems', 'cliente'],
   nestedRelations: {
-    'libroPedidos': {
+    'pedidoItems': {
       'libro':{}, 
-      'especificaciones':{}
+      'especificacion':{}
     }
   }
 };
@@ -94,10 +94,10 @@ export const PEDIDO_SELECTED_LIBRO_ID: SelectedDeep<Pedido> = {
       nombre:true,
       email:true
     },
-    libroPedidos:{
+    pedidoItems:{
       id:true,
       estado:true,
-      especificaciones:{
+      especificacion:{
         id:true,
         nombre:true,
       },

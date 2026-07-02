@@ -3,9 +3,10 @@ import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { PedidoService } from './pedido.service';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta } from './dto/pedido.dto';
+import { DtoPedidoCrear, DtoPedidoEditar } from './dto/pedido.dto';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
+import { DtoPedidoItemRespuesta } from '@src/libro_pedido/dto/pedido_item.dto';
 
 @Controller('pedido')
 @UseGuards(UsuarioGuard)
@@ -33,7 +34,7 @@ export class PedidoController extends BaseController<
     @Query('limite') limite = 20,
     @Query('pagina') pagina = 1,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoRespuesta[]> {
+  ): Promise<DtoPedidoItemRespuesta[]> {
     const offset = (Number(pagina) - 1) * Number(limite);
     return this.pedidoService.buscarPedidos(
       busqueda,

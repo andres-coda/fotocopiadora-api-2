@@ -1,6 +1,4 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { LibroPedidoController } from './pedido_item.controller';
-import { LibroPedidoService } from './pedido_item.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PedidoItem } from './entity/pedido_item.entity';
 import { AuthModule } from '../auth/auth.module';
@@ -10,10 +8,11 @@ import { Pedido } from '../pedido/entity/pedido.entity';
 import { EspecificacionModule } from '../especificacion/especificacion.module';
 import { LibroModule } from '../libro/libro.module';
 import { PedidoModule } from '../pedido/pedido.module';
-import { SedeModule } from '../sede/sede.module';
 import { Libro } from '../libro/entity/libro.entity';
 import { Sede } from '../sede/entity/sede.entity';
 import { Especificacion } from '../especificacion/entity/especificacion.entity';
+import { PedidoItemController } from './pedido_item.controller';
+import { PedidoItemService } from './pedido_item.service';
 
 @Module({
   imports: [
@@ -30,10 +29,9 @@ import { Especificacion } from '../especificacion/entity/especificacion.entity';
     forwardRef(() => EspecificacionModule),
     forwardRef(() => LibroModule),
     forwardRef(() => PedidoModule),
-    forwardRef(() => SedeModule),
   ],
-  controllers: [LibroPedidoController],
-  providers: [LibroPedidoService],
-  exports: [LibroPedidoService]
+  controllers: [PedidoItemController],
+  providers: [PedidoItemService],
+  exports: [PedidoItemService]
 })
 export class LibroPedidoModule { }

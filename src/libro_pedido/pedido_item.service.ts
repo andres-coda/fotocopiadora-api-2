@@ -71,7 +71,8 @@ export class PedidoItemService {
       if (!qR) await runner.connect();
 
       const rows = await runner.query(
-        `SELECT * FROM vw_pedidos_item where id_pedido = ${id_pedido} ${nro_pedido ? `and nro_pedido = ${nro_pedido}` : ''}`,
+        `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 AND ($2::int IS NULL OR id = $2)`,
+        [id_pedido, nro_pedido || null]
       );
 
       if (!qR) await runner.release();
@@ -119,7 +120,7 @@ export class PedidoItemService {
       }
 
       // Recargamos el item creado con sus relaciones
-      const item: PedidoItem = await this.getDatoByIdOrFail({ id_pedido: row.pedido_id, nro_pedido: row.id, qR })
+      const item: PedidoItem = await this.getDatoByIdOrFail({ id_pedido: row.id_pedido, nro_pedido: row.id, qR })
 
       if (!item) throw new NotFoundException('No se pudo crear el item del pedido');
       return item;
@@ -130,7 +131,7 @@ export class PedidoItemService {
 
   async createItemCx(dto: DtoLibroPedidoCrear, qR: QueryRunner): Promise<DtoPedidoItemRespuesta> {
     try {
-      const pedido_Item:PedidoItem = await this.createItem(dto, qR);
+      const pedido_Item: PedidoItem = await this.createItem(dto, qR);
       return this.remplaceToReturn(pedido_Item);
     } catch (er) {
       throw this.erroresService.handleExceptions(er, 'Error al crear item del pedido');

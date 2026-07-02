@@ -6,9 +6,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
 import { Cliente } from '../cliente/entity/cliente.entity';
-import { ClienteModule } from '../cliente/cliente.module';
 import { Pedido } from './entity/pedido.entity';
-import { LibroPedidoModule } from '../libro_pedido/pedido_item.module';
 import { PedidoItem } from '@src/libro_pedido/entity/pedido_item.entity';
 
 @Module({
@@ -21,8 +19,6 @@ import { PedidoItem } from '@src/libro_pedido/entity/pedido_item.entity';
     forwardRef(() => AuthModule),
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
-    forwardRef(() => ClienteModule),
-    forwardRef(() => LibroPedidoModule),
   ],
   controllers: [PedidoController],
   providers: [PedidoService],

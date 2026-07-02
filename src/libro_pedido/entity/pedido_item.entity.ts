@@ -32,7 +32,7 @@ export class PedidoItem {
   @PrimaryColumn({ type: 'int', name: 'id' })
   id!: number;
 
-  @PrimaryColumn({ type: 'uuid', name: 'id_libro' })
+  @Column({ type: 'uuid', name: 'id_libro' })
   libro_id!: string;
 
   @Column({ type: 'uuid', name: 'id_sede' })

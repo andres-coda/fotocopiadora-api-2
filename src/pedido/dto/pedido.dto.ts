@@ -90,7 +90,7 @@ export class DtoPedidoRespuestaCliente extends DtoPedidoEstadoRespuesta {
   archivos!: number;
   anillados!: number;
   sena!: number;
-  pedidoItems!: DtoPedidoItemRespuesta[];
+  items!: DtoPedidoItemRespuesta[];
 }
 
 export class DtoPedidoRespuesta extends DtoPedidoRespuestaCliente {  
