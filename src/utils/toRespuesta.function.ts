@@ -73,7 +73,7 @@ export const toRespuestaPedido = (dato?: Pedido): DtoPedidoRespuesta | undefined
     sena: dato.sena,
     estado: dato.estado,
     cliente,
-    pedidoItems,
+    items: pedidoItems,
   }
 }
 
@@ -96,12 +96,7 @@ export const toRespuestaEspecificacion = (dato?: Especificacion): Especificacion
 export const toRespuestaPedidoItem = (dato?: PedidoItem): DtoPedidoItemRespuesta | undefined => {
   if (!dato) return undefined;
   const sede = toRespuestaSede(dato.sede);
-  const especificaciones = (dato.especificacion ?? [])
-    .flatMap(e => {
-      const esp = toRespuestaEspecificacion(e);
-      return esp ? [esp] : [];
-    });
-
+  
   return {
     idPedido: dato?.idPedido,
     id: dato.id,
@@ -110,8 +105,7 @@ export const toRespuestaPedidoItem = (dato?: PedidoItem): DtoPedidoItemRespuesta
     estado: dato.estado,
     idLibro: dato.libro_id ?? dato.libro_id,
     idSede: sede?.id ?? undefined,
-    sede,
-    especificaciones
+    sede
   }
 }
 
@@ -133,7 +127,7 @@ export const toRespuestaPedidoItemCompleto = (dato?: GetPedidoItemBusqueda): Dto
     archivos: dato.archivs,
     anillados: dato.anillados,
     sena: dato.sena,
-    pedidoItems: [],
+    items: [],
     cliente,
     estado: dato.estado_pedido,
     deleted: false

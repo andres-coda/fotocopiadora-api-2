@@ -36,6 +36,12 @@ interface CambioEstado extends PedidoItemGeneralProp {
   estado: EstadoPedido;
 }
 
+interface UpdateDatoEntidadProp {
+  dato: DtoPedidoItemRespuesta;
+  qR: QueryRunner;
+  dto: DtoPedidoItemEditar;
+}
+
 @Injectable()
 export class PedidoItemService {
   constructor(
@@ -65,7 +71,7 @@ export class PedidoItemService {
     }
   }
 
-  async getPedidoItemByIdCx({ id_pedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<DtoPedidoRespuesta[]> {
+  async getPedidoItemByIdCx({ id_pedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<DtoPedidoItemRespuesta[]> {
     try {
       const runner = qR ?? this.dataSource.createQueryRunner();
       if (!qR) await runner.connect();
@@ -137,48 +143,78 @@ export class PedidoItemService {
       throw this.erroresService.handleExceptions(er, 'Error al crear item del pedido');
     }
   }
+
+  async updateEspecificacionesPedidoItem({ dato, qR, dto }: UpdateDatoEntidadProp): Promise<DtoPedidoItemRespuesta> {
+    try {
+      const actuales = new Set(dato.especificaciones ?? []);
+      const nuevas = new Set(dto.especificaciones ?? []);
+
+      const aEliminar = [...actuales].filter(e => !nuevas.has(e));
+      const aInsertar = [...nuevas].filter(e => !actuales.has(e));
+
+      if (aEliminar.length === 0 && aInsertar.length === 0) return dato;
+
+      if (aEliminar.length > 0) {
+        await qR.query(
+          `DELETE FROM pedido_item_especificacion pie
+         USING especificacion e
+         WHERE e.id = pie.id_especificacion
+           AND pie.id_pedido = $1
+           AND pie.nro_item  = $2
+           AND e.nombre = ANY($3::varchar[])`,
+          [dato.idPedido, dato.id, aEliminar],
+        );
+      }
+
+      if (aInsertar.length > 0) {
+        await qR.query(
+          `INSERT INTO pedido_item_especificacion (id_pedido, nro_item, id_especificacion)
+         SELECT $1, $2, e.id
+         FROM especificacion e
+         WHERE e.nombre = ANY($3::varchar[])`,
+          [dato.idPedido, dato.id, aInsertar],
+        );
+      }
+
+      return { ...dato, especificaciones: [...nuevas] };
+
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar item nro ${dato.id} del pedido ${dato.idPedido}`)
+    }
+  }
+
   async updateDato({ dto, qR, nro_pedido, id_pedido }: EditarPedidoItem): Promise<PedidoItem> {
     try {
-      const pedido_item: PedidoItem = await this.getDatoByIdOrFail({ id_pedido, nro_pedido, qR });
+      const pedido_items: DtoPedidoItemRespuesta[] = await this.getPedidoItemByIdCx({ id_pedido, nro_pedido, qR });
+      if (pedido_items.length != 1) throw new NotFoundException(`El pedido tiene mas de un item con el mismo nro, o no se encontro el item con el nro ${nro_pedido}`);
+      const pedido_item: DtoPedidoItemRespuesta = pedido_items[0];
 
-      const actuales: Especificaciones[] = (pedido_item.especificacion ?? [])
-        .flatMap(e => {
-          const esp = toRespuestaEspecificacion(e);
-          return esp ? [esp] : [];
-        });
+      const cantidad = dto.cantidad ?? pedido_item.cantidad;
+      const detalles = dto.detalles ?? pedido_item.detalles;
+      const estado = dto.estado ?? pedido_item.estado;
 
-      const nuevas: Especificaciones[] = dto.especificaciones || [];
+      const libroId = dto.libroId ?? pedido_item.libro?.id;
+      const sedeId = dto.sedeId ?? pedido_item.sede?.id;
 
-      const setActual: Set<Especificaciones> = new Set(actuales);
-      const setNuevo: Set<Especificaciones> = new Set(nuevas);
+      if (!libroId) throw new NotFoundException('Falta el libro');
+      if (!sedeId) throw new NotFoundException('Falta la sede');
 
-      const sonIguales: boolean =
-        setActual.size === setNuevo.size &&
-        [...setActual].every(e => setNuevo.has(e));
+      await this.updateEspecificacionesPedidoItem({ dato: pedido_item, qR, dto });
 
-      const especificaciones: Especificacion[] = sonIguales
-        ? pedido_item.especificacion
-        : await this.espService.getDatosByNombres({
-          nombres: dto.especificaciones || [],
-          qR,
-          relaciones: [ESPECIFICACION_RELATIONS],
-          entidadError: 'pedido',
-          selected: SELECTED_ESPECIFICACION
-        });
+      const [row] = await qR.query(
+        `UPDATE pedido_item SET 
+        cantidad = $1,
+        detalles = $2,
+        estado = $3,
+        id_sede = $4,
+        id_libro = $5
+        WHERE id_pedido = $6
+        AND nro_item = $7
+        RETURNING *`,
+        [cantidad, detalles, estado, sedeId, libroId]
+      )
 
-
-      pedido_item.cantidad = dto.cantidad ?? pedido_item.cantidad;
-      pedido_item.detalles = dto.detalles ?? pedido_item.detalles;
-      pedido_item.libro_id = dto.libroId || pedido_item.libro_id;
-      pedido_item.sede_id = dto.sedeId || pedido_item.sede_id;
-      pedido_item.estado = dto.estado ?? pedido_item.estado;
-      pedido_item.especificacion = especificaciones;
-
-      const new_pedido_item: PedidoItem = qR
-        ? await qR.manager.save(PedidoItem, pedido_item)
-        : await this.libroPedidoRepository.save(pedido_item);
-
-      return new_pedido_item;
+      return row;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar item de libro en pedidos`)
@@ -213,7 +249,7 @@ export class PedidoItemService {
         ],
       );
 
-      const especificaciones: Especificacion[] = await this.createEspecificacionXpedido(pedido_item, qR, libro, dto.especificaciones);
+      const especificaciones: Especificaciones[] = await this.createEspecificacionXpedido(pedido_item, qR, libro, dto.especificaciones);
       pedido_item.libro = libro;
       pedido_item.especificacion = especificaciones;
 
@@ -223,30 +259,22 @@ export class PedidoItemService {
     }
   }
 
-  async createEspecificacionXpedido(pi: PedidoItem, qR: QueryRunner, libro: Libro, esp?: Especificaciones[]): Promise<Especificacion[]> {
+  async createEspecificacionXpedido(pi: PedidoItem, qR: QueryRunner, libro: Libro, esp?: Especificaciones[]): Promise<Especificaciones[]> {
     try {
       const dtoEsp: Especificaciones[] = !esp || esp.length === 0
-        ? libro.especificacionesDefecto || []
-        : esp;
+        ? libro.especificacionesDefecto ?? []
+        : esp ?? [];
 
-      let especificaciones: Especificacion[] = [];
       if (dtoEsp.length) {
-        especificaciones = await this.espService.getDatosByNombres({
-          nombres: dtoEsp,
-          qR,
-          relaciones: [ESPECIFICACION_RELATIONS],
-          entidadError: 'especificación',
-          selected: SELECTED_ESPECIFICACION
-        });
-        for (const idEsp of especificaciones) {
-          await qR.query(
-            `INSERT INTO pedido_item_especificacion (id_pedido, nro_item, id_especificacion)
-             VALUES ($1, $2, $3)`,
-            [pi.idPedido, pi.id, idEsp.id],
-          );
-        }
+        await qR.query(
+          `INSERT INTO pedido_item_especificacion (id_pedido, nro_item, id_especificacion)
+         SELECT $1, $2, e.id
+         FROM especificacion e
+         WHERE e.nombre = ANY($3::varchar[])`,
+          [pi.idPedido, pi.id, dtoEsp],
+        );
       }
-      return especificaciones;
+      return dtoEsp;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar agregar las especificaciones al pedido_item id: ${pi.id}`);
     }

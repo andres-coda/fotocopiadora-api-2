@@ -5,9 +5,6 @@ import { EstadoPedido } from "@src/pedido/interface/estadoPedido.enum";
 import { DtoPedidoRespuesta } from "@src/pedido/dto/pedido.dto";
 import { DtoLibroRespuesta } from "@src/libro/dto/libroRetorno.dto";
 import { DtoSedeRespuesta } from "@src/sede/dto/sedeRetorno.dto";
-import { DtoEspecificaionRetorno } from "@src/especificacion/dto/DtoEspecificacionRetorno.dto";
-import { GetPedidoItemBusqueda } from "../interface/pedido_item_busqueda.interface";
-import { DtoClienteRespuesta } from "@src/cliente/dto/cliente.dto";
 
 // ------------ Dto Pedido_Item Crear ------------ //
 
@@ -94,5 +91,5 @@ export class DtoPedidoItemRespuesta {
   libro?: DtoLibroRespuesta;
   sede?: DtoSedeRespuesta;
   idSede?: string;
-  especificaciones?: string[];
+  especificaciones?: Especificaciones[];
 }

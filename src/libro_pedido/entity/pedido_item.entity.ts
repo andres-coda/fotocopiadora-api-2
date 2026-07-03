@@ -75,13 +75,6 @@ export class PedidoItem {
   @JoinColumn({ name: 'id_sede' })
   sede!: Sede;
 
-  @ManyToMany(() => Especificacion, (esp) => esp.pedidoItems, {
-    nullable: false,
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'id_especificacion' })
-  especificacion!: Especificacion[];
-
   constructor() {
     this.estado = EstadoPedido.PENDIENTE;
   }
