@@ -10,7 +10,7 @@ import { Especificacion } from './entity/especificacion.entity';
 import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
 import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from './default/relacion.default';
-import { Especificaciones } from '../libro_pedido/interface/especificaciones.interface';
+import { Especificaciones } from '../pedido_item/interface/especificaciones.interface';
 import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 

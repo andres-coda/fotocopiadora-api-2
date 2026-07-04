@@ -2,7 +2,7 @@ import { Libro } from "@src/libro/entity/libro.entity";
 import { mockMateria } from "./materia.mock";
 import { mockStock } from "./stock.mock";
 import { mockUser } from "./user.mock";
-import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
+import { Especificaciones } from "@src/pedido_item/interface/especificaciones.interface";
 import { DtoLibroCrear } from "@src/libro/dto/libroCrear.dto";
 import { createMockBaseService } from "./base.mock";
 import { DtoLibroEditar } from "@src/libro/dto/libroEditar.dto";

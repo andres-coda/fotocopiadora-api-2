@@ -16,13 +16,24 @@ import { Especificacion } from '../especificacion/entity/especificacion.entity';
 import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from '../especificacion/default/relacion.default';
 import { Especificaciones } from './interface/especificaciones.interface';
 import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
-import { GetPedidoItemBusqueda } from './interface/pedido_item_busqueda.interface';
-import { DtoPedidoRespuesta } from '@src/pedido/dto/pedido.dto';
-import { toRespuestaEspecificacion, toRespuestaPedidoItem, toRespuestaPedidoItemCompleto } from '@src/utils/toRespuesta.function';
+import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById } from './interface/pedido_item_busqueda.interface';
+import { toRespuestaItemsPedidoByLibro, toRespuestaPedidoItem, toRespuestaPedidoItemCompleto } from './utils/toRespuestaItem';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.RESUMEN>, "entidad"> {
   pedido: Pedido
 }
+
+interface PedidoItemByLibroProp{
+  id_libro:string;
+  qR:QueryRunner;
+  limite?:number;
+  offset?:number;
+}
+
+interface ItemsByPedidoId extends Omit<PedidoItemByLibroProp, 'id_libro'>{
+  id_pedido:string;
+}
+
 interface PedidoItemGeneralProp {
   qR: QueryRunner;
   nro_pedido: number;
@@ -71,21 +82,49 @@ export class PedidoItemService {
     }
   }
 
+  async getItemByPedido({id_pedido, qR, limite = 20, offset = 0}:ItemsByPedidoId):Promise<DtoPedidoItemRespuesta[]> {
+    try {
+
+      const rows = await qR.query(
+        `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 LIMIT $2 OFFSET $3)`,
+        [id_pedido, limite, offset]
+      );
+
+      return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al leer los items del pedido ${id_pedido}`);
+    }
+  }
+
   async getPedidoItemByIdCx({ id_pedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<DtoPedidoItemRespuesta[]> {
     try {
-      const runner = qR ?? this.dataSource.createQueryRunner();
-      if (!qR) await runner.connect();
 
-      const rows = await runner.query(
+      const rows = await qR.query(
         `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 AND ($2::int IS NULL OR id = $2)`,
         [id_pedido, nro_pedido || null]
       );
 
-      if (!qR) await runner.release();
-
       return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido id ${id_pedido} nro ${nro_pedido}`);
+    }
+  }
+
+  async getItemsPedidoByLibroId({ id_libro, qR, limite = 20, offset = 0 }: PedidoItemByLibroProp): Promise<DtoPedidoItemRespuesta[]> {
+    try {
+      const rows: RetornoVistaItemsPedidoLibroById[] = await qR.query(
+        'SELECT * FROM vw_pedido_libro where pi.id_libro = $1 ORDER BY estado ASC, fecha_entrega ASC LIMIT $2 OFFSET $3',
+        [id_libro, limite, offset]
+      )
+      if (!rows) return [];
+
+      const itemsPedido: DtoPedidoItemRespuesta[] = rows
+        .map((r) => toRespuestaItemsPedidoByLibro(r))
+        .filter((item): item is DtoPedidoItemRespuesta => item !== undefined);
+
+      return itemsPedido ?? [];
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar extraer los pedidos del libro ${id_libro}`);
     }
   }
 
@@ -233,7 +272,7 @@ export class PedidoItemService {
   async createDatoXEntidad({ dto, qR, pedido }: CreateDatoXEntidadProp): Promise<PedidoItem> {
     try {
       if (!qR) throw new NotFoundException('Para crear un item de pedido debe iniciar una transacción');
-      const libro: Libro = await this.libroService.getDatoByIdOrFail({ id: dto.libro_id, qR, entidadError: 'libro' });
+      const libro: Libro = await this.libroService.getLibroEmpresaByIdOrdFail({ id: dto.libro_id, qR });
 
       const [pedido_item] = await qR.query(
         `INSERT INTO pedido_item (id_pedido, id_libro, id_sede, id_empresa, cantidad, detalles, estado)
@@ -241,7 +280,7 @@ export class PedidoItemService {
          RETURNING id_pedido, id`,
         [
           pedido.id,
-          libro.id,
+          libro.idLibro,
           dto.sede_id,
           dto.cantidad,
           dto.detalles ?? null,

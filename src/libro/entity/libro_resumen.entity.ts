@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
-import { Cliente } from "./cliente.entity";
+import { Libro } from "./libro.entity";
 
 /**
  * Tabla resumen_cliente — mantenida exclusivamente por triggers de PostgreSQL.
@@ -14,10 +14,13 @@ import { Cliente } from "./cliente.entity";
  *   automáticamente cuando cambia el estado de un pedido.
  */
 
-@Entity('resumen_cliente')
-export class ClienteResumen{
-  @PrimaryColumn({ type: 'uuid', name: 'id_cliente' })
-  idCliente!: string;
+@Entity('resumen_libro')
+export class LibroResumen{
+  @PrimaryColumn({ type: 'uuid', name: 'id_libro' })
+  idLibro!: string;
+
+  @PrimaryColumn({ type: 'uuid', name: 'id_empresa' })
+  idEmpresa!: string;
 
   @Column({ type: 'int', default: 0 })
   pendiente!: number;
@@ -31,9 +34,9 @@ export class ClienteResumen{
   @Column({ type: 'int', default: 0 })
   cancelado!: number;
 
-  @OneToOne(() => Cliente)
-  @JoinColumn({ name: 'id_cliente' })
-  cliente!: Cliente;
+  @OneToOne(() => Libro)
+  @JoinColumn({ name: 'id_libro' })
+  Libro!: Libro;
 
   constructor() {
     this.pendiente = 0;

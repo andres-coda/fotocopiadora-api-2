@@ -6,7 +6,7 @@ import { Pedido } from './entity/pedido.entity';
 import { DtoPedidoCrear, DtoPedidoEditar } from './dto/pedido.dto';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
-import { DtoPedidoItemRespuesta } from '@src/libro_pedido/dto/pedido_item.dto';
+import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
 
 @Controller('pedido')
 @UseGuards(UsuarioGuard)

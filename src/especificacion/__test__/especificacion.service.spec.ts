@@ -14,7 +14,7 @@ import { mockEsp } from 'test/mock/esp.mock';
 import { mockUser } from 'test/mock/user.mock';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { DtoEspecificacionEditar } from '../dto/DtoEditarEspecificacion.dto';
-import { Especificaciones } from '@src/libro_pedido/interface/especificaciones.interface';
+import { Especificaciones } from '@src/pedido_item/interface/especificaciones.interface';
 
 jest.mock('@src/especificacion/entity/especificacion.entity', () => ({
   Especificacion: class { },

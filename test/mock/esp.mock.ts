@@ -1,5 +1,5 @@
 import { Especificacion } from "@src/especificacion/entity/especificacion.entity";
-import { Especificaciones } from "@src/libro_pedido/interface/especificaciones.interface";
+import { Especificaciones } from "@src/pedido_item/interface/especificaciones.interface";
 import { mockUser } from "./user.mock";
 import { createMockBaseService } from "./base.mock";
 import { jest } from '@jest/globals';

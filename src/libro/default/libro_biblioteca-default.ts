@@ -2,7 +2,7 @@ import { NAMES_EDITORIAL } from "../../default/editoriales.default";
 import { LibroDefaultProp } from "../interface/libro.interface";
 import { NAMES_MATERIAS } from "../../materia/default/materia.default";
 import { NAMES_COMPONENTE } from "../../componente/default/componente.default";
-import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
+import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { NAMES_LIBRO } from "./libro_const_default";
 
 

@@ -7,7 +7,7 @@ import { Sede } from "../../sede/entity/sede.entity";
 import { Stock } from "../../stock/entity/stock.entity";
 import { Especificacion } from "../../especificacion/entity/especificacion.entity";
 import { Propuesta } from "../../propuesta_pedido/entity/propuesta_pedido.entity";
-import { LibroPedido } from "../../libro_pedido/entity/pedido_item.entity";
+import { LibroPedido } from "../../pedido_item/entity/pedido_item.entity";
 import { ClienteResumen } from "../../cliente_resumen/entity/clienteResumen.entity";
 import { Materia } from "../../materia/entity/materia.entity";
 import { Base } from "../../base/entity/base.entity";

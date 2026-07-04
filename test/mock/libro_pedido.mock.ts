@@ -1,11 +1,11 @@
-import { LibroPedido } from "@src/libro_pedido/entity/pedido_item.entity";
+import { LibroPedido } from "@src/pedido_item/entity/pedido_item.entity";
 import { mockLibro } from "./libro.mock";
 import { mockUser } from "./user.mock";
 import { mockSede } from "./sede.mock";
 import { mockPedido } from "./pedido.mock";
 import { Estado } from "@src/interface/estado.interface";
 import { createMockBaseService } from "./base.mock";
-import { DtoLibroPedidoCrear } from "@src/libro_pedido/dto/pedido_item.dto";
+import { DtoLibroPedidoCrear } from "@src/pedido_item/dto/pedido_item.dto";
 import { DtoLibroPedidoEditar } from "@src/libro_pedido/dto/DtoEditarLibroPedido.dto";
 import { CreateProp, EditarElementoControllerProp, EditarProp, GetIdProp } from "@src/base/interface/base.interface";
 import { jest } from '@jest/globals';

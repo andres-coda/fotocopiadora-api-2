@@ -7,7 +7,7 @@ import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
 import { Cliente } from '../cliente/entity/cliente.entity';
 import { Pedido } from './entity/pedido.entity';
-import { PedidoItem } from '@src/libro_pedido/entity/pedido_item.entity';
+import { PedidoItem } from '@src/pedido_item/entity/pedido_item.entity';
 
 @Module({
   imports: [

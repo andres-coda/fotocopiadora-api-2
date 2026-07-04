@@ -1,5 +1,5 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
+import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { Type } from "class-transformer";
 import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Matches } from "class-validator";
 

@@ -1,5 +1,5 @@
 import { Base } from "../../base/entity/base.entity";
-import { Especificaciones } from "../../libro_pedido/interface/especificaciones.interface";
+import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { Column, Entity } from "typeorm";
 
 @Entity('especificacion')

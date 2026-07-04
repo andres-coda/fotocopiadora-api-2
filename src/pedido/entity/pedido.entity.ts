@@ -1,6 +1,6 @@
 import { Base } from "../../base/entity/base.entity";
 import { Cliente } from "../../cliente/entity/cliente.entity";
-import { PedidoItem } from "../../libro_pedido/entity/pedido_item.entity";
+import { PedidoItem } from "../../pedido_item/entity/pedido_item.entity";
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { EstadoPedido } from "../interface/estadoPedido.enum";
 

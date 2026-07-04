@@ -1,7 +1,7 @@
 import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
 import { BaseDto } from "../../base/dto/baseDto";
 import { DtoClienteCrear, DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
-import { DtoLibroPedidoCrearParcial, DtoPedidoItemRespuesta } from "../../libro_pedido/dto/pedido_item.dto";
+import { DtoLibroPedidoCrearParcial, DtoPedidoItemRespuesta } from "../../pedido_item/dto/pedido_item.dto";
 import { Type } from "class-transformer";
 import { ArrayMinSize, IsArray, IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, IsUUID, Matches, ValidateIf, ValidateNested } from "class-validator";
 import { EstadoPedido } from "../interface/estadoPedido.enum";

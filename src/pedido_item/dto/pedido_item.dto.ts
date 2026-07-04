@@ -93,3 +93,83 @@ export class DtoPedidoItemRespuesta {
   idSede?: string;
   especificaciones?: Especificaciones[];
 }
+
+/* 
+export class DtoPedidoItemRespuesta {
+  idPedido!: string;
+  id!: number;
+  cantidad!: number;
+  detalles?: string;
+  estado!: EstadoPedido;
+  idLibro!: string;
+  pedido?: {
+    estado: EstadoPedido;
+    fechaEntrega: string;
+    importeTotal: number;
+    archivos: number;
+    anillados: number;
+    sena: number;
+    items?: DtoPedidoItemRespuesta[];
+    cliente?: {
+      id: string;
+      deleted?: boolean;
+      nombre?: string;
+      telefono?: string;
+      email?: string;
+      resumen?: {
+        id: string;
+        pendiente: number;
+        listo: number;
+        retirado: number;
+        cancelado: number;
+      }
+    }
+  }
+  libro?: {
+    id: string;
+    deleted?: boolean;
+    nombre: string;
+    descripcion?: string;
+    editorial?: string;
+    edicion?: number;
+    nivel?: string;
+    cantidadPg: number;
+    anio?: string;
+    adhesivos?: number;
+    autor?: string;
+    img?: string;
+    especificacionesDefecto?: Especificaciones[];
+    componentes?: {
+      id: string;
+      deleted?: boolean;
+      nombre: string;
+    }[];
+    materia?: {
+      id: string;
+      deleted?: boolean;
+      nombre: string;
+    };
+    stock?: DtoStockRespuesta;
+    propuesta?: {
+      id: string;
+      deleted?: boolean;
+      nombre: string;
+      libro?: DtoLibroRespuesta[];
+    };
+    componentes_texto?: string;
+    resumen?: {
+      listo: number,
+      pendiente: number,
+      retirado: number,
+      cancelado: number
+    };
+  }
+  sede?: {
+      id: string;
+      deleted?: boolean;
+      nombre: string;
+    };
+  idSede?: string;
+  especificaciones?: Especificaciones[];
+}
+ */

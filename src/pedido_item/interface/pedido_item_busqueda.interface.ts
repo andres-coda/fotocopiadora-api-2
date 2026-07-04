@@ -23,7 +23,7 @@ export interface GetPedidoItemBusqueda{
   retirado:number;
   cancelado: number;
   fecha_creacion: Date;
-  fecha_entrega: Date;
+  fecha_entrega: string;
   importe_total:number;
   sena: number;
   anillados:number;
@@ -36,4 +36,25 @@ export interface GetPedidoItemBusqueda{
   id_sede: string;
   id_libro: string;
   id_materia: string;
+}
+
+export interface RetornoVistaItemsPedidoLibroById{
+  id_pedido:string;
+  nro_pedido:number;
+  id_libro: string;
+  id_sede:string;
+  cantidad:number;
+  detalles:string;
+  estado:EstadoPedido;
+  estado_pedido:EstadoPedido;
+  especificaciones:Especificaciones[];
+  fecha_creacion:Date;
+  fecha_entrega:string;
+  importe_total: number;
+  sena:number;
+  anillados:number;
+  archivos:number;
+  sede:string
+  telefono:string;
+  email:string;
 }

@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '../base/base.service';
 import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { DtoLibroEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
@@ -7,170 +6,138 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
-import { LIBRO_RELATIONS, SELECTED_LIBRO } from './default/relacion.default';
+import { CreateProp } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
-import { MateriaService } from '../materia/materia.service';
-import { Materia } from '../materia/entity/materia.entity';
 import { StockService } from '../stock/stock.service';
-import { DtoStockCrear } from '../stock/dto/stockCrear.dto';
-import { Stock } from '../stock/entity/stock.entity';
-import { DtoStockEditar } from '../stock/dto/stockEditar.dto';
-import { Estado } from '../interface/estado.interface';
-import { Componente } from '../componente/entity/componente.entity';
-import { ComponenteService } from '../componente/componente.service';
-import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from '../componente/default/relacion.default';
 import { DtoLibroRespuesta } from './dto/libroRetorno.dto';
-import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
-import { DtoComponenteRespuesta } from '../componente/dto/componenteRetorno.dto';
-import { DtoMateriaRespuesta } from '../materia/dto/materiaRetorno.dto';
-import { DtoStockRespuesta } from '../stock/dto/stockRetorno.dto';
-import { DtoPropuestaLibroRetorno } from '@src/propuesta_pedido/dto/propuestaRetorno.dto';
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
+import { RetornoVistaLibroProp } from './interface/libro.interface';
+import { toRespuestaLibro } from './utils/toRespuestaLibro';
 
+interface GetLibroProp {
+  limite?: number,
+  offset?: number,
+  qR: QueryRunner,
+}
 
+interface BuscarLibroProp extends GetLibroProp {
+  busqueda: string,
+}
+
+interface GetLibroByIdProp {
+  id: string;
+  qR: QueryRunner,
+}
+
+interface EditarLibroProp extends GetLibroByIdProp {
+  dto: DtoLibroEditar;
+  entidad: typeof Entidad.LIBRO
+}
+
+interface GetPedidoItemByLibroProp extends GetLibroProp {
+  id_libro: string;
+}
 
 @Injectable()
-export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLibroCrear, DtoLibroEditar> {
+export class LibroService {
   constructor(
     @InjectRepository(Libro) private readonly libroRepository: Repository<Libro>,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    private readonly materiaService: MateriaService,
     private readonly stockService: StockService,
-    private readonly componenteService: ComponenteService,
     @Inject(forwardRef(() => PropuestaService))
     private readonly propuestaService: PropuestaService,
 
-  ) {
-    super(libroRepository, dataSource, erroresService, gatewayGateway)
+  ) { }
+
+  async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<DtoLibroRespuesta[]> {
+    try {
+      const rows = await qR.query(
+        `SELECT * FROM fc_busqueda_libro($1, $2, $3)`,
+        [busqueda, limite, offset]
+      );
+      return rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
+    }
   }
 
-  async createDato({ usuario, dto, qR, entidad }: CreateProp<DtoLibroCrear, typeof Entidad.LIBRO>): Promise<Libro> {
+  async getLibroCompletoByIdOrdFail({ id, qR }: GetLibroByIdProp): Promise<DtoLibroRespuesta> {
     try {
-      const libroExiste: Libro | null = await this.getDatoByName({
-        dato: dto.nombre,
-        usuarioId: usuario.id,
-        qR,
-        relaciones: [LIBRO_RELATIONS],
-        selected: SELECTED_LIBRO,
-        entidadError: 'libro'
-      });
+      const [row]: RetornoVistaLibroProp[] = await qR.query(
+        'SELECT * FROM vw_libro_busqueda WHERE id = $1', [id]
+      );
+      const libro = toRespuestaLibro(row);
+      if (!libro) throw new NotFoundException(`Libro ${id} no encontrado`);
 
-      if (libroExiste) {
-        const normalize = (s: string) => s.toLowerCase().trim();
+      return libro;
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar leer el libro de id ${id}`);
+    }
+  }
 
-        const setLibro = new Set(
-          libroExiste.componentes.map(c => normalize(c.nombre))
-        );
+  async getLibroEmpresaByIdOrdFail({ id, qR }: GetLibroByIdProp): Promise<Libro> {
+    try {
+      const row = await qR.query(
+        'SELECT * FROM libro_empresa WHERE id = $1 ',
+        [id]
+      );
+      if (!row) throw new NotFoundException(`Libro ${id} no encontrado`);
 
-        const setDto = new Set(
-          (dto.componentes ?? []).map(normalize)
-        );
+      return row;
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar leer el libro de id ${id}`);
+    }
+  }
 
-        const mismosComponentes =
-          setLibro.size === setDto.size &&
-          [...setLibro].every(nombre => setDto.has(nombre));
+  async getLibroEmpresa({ qR, limite, offset }: GetLibroProp): Promise<DtoLibroRespuesta[]> {
+    try {
+      const rows = await qR.query(
+        'SELECT * FROM vw_libro_busqueda ORDER BY pendiente DESC, listo DESC LIMIT $1 OFFSET $2',
+        [limite, offset]
+      );
 
-        const mismoNivel = libroExiste.nivel === dto.nivel;
+      return rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar leer la pagina de libros ${offset}`);
+    }
+  }
 
-        if (mismosComponentes && mismoNivel) {
-          return libroExiste;
-        }
+  async createLibroCompleto({ dto, qR, entidad }: CreateProp<DtoLibroCrear, typeof Entidad.LIBRO>): Promise<DtoLibroRespuesta> {
+    try {
+
+      const [rows]: RetornoVistaLibroProp[] = await qR.query('SELECT * FROM fc_crear_libro($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
+        [dto.nombre, dto.editorial, dto.materia, dto.cantidadPg, dto.adhesivos, JSON.stringify(dto.especificacionesDefecto ?? []), null, dto.nivel, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, JSON.stringify(dto.componentes ?? [])]
+      )
+
+      const libro: DtoLibroRespuesta | undefined = toRespuestaLibro(rows);
+
+      if (!libro) throw new NotFoundException('Error al intentar crear el libro');
+
+      const payload: Mensaje = {
+        mensaje: Mens.CREAR,
+        entidad: entidad,
+        dato: libro
       }
 
-      const componentes: Componente[] = await this.componenteService.getDatosByNombres({
-        nombres: dto.componentes ?? [],
-        usuarioId: usuario.id,
-        qR,
-        entidadError: 'componente',
-        relaciones: [COMPONENTE_RELATIONS],
-        selected: SELECTED_COMPONENTE
-      });
+      this.gatewayGateway.actualizacionDato(payload);
 
-      const materia: Materia = await this.materiaService.createDato({
-        usuario,
-        dto: { nombre: dto.materia },
-        qR,
-        entidad: Entidad.MATERIA,
-      });
-
-      const dtoStock: DtoStockCrear = { stock: 0 };
-
-      const stock: Stock = await this.stockService.createDato({ usuario, qR, dto: dtoStock, entidad: Entidad.STOCK })
-
-      const libro: Libro = new Libro();
-      libro.nombre = dto.nombre;
-      libro.descripcion = dto.descripcion ?? undefined;
-      libro.editorial = dto.editorial ?? undefined;
-      libro.edicion = dto.edicion ?? undefined;
-      libro.nivel = dto.nivel ?? undefined;
-      libro.cantidadPg = dto.cantidadPg ?? 0;
-      libro.anio = dto.anio ?? undefined;
-      libro.adhesivo = dto.adhesivos ?? undefined;
-      libro.autor = dto.autor ?? undefined;
-      libro.img = dto.img ?? undefined;
-      libro.especificacionesDefecto = dto.especificacionesDefecto ?? undefined;
-      libro.materia = materia;
-      libro.stock = stock;
-      libro.componentes = componentes;
-      libro.user = usuario;
-
-      const newLibro: Libro = qR
-        ? await qR.manager.save(Libro, libro)
-        : await this.libroRepository.save(libro);
-
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.CREAR,
-          entidad: entidad,
-          dato: newLibro
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
-      return newLibro;
+      return libro;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
     }
   }
 
-  async updateDato({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Libro, DtoLibroEditar, typeof Entidad.LIBRO>): Promise<UpdateRetorno<Libro>> {
+  async updateLibroEmpresa({ dto, qR, id, entidad }: EditarLibroProp): Promise<Libro> {
     try {
-      const libro: Libro = await this.getDatoByIdOrFail({
-        id,
-        usuarioId,
-        qR,
-        relaciones,
-        selected,
-        entidadError
-      });
+      const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
 
-      const materia: Materia | null = dto.materia ?
-        await this.materiaService.createDato({
-          usuario: libro.user,
-          dto: { nombre: dto.materia },
-          qR,
-          entidad: Entidad.MATERIA
-        })
-        : libro.materia;
-
-      libro.nombre = dto.nombre ?? libro.nombre;
-      libro.descripcion = dto.descripcion ?? libro.descripcion;
-      libro.editorial = dto.editorial ?? libro.editorial;
-      libro.edicion = dto.edicion ?? libro.edicion;
-      libro.nivel = dto.nivel ?? libro.nivel;
       libro.cantidadPg = dto.cantidadPg ?? libro.cantidadPg;
-      libro.anio = dto.anio ?? libro.anio;
       libro.adhesivo = dto.adhesivos ?? libro.adhesivo;
-      libro.autor = dto.autor ?? libro.autor;
-      libro.img = dto.img ?? libro.img;
       libro.especificacionesDefecto = dto.especificacionesDefecto ?? libro.especificacionesDefecto;
-      libro.materia = materia;
 
       const newLibro: Libro = qR
         ? await qR.manager.save(Libro, libro)
@@ -186,111 +153,28 @@ export class LibroService extends BaseService<typeof Entidad.LIBRO, Libro, DtoLi
         this.gatewayGateway.actualizacionDato(payload);
       }
 
-      return { dato: libro, isQr: true };
+      return newLibro;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de libros`)
     }
   }
 
-  async agregarStock({ usuarioId, dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Libro, DtoStockCrear, typeof Entidad.STOCK>): Promise<Stock> {
-    try {
-      const libro: Libro = await this.getDatoByIdOrFail({ id, qR, relaciones, entidadError, selected, usuarioId });
-      const dtoStock: DtoStockEditar = {
-        anterior: Estado.CANCELADO,
-        actual: Estado.STOCK,
-        cantidad: dto.stock
-      }
-      const stock: UpdateRetorno<Stock> = await this.stockService.updateDato({ usuarioId, dto: dtoStock, qR, id: libro.stock.id, entidadError: 'stock', entidad });
+  async updateLibroCompleto({ dto, qR, id }: EditarLibroProp): Promise<DtoLibroRespuesta> {
+    await qR.query(
+      `UPDATE libro_completo SET
+       anio        = COALESCE($2, anio),
+       autor       = COALESCE($3, autor),
+       img         = COALESCE($4, img),
+       edicion     = COALESCE($5, edicion),
+       descripcion = COALESCE($6, descripcion),
+       id_nivel    = COALESCE(
+         (SELECT id FROM nivel WHERE nombre = $7), id_nivel
+       )
+     WHERE id = $1`,
+      [id, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, dto.nivel]
+    );
 
-      if (!stock?.dato) throw new NotFoundException('No se pudo agregar libros al stock');
-      return stock.dato;
-    } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el stok del libro id ${id}`)
-    }
-  }
-
-  async agregarStockCx({ usuarioId, dto, id, entidadError, relaciones, selected, entidad }: EditarProp<Libro, DtoStockCrear, typeof Entidad.STOCK>): Promise<boolean> {
-    const qR: QueryRunner = this.dataSource.createQueryRunner();
-    await qR.connect();
-    await qR.startTransaction();
-    try {
-      const stock: Stock = await this.agregarStock({ usuarioId, id, dto, entidadError, relaciones, selected, qR, entidad });
-      await qR.commitTransaction();
-
-      const payload: Mensaje = {
-        mensaje: Mens.EDITAR,
-        entidad: entidad,
-        dato: stock
-      }
-      this.gateway.actualizacionDato(payload);
-
-      return true;
-    } catch (er) {
-      await qR.rollbackTransaction();
-      throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el stok del libro id ${id}`)
-    } finally {
-      await qR.release();
-    }
-  }
-
-  async quitarStockCx({ usuarioId, dto, id, entidadError, relaciones, selected, entidad }: EditarProp<Libro, DtoStockCrear, typeof Entidad.STOCK>): Promise<boolean> {
-    const qR: QueryRunner = this.dataSource.createQueryRunner();
-    await qR.connect();
-    await qR.startTransaction();
-    try {
-      const newDto: DtoStockCrear = {
-        stock: dto.stock * (-1)
-      }
-      const stock: Stock = await this.agregarStock({ usuarioId, id, dto: newDto, entidadError, relaciones, selected, qR, entidad });
-      await qR.commitTransaction();
-
-      const payload: Mensaje = {
-        mensaje: Mens.EDITAR,
-        entidad: entidad,
-        dato: stock
-      }
-      this.gateway.actualizacionDato(payload);
-
-      return true;
-    } catch (er) {
-      await qR.rollbackTransaction();
-      throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el stok del libro id ${id}`)
-    } finally {
-      await qR.release();
-    }
-  }
-
-  remplaceToReturn(entidad: Libro): DtoLibroRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    const componentes: DtoComponenteRespuesta[] = entidad.componentes?.length > 0
-      ? entidad.componentes.map(c => this.componenteService.remplaceToReturn(c))
-      : [];
-
-    const materia: DtoMateriaRespuesta | undefined= entidad.materia ? this.materiaService.remplaceToReturn(entidad.materia) : undefined;
-    const stock: DtoStockRespuesta | undefined = entidad.stock ? this.stockService.remplaceToReturn(entidad.stock) : undefined;
-    const propuesta: DtoPropuestaLibroRetorno[] = entidad.propuesta?.length > 0
-      ? entidad.propuesta.map(p => this.propuestaService.remplaceToReturn(p))
-      : [];
-
-    return {
-      ...base,
-      nombre: entidad.nombre,
-      descripcion: entidad.descripcion,
-      editorial: entidad.editorial,
-      edicion: entidad.edicion,
-      nivel: entidad.nivel,
-      cantidadPg: entidad.cantidadPg,
-      anio: entidad.anio,
-      adhesivos: entidad.adhesivo,
-      autor: entidad.autor,
-      img: entidad.img,
-      especificacionesDefecto: entidad.especificacionesDefecto,
-
-      componentes,
-      materia,
-      stock,
-      propuesta
-    }
+    return this.getLibroCompletoByIdOrdFail({ id, qR });
   }
 }

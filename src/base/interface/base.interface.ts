@@ -11,7 +11,7 @@ import { User } from "../../user/entity/user.entity";
  */
 
 export interface GenericoProp {
-  qR?: QueryRunner;
+  qR: QueryRunner;
 }
 
 export interface GetProp<T extends Base> extends GenericoProp {
