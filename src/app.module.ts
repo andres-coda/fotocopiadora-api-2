@@ -23,17 +23,16 @@ import { Pedido } from './pedido/entity/pedido.entity';
 import { Sede } from './sede/entity/sede.entity';
 import { Cliente } from './cliente/entity/cliente.entity';
 import { Stock } from './stock/entity/stock.entity';
-import { LibroPedido } from './pedido_item/entity/pedido_item.entity';
 import { Especificacion } from './especificacion/entity/especificacion.entity';
 import { PropuestaPedidoModule } from './propuesta_pedido/propuesta_pedido.module';
-import { ClienteResumenModule } from './cliente_resumen/cliente_resumen.module';
 import { Propuesta } from './propuesta_pedido/entity/propuesta_pedido.entity';
-import { ClienteResumen } from './cliente_resumen/entity/clienteResumen.entity';
 import { ComponenteModule } from './componente/componente.module';
 import { Componente } from './componente/entity/componente.entity';
 import { DbContextInterceptor } from './common/interceptors/db-context.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { PrecioEmpresaModule } from './precio_empresa/precio_empresa.module';
+import { PedidoItem } from './pedido_item/entity/pedido_item.entity';
+import { ClienteResumen } from './cliente/entity/clienteResumen.entity';
+import { LibroResumen } from './libro/entity/libro_resumen.entity';
 
 @Module({
    imports: [
@@ -56,7 +55,8 @@ import { PrecioEmpresaModule } from './precio_empresa/precio_empresa.module';
         Especificacion,
         Materia,
         Libro,
-        LibroPedido,
+        LibroResumen,
+        PedidoItem,
         Pedido,
         Precio,
         Propuesta,
@@ -80,9 +80,7 @@ import { PrecioEmpresaModule } from './precio_empresa/precio_empresa.module';
     LibroPedidoModule,
     EspecificacionModule,
     PropuestaPedidoModule,
-    ClienteResumenModule,
     ComponenteModule,
-    PrecioEmpresaModule,
   ],
   controllers: [],
   providers: [

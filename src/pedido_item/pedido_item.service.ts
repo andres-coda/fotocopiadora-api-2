@@ -86,7 +86,7 @@ export class PedidoItemService {
     try {
 
       const rows = await qR.query(
-        `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 LIMIT $2 OFFSET $3)`,
+        `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 LIMIT $2 OFFSET $3`,
         [id_pedido, limite, offset]
       );
 
@@ -159,7 +159,7 @@ export class PedidoItemService {
           await qR.query(
             `INSERT INTO pedido_item_especificacion (id_pedido, nro_item, id_especificacion)
              VALUES ($1, $2, $3)`,
-            [row.id_pedido, row.id, idEsp],
+            [row.id_pedido, row.id, idEsp.id],
           );
         }
       }
@@ -248,9 +248,9 @@ export class PedidoItemService {
         id_sede = $4,
         id_libro = $5
         WHERE id_pedido = $6
-        AND nro_item = $7
+        AND id = $7
         RETURNING *`,
-        [cantidad, detalles, estado, sedeId, libroId]
+        [cantidad, detalles, estado, sedeId, libroId, id_pedido, nro_pedido]
       )
 
       return row;

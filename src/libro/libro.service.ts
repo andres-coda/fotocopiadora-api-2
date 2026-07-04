@@ -80,7 +80,7 @@ export class LibroService {
 
   async getLibroEmpresaByIdOrdFail({ id, qR }: GetLibroByIdProp): Promise<Libro> {
     try {
-      const row = await qR.query(
+      const [row] = await qR.query(
         'SELECT * FROM libro_empresa WHERE id = $1 ',
         [id]
       );
