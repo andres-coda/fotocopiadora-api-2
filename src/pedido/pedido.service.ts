@@ -9,10 +9,10 @@ import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
 import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta } from './dto/pedido.dto';
-import { ClienteService } from '../cliente/cliente.service';
 import { DtoPedidoItemRespuesta } from '../pedido_item/dto/pedido_item.dto';
-import { toRespuestaPedido, toRespuestaPedidoItemCompleto } from '@src/utils/toRespuesta.function';
 import { GetPedidoItemBusqueda } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
+import { toRespuestaPedido } from './utils/toRespuestaPedido';
+import { toRespuestaPedidoItemCompleto } from '../pedido_item/utils/toRespuestaItem';
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {

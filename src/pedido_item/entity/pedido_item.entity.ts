@@ -1,9 +1,6 @@
-import { Base } from "../../base/entity/base.entity";
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Libro } from "../../libro/entity/libro.entity";
 import { Pedido } from "../../pedido/entity/pedido.entity";
-import { Especificacion } from "../../especificacion/entity/especificacion.entity";
-import { Estado } from "../../interface/estado.interface";
 import { Sede } from "../../sede/entity/sede.entity";
 import { EstadoPedido } from "@src/pedido/interface/estadoPedido.enum";
 

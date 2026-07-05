@@ -10,19 +10,18 @@ import { GateWayModule } from '../gateway/gateway.module';
 import { Materia } from '../materia/entity/materia.entity';
 import { MateriaModule } from '../materia/materia.module';
 import { Libro } from './entity/libro.entity';
-import { LibroPedido } from '../pedido_item/entity/pedido_item.entity';
-import { Stock } from '../stock/entity/stock.entity';
-import { StockModule } from '../stock/stock.module';
 import { Componente } from '../componente/entity/componente.entity';
 import { ComponenteModule } from '../componente/componente.module';
 import { PropuestaPedidoModule } from '@src/propuesta_pedido/propuesta_pedido.module';
+import { StockController } from './stock.controller';
+import { StockService } from './stock.service';
+import { Stock } from './entity/stock.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       User,
       Libro,
-      LibroPedido,
       Materia,
       Stock,
       Componente,
@@ -32,12 +31,11 @@ import { PropuestaPedidoModule } from '@src/propuesta_pedido/propuesta_pedido.mo
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
     forwardRef(() => MateriaModule),
-    forwardRef(() => StockModule),
     forwardRef(() => ComponenteModule),
     forwardRef(() => PropuestaPedidoModule),
   ],
-  controllers: [LibroController],
-  providers: [LibroService],
+  controllers: [LibroController, StockController],
+  providers: [LibroService, StockService],
   exports: [LibroService]
 })
 export class LibroModule { }

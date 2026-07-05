@@ -3,30 +3,32 @@ import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
 import { DtoComponenteRespuesta } from "../../componente/dto/componenteRetorno.dto";
 import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { DtoMateriaRespuesta } from "../../materia/dto/materiaRetorno.dto";
-import { DtoStockRespuesta } from "../../stock/dto/stockRetorno.dto";
 
-interface Resumen{
-    listo:number,
-    pendiente:number,
-    retirado: number,
-    cancelado: number
+interface Resumen {
+  listo: number,
+  pendiente: number,
+  retirado: number,
+  cancelado: number,
+  stock: number,
 }
 
-export class DtoLibroRespuesta extends DtoBaseRetorno {
-  nombre!: string;
+export class DtoLibroEmpresaRespuesta extends DtoBaseRetorno {
+  especificacionesDefecto?: Especificaciones[];
+  adhesivos?: number;
+  cantidadPg!: number;
   descripcion?: string;
+}
+
+export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
+  nombre!: string;
   editorial?: string;
   edicion?: number;
   nivel?: string;
-  cantidadPg!: number;
   anio?: string;
-  adhesivos?: number;
   autor?: string;
   img?: string;
-  especificacionesDefecto?: Especificaciones[];
-  componentes?: DtoComponenteRespuesta[]; 
+  componentes?: DtoComponenteRespuesta[];
   materia?: DtoMateriaRespuesta;
-  stock?: DtoStockRespuesta;
   propuesta?: DtoPropuestaLibroRetorno[];
   componentes_texto?: string;
   resumen?: Resumen;

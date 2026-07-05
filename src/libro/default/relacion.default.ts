@@ -1,7 +1,7 @@
 import { RelationsKey, SelectedDeep } from "../../base/interface/base.interface";
 import { Libro } from "../entity/libro.entity";
 import { SELECTED_BASE } from "../../utils/relacion";
-
+/* 
 export const LIBRO_RELATIONS: RelationsKey<Libro> = {
   relations: ['materia', 'stock', 'componentes'],
   nestedRelations: {}
@@ -44,3 +44,4 @@ export const SELECTED_LIBRO: SelectedDeep<Libro> = {
   fechaCreacion:true
 }
 
+ */

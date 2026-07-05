@@ -23,9 +23,6 @@ export class Libro {
   @Column({ type: 'jsonb', nullable: true })
   especificacionesDefecto?: Especificaciones[];
 
-  /* @OneToOne(() => Stock, stock => stock.libro)
-  stock!: Stock; */
-
   @OneToMany(() => PedidoItem, pedidoItem => pedidoItem.libro)
   pedidoItems!: PedidoItem[];
 

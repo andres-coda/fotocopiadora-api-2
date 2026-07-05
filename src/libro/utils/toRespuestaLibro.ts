@@ -1,23 +1,44 @@
-import { DtoLibroRespuesta } from "../dto/libroRetorno.dto";
+import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from "../dto/libroRetorno.dto";
+import { Libro } from "../entity/libro.entity";
 import { RetornoVistaLibroProp } from "../interface/libro.interface";
 
-export const toRespuestaLibro = (dato?: RetornoVistaLibroProp): DtoLibroRespuesta | undefined => {
-  if(!dato) return undefined;
+export const toRespuestaLibroEmptresXlibro = (libro:Libro) =>{
+  return {
+    id: libro.idLibro,
+    deleted: libro.deleted,
+    cantidadPg: libro.cantidadPg,
+    adhesivos: libro.adhesivo,
+    especificacionesDefecto: libro.especificacionesDefecto,
+    //descripcion: libro.descripcion   
+  }
+}
 
-  const libro: DtoLibroRespuesta = {
+export const toRespuestaLibroEmpresa = (dato?:RetornoVistaLibroProp):DtoLibroEmpresaRespuesta | undefined =>{
+  if(!dato) return undefined;
+  return {
     id: dato.id,
     deleted: false,
+    cantidadPg: dato.cantidad_pg,
+    adhesivos: dato.cantidad_adhesivo,
+    especificacionesDefecto: dato.especificaciones_defecto,
+    descripcion: dato.descripcion    
+  }
+}
+
+export const toRespuestaLibro = (dato?: RetornoVistaLibroProp): DtoLibroRespuesta | undefined => {
+  const libroEmpresa: DtoLibroEmpresaRespuesta | undefined = toRespuestaLibroEmpresa(dato);
+  
+  if(!dato || !libroEmpresa) return undefined;
+
+  const libro: DtoLibroRespuesta = {
+    ...libroEmpresa,
     nombre: dato.nombre,
-    descripcion: dato.descripcion,
     edicion: dato.edicion,
     autor: dato.autor,
     anio: dato.anio,
     img: dato.img,
     nivel: dato.nivel,
     componentes_texto: dato.componentes,
-    cantidadPg: dato.cantidad_pg,
-    adhesivos: dato.cantidad_adhesivo,
-    especificacionesDefecto: dato.especificaciones_defecto,
     materia: {
       nombre: dato.materia,
       deleted: false,
@@ -28,7 +49,8 @@ export const toRespuestaLibro = (dato?: RetornoVistaLibroProp): DtoLibroRespuest
       listo: dato.listo,
       pendiente: dato.pendiente,
       cancelado: dato.cancelado,
-      retirado: dato.retirado
+      retirado: dato.retirado,
+      stock: dato.stock
     },
   }
   return libro;

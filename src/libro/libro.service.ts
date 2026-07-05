@@ -9,11 +9,10 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
-import { StockService } from '../stock/stock.service';
-import { DtoLibroRespuesta } from './dto/libroRetorno.dto';
+import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
 import { RetornoVistaLibroProp } from './interface/libro.interface';
-import { toRespuestaLibro } from './utils/toRespuestaLibro';
+import { toRespuestaLibro, toRespuestaLibroEmptresXlibro } from './utils/toRespuestaLibro';
 
 interface GetLibroProp {
   limite?: number,
@@ -46,7 +45,6 @@ export class LibroService {
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    private readonly stockService: StockService,
     @Inject(forwardRef(() => PropuestaService))
     private readonly propuestaService: PropuestaService,
 
@@ -95,7 +93,7 @@ export class LibroService {
   async getLibroEmpresa({ qR, limite, offset }: GetLibroProp): Promise<DtoLibroRespuesta[]> {
     try {
       const rows = await qR.query(
-        'SELECT * FROM vw_libro_busqueda ORDER BY pendiente DESC, listo DESC LIMIT $1 OFFSET $2',
+        'SELECT * FROM vw_libro_busqueda WHERE deleted = false ORDER BY pendiente DESC, listo DESC LIMIT $1 OFFSET $2',
         [limite, offset]
       );
 
@@ -108,7 +106,8 @@ export class LibroService {
   async createLibroCompleto({ dto, qR, entidad }: CreateProp<DtoLibroCrear, typeof Entidad.LIBRO>): Promise<DtoLibroRespuesta> {
     try {
 
-      const [rows]: RetornoVistaLibroProp[] = await qR.query('SELECT * FROM fc_crear_libro($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
+      const [rows]: RetornoVistaLibroProp[] = await qR.query(
+        'SELECT * FROM fc_crear_libro($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
         [dto.nombre, dto.editorial, dto.materia, dto.cantidadPg, dto.adhesivos, JSON.stringify(dto.especificacionesDefecto ?? []), null, dto.nivel, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, JSON.stringify(dto.componentes ?? [])]
       )
 
@@ -131,7 +130,7 @@ export class LibroService {
     }
   }
 
-  async updateLibroEmpresa({ dto, qR, id, entidad }: EditarLibroProp): Promise<Libro> {
+  async updateLibroEmpresa({ dto, qR, id, entidad }: EditarLibroProp): Promise<DtoLibroEmpresaRespuesta> {
     try {
       const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
 
@@ -143,17 +142,7 @@ export class LibroService {
         ? await qR.manager.save(Libro, libro)
         : await this.libroRepository.save(libro);
 
-      if (!qR) {
-        const payload: Mensaje = {
-          mensaje: Mens.EDITAR,
-          entidad: entidad,
-          dato: newLibro
-        }
-
-        this.gatewayGateway.actualizacionDato(payload);
-      }
-
-      return newLibro;
+     return toRespuestaLibroEmptresXlibro(newLibro);
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de libros`)
@@ -176,5 +165,19 @@ export class LibroService {
     );
 
     return this.getLibroCompletoByIdOrdFail({ id, qR });
+  }
+
+  async deleteLibroEmpresa({id, qR}:GetLibroByIdProp):Promise<boolean> {
+    try{
+      const libro: Libro = await this.getLibroEmpresaByIdOrdFail({id, qR});
+      if(libro.deleted) throw new NotFoundException('El libro no existe, no se puede eliminar');
+
+      libro.deleted = true;
+      const newLibro = await qR.manager.save(Libro, libro);
+      if(!newLibro) throw new NotFoundException(`No se pudo eliminar el libro id ${id}`);
+      return true;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar eliminar el libro ${id}`)
+    }
   }
 }

@@ -6,9 +6,8 @@ import { UsuarioGuard } from '../auth/guard/user.guard';
 import { AdminGuard } from '../auth/guard/admin.guard';
 import { BaseDto } from './dto/baseDto';
 import { EntidadDatoMapType } from '../gateway/dto/gatewayDto.dto';
-import type { CreateElementoControllerProp, RetornoGet, SelectedDeep } from './interface/base.interface';
+import type { CreateProp, RetornoGet, SelectedDeep } from './interface/base.interface';
 import { DeletProp, EditarElementoControllerProp, RelationsKey } from './interface/base.interface';
-import { User } from '../user/entity/user.entity';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 
 /**
@@ -27,6 +26,7 @@ import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
  */
 
 @Controller('base')
+@UseGuards(UsuarioGuard)
 export abstract class BaseController<
   K extends keyof EntidadDatoMapType,
   T extends Base,
@@ -57,6 +57,7 @@ export abstract class BaseController<
   async findAll(
     @Query('pagina') pagina = 1,
     @Query('limite') limite = 20,
+    @Request() req: RequestWithUser,
   ): Promise<RetornoGet<K>> {
     const offset = (pagina - 1) * limite;
     const datoRetorno:RetornoGet<K>= await this.baseService.getDatoCx({
@@ -65,7 +66,8 @@ export abstract class BaseController<
       selected: this.selectedGeneral ?? this.selected,
       orden: this.orden,
       limite, 
-      offset
+      offset,
+      qR: req.queryRunner
     });
 
     return datoRetorno
@@ -82,12 +84,16 @@ export abstract class BaseController<
   @Get(':id')
   @HttpCode(200)
   @UseGuards(UsuarioGuard, AdminGuard)
-  async findOne(@Param('id') id: string): Promise<EntidadDatoMapType[K]> {
+  async findOne(
+    @Param('id') id: string,  
+    @Request() req: RequestWithUser,
+  ): Promise<EntidadDatoMapType[K]> {
     return this.baseService.getDatoByIdCx({
       id,
       entidadError: this.entidadError,
       relaciones: this.relaciones,
       selected: this.selected,
+      qR:req.queryRunner
     });
   }
 
@@ -164,7 +170,7 @@ export abstract class BaseController<
     @Body() datos: CrearDto,
     @Request() req: RequestWithUser,
   ): Promise<EntidadDatoMapType[K]> {
-    const dto: CreateElementoControllerProp<CrearDto, K> & { qR: any } = {
+    const dto: CreateProp<CrearDto, K> & { qR: any } = {
       dto: datos,
       entidad: this.entidad,
       qR: req.queryRunner,

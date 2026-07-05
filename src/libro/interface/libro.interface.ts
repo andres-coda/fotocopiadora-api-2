@@ -39,6 +39,7 @@ export interface RetornoVistaLibroProp{
   listo:number;
   retirado:number;
   cancelado:number;
+  stock: number;
   id_empresa:string;
   id_materia:string;
 }
