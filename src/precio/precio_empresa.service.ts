@@ -103,11 +103,11 @@ export class PrecioEmpresaService {
       });
 
       const retorno = this.toRespuesta(conRelacion!);
-      this.gateway.actualizacionDato({
+     /*  this.gateway.actualizacionDato({
         mensaje: Mens.CREAR,
         entidad: Entidad.PRECIO,
         dato: retorno,
-      } as Mensaje);
+      } as Mensaje); */
 
       return retorno;
     } catch (er) {
@@ -145,11 +145,11 @@ export class PrecioEmpresaService {
       const saved = await qR.manager.save(PrecioEmpresa, pe);
       const retorno = this.toRespuesta({ ...saved, precio: pe.precio });
 
-      this.gateway.actualizacionDato({
+     /*  this.gateway.actualizacionDato({
         mensaje: Mens.EDITAR,
         entidad: Entidad.PRECIO,
         dato: retorno,
-      } as Mensaje);
+      } as Mensaje); */
 
       return retorno;
     } catch (er) {

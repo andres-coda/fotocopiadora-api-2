@@ -14,7 +14,6 @@ import { MateriaModule } from './materia/materia.module';
 import { PedidoModule } from './pedido/pedido.module';
 import { SedeModule } from './sede/sede.module';
 import { ClienteModule } from './cliente/cliente.module';
-import { StockModule } from './stock/stock.module';
 import { LibroPedidoModule } from './pedido_item/pedido_item.module';
 import { EspecificacionModule } from './especificacion/especificacion.module';
 import { Precio } from './precio/entity/precio.entity';
@@ -22,7 +21,6 @@ import { Materia } from './materia/entity/materia.entity';
 import { Pedido } from './pedido/entity/pedido.entity';
 import { Sede } from './sede/entity/sede.entity';
 import { Cliente } from './cliente/entity/cliente.entity';
-import { Stock } from './stock/entity/stock.entity';
 import { Especificacion } from './especificacion/entity/especificacion.entity';
 import { PropuestaPedidoModule } from './propuesta_pedido/propuesta_pedido.module';
 import { Propuesta } from './propuesta_pedido/entity/propuesta_pedido.entity';
@@ -33,6 +31,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PedidoItem } from './pedido_item/entity/pedido_item.entity';
 import { ClienteResumen } from './cliente/entity/clienteResumen.entity';
 import { LibroResumen } from './libro/entity/libro_resumen.entity';
+import { Stock } from './libro/entity/stock.entity';
 
 @Module({
    imports: [
@@ -76,7 +75,6 @@ import { LibroResumen } from './libro/entity/libro_resumen.entity';
     PedidoModule,
     SedeModule,
     ClienteModule,
-    StockModule,
     LibroPedidoModule,
     EspecificacionModule,
     PropuestaPedidoModule,

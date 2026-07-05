@@ -5,12 +5,12 @@ import { Column, Entity, JoinTable, ManyToMany } from "typeorm";
 @Entity('propuesta')
 export class Propuesta extends Base {
 
-  @Column({type:'varchar', nullable:false, length:100})
+  @Column({type:'varchar', nullable:false, length:50})
   nombre!:string;
 
   @ManyToMany(() => Libro, libro => libro.propuesta)
   @JoinTable({ name: "propuesta_libro" })
-  libro!: Libro[];
+  libros!: Libro[];
 
   constructor() {
     super()

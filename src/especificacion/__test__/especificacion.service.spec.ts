@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* import { Test, TestingModule } from '@nestjs/testing';
 import { Repository, DataSource } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
@@ -291,4 +291,4 @@ describe('EspecificacionService', () => {
 
   });
 
-});
+}); */

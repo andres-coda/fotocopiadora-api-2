@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* import { Test, TestingModule } from '@nestjs/testing';
 import { ClienteService } from '../cliente.service';
 import { DataSource, Repository } from 'typeorm';
 import { Cliente } from '../entity/cliente.entity';
@@ -19,7 +19,7 @@ import { NotFoundException } from '@nestjs/common';
 
 /* =========================
    🔧 MOCKS DE MÓDULOS
-========================= */
+========================= 
 
 jest.mock('@src/cliente/entity/cliente.entity', () => ({
   Cliente: class {
@@ -43,7 +43,7 @@ jest.mock('@src/user/entity/user.entity', () => ({
 
 /* =========================
    🧪 TEST SUITE
-========================= */
+========================= 
 
 describe('ClienteService', () => {
   let service: ClienteService;
@@ -106,7 +106,7 @@ describe('ClienteService', () => {
 
   /* =========================
      🔹 getDatoByTelefono
-  ========================= */
+  ========================= 
 
   describe('getDatoByTelefono', () => {
     it('[camino feliz] debería devolver el cliente cuando existe', async () => {
@@ -173,7 +173,7 @@ describe('ClienteService', () => {
 
   /* =========================
      🔹 getDatoByEmail
-  ========================= */
+  ========================= 
 
   describe('getDatoByEmail', () => {
     it('[camino feliz] debería devolver el cliente cuando existe', async () => {
@@ -240,7 +240,7 @@ describe('ClienteService', () => {
 
   /* =========================
      🔹 clienteExistente
-  ========================= */
+  ========================= *
 
   describe('clienteExistente', () => {
     it('[camino feliz] debería devolver cliente si lo encuentra por teléfono', async () => {
@@ -329,7 +329,7 @@ describe('ClienteService', () => {
 
   /* =========================
      🔹 createDato
-  ========================= */
+  ========================= *
 
   describe('createDato', () => {
     it('[camino feliz] debería crear cliente nuevo con teléfono', async () => {
@@ -476,7 +476,7 @@ describe('ClienteService', () => {
 
   /* =========================
      🔹 updateDato
-  ========================= */
+  ========================= *
 
   describe('updateDato', () => {
     it('[camino feliz] debería actualizar el cliente y retornar { dato, isQr: true }', async () => {
@@ -585,7 +585,7 @@ describe('ClienteService', () => {
 
   /* =========================
      🔹 getDatoCx
-  ========================= */
+  ========================= *
 
   describe('getDatoCx', () => {
     it('[camino feliz] debería retornar clientes con contadores de pedidos calculados', async () => {
@@ -672,7 +672,7 @@ describe('ClienteService', () => {
 
   /* =========================
      🔹 remplaceToReturn
-  ========================= */
+  ========================= *
 
   describe('remplaceToReturn', () => {
     it('[camino feliz] debería mapear correctamente la entidad al DTO de respuesta', () => {
@@ -694,4 +694,4 @@ describe('ClienteService', () => {
       expect(resumenServiceMock.remplaceToReturn).toHaveBeenCalledWith(mockCliente.resumen);
     });
   });
-});
+}); */

@@ -14,8 +14,6 @@ export const mockEsp: Especificacion = {
   fechaActualizacion: new Date('2024-01-02T00:00:00Z'),
   deleted: false,
   nombre: Especificaciones.ANILLADO,
-  librosPedidos: [],
-  user: mockUser
 };
 
 export const mockEspService = {

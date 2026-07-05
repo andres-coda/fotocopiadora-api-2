@@ -1,5 +1,4 @@
 import { Mens } from "../enum/Mens.enum";
-import { TestEntityDto } from "../../base/__test__/base.service.spec";
 import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
 import { DtoComponenteRespuesta } from "../../componente/dto/componenteRetorno.dto";
 import { DtoEspecificaionRetorno } from "../../especificacion/dto/DtoEspecificacionRetorno.dto";
@@ -10,7 +9,6 @@ import { DtoPedidoRespuesta } from "../../pedido/dto/pedido.dto";
 import { DtoPrecioRespuesta } from "../../precio/dto/precio.dto";
 import { DtoPropuestaRespuesta } from "../../propuesta_pedido/dto/propuestaRetorno.dto";
 import { DtoSedeRespuesta } from "../../sede/dto/sedeRetorno.dto";
-import { DtoStockRespuesta } from "../../stock/dto/stockRetorno.dto";
 import { DtoResumenRespuesta } from "../../libro/dto/resumen.dto";
 import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
 
@@ -24,8 +22,6 @@ export const EntidadDatoMap = {
   precio: {} as DtoPrecioRespuesta,
   propuesta_pedido: {} as DtoPropuestaRespuesta,
   sede: {} as DtoSedeRespuesta,
-  stock: {} as DtoStockRespuesta,
-  testEntity: {} as TestEntityDto,
 } satisfies Record<string, DtoBaseRetorno>;
 
 

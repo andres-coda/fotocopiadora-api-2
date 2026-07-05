@@ -2,6 +2,7 @@ import { UsuarioCrear } from "@src/user/dto/userCrear.dto";
 import { User } from "@src/user/entity/user.entity";
 import { jest } from '@jest/globals';
 import { EditarUsuario, ModificarRole } from "@src/user/interface/usuario.interface";
+import { Role } from "@src/auth/rol/rol.enum";
 
 export const mockUser: User = {
   id: '123e4567-e89b-12d3-a456-426614174000',
@@ -11,18 +12,8 @@ export const mockUser: User = {
   nombre: 'Test User',
   password: 'password123',
   email: 'test@ej.com',
-  clientes: [],
-  resumenes: [],
-  especificaciones: [],
-  libros: [],
-  librosPedidos: [],
-  materias: [],
-  pedidos: [],
-  precios: [],
-  propuestas: [],
-  sedes: [],
-  stocks: [],
-  role: 'user',
+  idEmpresa: '12',
+  role: Role.Admin,
 }
 
 export const mockUsuarioCrear: UsuarioCrear = {

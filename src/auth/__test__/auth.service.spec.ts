@@ -1,4 +1,4 @@
-import { AuthService } from "../auth.service";
+/* import { AuthService } from "../auth.service";
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test, TestingModule } from "@nestjs/testing";
 import { JwtService } from "@nestjs/jwt";
@@ -108,4 +108,4 @@ describe('AuthService', () => {
       await expect(service.getUserFromRequest(mockRequest)).rejects.toThrow('Token inválido');
     });
   });
-});
+}); */

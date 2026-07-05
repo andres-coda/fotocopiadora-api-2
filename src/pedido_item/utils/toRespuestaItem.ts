@@ -92,7 +92,8 @@ export const toRespuestaPedidoItemCompleto = (dato?: GetPedidoItemBusqueda): Dto
       listo: dato.listo,
       pendiente: dato.pendiente,
       cancelado: dato.cancelado,
-      retirado: dato.retirado
+      retirado: dato.retirado,
+      stock: dato.stock
     },
     materia: {
       nombre: dato.materia,

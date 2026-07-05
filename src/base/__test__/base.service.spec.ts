@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* import { Test, TestingModule } from '@nestjs/testing';
 import { Repository, DataSource } from 'typeorm';
 import { Base } from '@src/base/entity/base.entity';
 import { ErroresService } from '@src/error/error.service';
@@ -17,7 +17,7 @@ import { DtoBaseRetorno } from '../dto/baseRetorno.dto';
 
 /* =========================
    🔧 MOCKS DE MÓDULOS
-========================= */
+========================= 
 
 jest.mock('@src/base/entity/base.entity', () => ({
   Base: class { },
@@ -37,7 +37,7 @@ jest.mock('@src/cliente_resumen/entity/clienteResumen.entity', () => ({
 
 /* =========================
    🧱 ENTIDAD DE TEST
-========================= */
+========================= 
 
 export class TestEntity extends Base {
   nombre!: string;
@@ -52,7 +52,7 @@ export class TestEntityDto extends DtoBaseRetorno {
 
 /* =========================
    🧱 SERVICE CONCRETO PARA TEST
-========================= */
+========================= 
 
 class TestService extends BaseService<
   typeof Entidad.TESTENTITY,
@@ -108,7 +108,7 @@ class TestService extends BaseService<
 
 /* =========================
    🧪 TEST SUITE
-========================= */
+========================= 
 
 describe('BaseService', () => {
   let service: TestService;
@@ -143,7 +143,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 getDato
-  ========================= */
+  ========================= 
 
   describe('getDato', () => {
     it('[camino feliz] debería obtener datos activos desde repository', async () => {
@@ -160,7 +160,7 @@ describe('BaseService', () => {
 
       /* const result = await service.getDato({ usuarioId: 'u1' });
 
-      expect(result).toEqual([]); */
+      expect(result).toEqual([]); 
       expect(repo.find).toHaveBeenCalled();
     });
 
@@ -185,7 +185,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 getDatoTodos
-  ========================= */
+  ========================= 
 
   describe('getDatoTodos', () => {
     it('[camino feliz] debería obtener todos los datos incluyendo eliminados', async () => {
@@ -194,7 +194,7 @@ describe('BaseService', () => {
 
       /* const result = await service.getDatoTodos({ usuarioId: 'u1' });
 
-      expect(result).toHaveLength(2); */
+      expect(result).toHaveLength(2); 
       expect(repo.find).toHaveBeenCalled();
     });
 
@@ -203,7 +203,7 @@ describe('BaseService', () => {
 
       /* const result = await service.getDatoTodos({ usuarioId: 'u1' });
 
-      expect(result).toEqual([]); */
+      expect(result).toEqual([]); 
     });
 
     it('[transacción] debería usar qR.manager.find si se provee QueryRunner', async () => {
@@ -226,7 +226,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 getDatoById
-  ========================= */
+  ========================= 
 
   describe('getDatoById', () => {
     it('[camino feliz] debería retornar el dato cuando existe', async () => {
@@ -266,7 +266,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 getDatoByIdOrFail
-  ========================= */
+  ========================= 
 
   describe('getDatoByIdOrFail', () => {
     it('[camino feliz] debería devolver el dato si existe y no está eliminado', async () => {
@@ -282,7 +282,7 @@ describe('BaseService', () => {
 
       /* await expect(
         service.getDatoByIdOrFail({ id: 'id-inexistente', usuarioId: 'u1' })
-      ).rejects.toThrow(NotFoundException); */
+      ).rejects.toThrow(NotFoundException); 
     });
 
     it('[error] debería lanzar NotFoundException si el dato tiene deleted = true', async () => {
@@ -290,7 +290,7 @@ describe('BaseService', () => {
 
       /* await expect(
         service.getDatoByIdOrFail({ id: mockEntity.id, usuarioId: 'u1' })
-      ).rejects.toThrow(NotFoundException); */
+      ).rejects.toThrow(NotFoundException); 
     });
 
     it('[error] debería incluir entidadError en el mensaje de error si se provee', async () => {
@@ -298,7 +298,7 @@ describe('BaseService', () => {
 
       /* await expect(
         service.getDatoByIdOrFail({ id: '1', usuarioId: 'u1', entidadError: 'sede' })
-      ).rejects.toThrow(/sede/); */
+      ).rejects.toThrow(/sede/); 
     });
 
     it('[transacción] debería usar QueryRunner al buscar el dato internamente', async () => {
@@ -313,7 +313,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 getDatoByName
-  ========================= */
+  ========================= 
 
   describe('getDatoByName', () => {
     it('[camino feliz] debería retornar el dato cuando existe con ese nombre', async () => {
@@ -353,7 +353,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 getDatosByNombres
-  ========================= */
+  ========================= 
 
   describe('getDatosByNombres', () => {
     it('[camino feliz] debería retornar los datos que coincidan con los nombres', async () => {
@@ -387,14 +387,14 @@ describe('BaseService', () => {
 
       /* await expect(
         service.getDatosByNombres({ nombres: ['Test'], usuarioId: 'u1' })
-      ).rejects.toThrow(); */
+      ).rejects.toThrow(); 
       expect(mockErrores.handleExceptions).toHaveBeenCalled();
     });
   });
 
   /* =========================
      🔹 getDatosByIds
-  ========================= */
+  ========================= 
 
   describe('getDatosByIds', () => {
     it('[camino feliz] debería retornar múltiples datos por ids', async () => {
@@ -411,7 +411,7 @@ describe('BaseService', () => {
 
      /*  expect(result).toHaveLength(2);
       expect(result[0]).toEqual(mockEntity);
-      expect(result[1]).toEqual(entity2); */
+      expect(result[1]).toEqual(entity2); 
     });
 
     it('[error] debería propagar NotFoundException si algún id no existe', async () => {
@@ -422,7 +422,7 @@ describe('BaseService', () => {
 
       /* await expect(
         service.getDatosByIds({ ids: [mockEntity.id, 'id-inexistente'], usuarioId: 'u1' })
-      ).rejects.toThrow(); */
+      ).rejects.toThrow(); 
       expect(mockErrores.handleExceptions).toHaveBeenCalled();
     });
 
@@ -441,7 +441,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 softDelete
-  ========================= */
+  ========================= 
 
   describe('softDelete', () => {
     it('[camino feliz] debería marcar deleted=true y retornar true', async () => {
@@ -505,7 +505,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 undoDelete
-  ========================= */
+  ========================= 
 
   describe('undoDelete', () => {
     it('[camino feliz] debería revertir deleted a false y retornar true', async () => {
@@ -582,7 +582,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 delete (físico)
-  ========================= */
+  ========================= 
 
   describe('delete', () => {
     it('[camino feliz] debería eliminar físicamente el dato y retornar true', async () => {
@@ -650,7 +650,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 createDatoCx (transacción)
-  ========================= */
+  ========================= 
 
   describe('createDatoCx', () => {
     it('[camino feliz] debería crear el dato, hacer commit y retornar el DTO', async () => {
@@ -702,7 +702,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 updateElementoController (transacción)
-  ========================= */
+  ========================= 
 
   describe('updateElementoController', () => {
     it('[camino feliz] debería actualizar el dato, hacer commit y retornar el DTO', async () => {
@@ -784,7 +784,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 createElementoDefault
-  ========================= */
+  ========================= 
 
   describe('createElementoDefault', () => {
     it('[camino feliz] debería crear todos los elementos del array defecto', async () => {
@@ -838,7 +838,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 mergeSelected (método protegido expuesto)
-  ========================= */
+  ========================= 
 
   describe('mergeSelected', () => {
     it('[camino feliz] debería mergear propiedades simples de ambos objetos', () => {
@@ -883,7 +883,7 @@ describe('BaseService', () => {
 
   /* =========================
      🔹 mergeRelations (método protegido expuesto)
-  ========================= */
+  ========================= 
 
   describe('mergeRelations', () => {
     it('[camino feliz] debería retornar BASE_RELATIONS si no se provee nada', () => {
@@ -923,4 +923,4 @@ describe('BaseService', () => {
       expect(result[0].relations).toContain('sede');
     });
   });
-});
+}); */

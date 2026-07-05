@@ -12,8 +12,6 @@ export const mockComponente:Componente ={
   fechaActualizacion: new Date('2024-01-02T00:00:00Z'),
   deleted: false,
   nombre: 'Test Componente',
-  user:mockUser,
-  libros:[]
 }
 
 export const mockDtoCrearComponente: DtoComponenteCrear = {

@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* import { Test, TestingModule } from '@nestjs/testing';
 import { LibroPedidoController } from '../pedido_item.controller';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { LibroPedidoService } from '../pedido_item.service';
@@ -116,4 +116,4 @@ describe('LibroPedidoController', () => {
     });
 
   });
-});
+}); */

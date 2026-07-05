@@ -13,12 +13,11 @@ export const mockPropuesta:Propuesta = {
   fechaActualizacion: new Date('2024-01-02T00:00:00Z'), 
   deleted: false,
   nombre: 'Propuesta de prueba',
-  libro:[],
-  user:mockUser,
+  libros:[],
 }
 
 export const mockDtoCrearPropuesta:DtoPropuestaCrear = {
-  libros: [mockLibro.id],
+  libros: [mockLibro.idLibro],
   nombre: 'Propuesta de prueba',
 }
 

@@ -3,7 +3,7 @@ import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { DtoLibroEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, In, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp } from '../base/interface/base.interface';
@@ -20,12 +20,17 @@ interface GetLibroProp {
   qR: QueryRunner,
 }
 
-interface BuscarLibroProp extends GetLibroProp {
+export interface BuscarLibroProp extends GetLibroProp {
   busqueda: string,
 }
 
 interface GetLibroByIdProp {
   id: string;
+  qR: QueryRunner,
+}
+
+interface GetLibrosByIdsProp {
+  ids: string[];
   qR: QueryRunner,
 }
 
@@ -90,6 +95,29 @@ export class LibroService {
     }
   }
 
+  async getLibrosByIds({ ids, qR }: GetLibrosByIdsProp): Promise<Libro[]> {
+    try {
+      const criterio: FindManyOptions = {
+        where: {
+          id: In(ids),
+        },
+      };
+      const libros: Libro[] = await qR.manager.find(Libro, criterio);
+
+      if (libros.length === 0) {
+        throw new NotFoundException(`Libros ${ids} no encontrados`);
+      }
+
+      if (libros.length < ids.length) {
+        throw new NotFoundException(`Algunos libros no fueron encontrados`);
+      }
+
+      return libros;
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar leer los libros por ids`);
+    }
+  }
+
   async getLibroEmpresa({ qR, limite, offset }: GetLibroProp): Promise<DtoLibroRespuesta[]> {
     try {
       const rows = await qR.query(
@@ -142,7 +170,7 @@ export class LibroService {
         ? await qR.manager.save(Libro, libro)
         : await this.libroRepository.save(libro);
 
-     return toRespuestaLibroEmptresXlibro(newLibro);
+      return toRespuestaLibroEmptresXlibro(newLibro);
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de libros`)
@@ -167,14 +195,14 @@ export class LibroService {
     return this.getLibroCompletoByIdOrdFail({ id, qR });
   }
 
-  async deleteLibroEmpresa({id, qR}:GetLibroByIdProp):Promise<boolean> {
-    try{
-      const libro: Libro = await this.getLibroEmpresaByIdOrdFail({id, qR});
-      if(libro.deleted) throw new NotFoundException('El libro no existe, no se puede eliminar');
+  async deleteLibroEmpresa({ id, qR }: GetLibroByIdProp): Promise<boolean> {
+    try {
+      const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
+      if (libro.deleted) throw new NotFoundException('El libro no existe, no se puede eliminar');
 
       libro.deleted = true;
       const newLibro = await qR.manager.save(Libro, libro);
-      if(!newLibro) throw new NotFoundException(`No se pudo eliminar el libro id ${id}`);
+      if (!newLibro) throw new NotFoundException(`No se pudo eliminar el libro id ${id}`);
       return true;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar eliminar el libro ${id}`)

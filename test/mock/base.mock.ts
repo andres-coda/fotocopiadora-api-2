@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { mockUser } from './user.mock';
 import { Base } from '@src/base/entity/base.entity';
 import { BaseDto } from '@src/base/dto/baseDto';
-import { CreateElementoControllerProp, DeletProp, EditarElementoControllerProp, GetDatoProp, GetIdProp, GetIdsProp, GetNombresProp, GetProp } from '@src/base/interface/base.interface';
+import { CreateProp, DeletProp, EditarElementoControllerProp, GetDatoProp, GetIdProp, GetIdsProp, GetNombresProp, GetProp } from '@src/base/interface/base.interface';
 import { EntidadDatoMapType } from '@src/gateway/dto/gatewayDto.dto';
 
 export const mockTestEntity = {
@@ -37,7 +37,7 @@ export const createMockBaseService = <
     undoDelete: jest.fn<(params: DeletProp<T, K>) => Promise<boolean>>(),
     delete: jest.fn<(params: DeletProp<T, K>) => Promise<boolean>>(),
 
-    createDatoCx: jest.fn<(params: CreateElementoControllerProp<CrearDto, K>) => Promise<T>>(),
+    createDatoCx: jest.fn<(params: CreateProp<CrearDto, K>) => Promise<T>>(),
 
     updateElementoController: jest.fn<(params: EditarElementoControllerProp<T, EditarDto, K>) => Promise<T>>(),
   });

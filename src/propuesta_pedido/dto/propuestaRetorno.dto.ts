@@ -6,5 +6,5 @@ export class DtoPropuestaLibroRetorno extends DtoBaseRetorno {
 }
 
 export class DtoPropuestaRespuesta extends DtoPropuestaLibroRetorno {
-  libro!: DtoLibroRespuesta[];
+  libros!: DtoLibroRespuesta[];
 }

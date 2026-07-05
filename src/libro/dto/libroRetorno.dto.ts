@@ -9,14 +9,14 @@ interface Resumen {
   pendiente: number,
   retirado: number,
   cancelado: number,
-  stock: number,
+  stock?: number,
 }
 
 export class DtoLibroEmpresaRespuesta extends DtoBaseRetorno {
   especificacionesDefecto?: Especificaciones[];
   adhesivos?: number;
   cantidadPg!: number;
-  descripcion?: string;
+  detalleImpresion?:string;
 }
 
 export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
@@ -32,6 +32,7 @@ export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
   propuesta?: DtoPropuestaLibroRetorno[];
   componentes_texto?: string;
   resumen?: Resumen;
+  descripcion?: string;
 }
 
 

@@ -42,6 +42,7 @@ export interface RetornoVistaLibroProp{
   stock: number;
   id_empresa:string;
   id_materia:string;
+  detalle_impresion?:string;
 }
 
 

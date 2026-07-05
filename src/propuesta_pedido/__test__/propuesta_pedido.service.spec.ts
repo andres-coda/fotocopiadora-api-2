@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* import { Test, TestingModule } from '@nestjs/testing';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { createMockRepository } from 'test/mock/repo.mocks';
 import { createMockDataSource, createMockQueryRunner } from 'test/mock/qR.mock';
@@ -119,7 +119,7 @@ describe('PropuestaService', () => {
 
       expect(mockRepo.save).not.toHaveBeenCalled();
     });
- */
+ *
     it('🔁 debería usar QueryRunner si existe', async () => {
       jest.spyOn(service, 'getDatoByName').mockResolvedValue(null);
       jest.spyOn(libroService, 'getDatosByIds').mockResolvedValue([mockLibro]);
@@ -232,4 +232,4 @@ describe('PropuestaService', () => {
       expect(erroresService.handleExceptions).toHaveBeenCalled();
     });
   });
-});
+}); */

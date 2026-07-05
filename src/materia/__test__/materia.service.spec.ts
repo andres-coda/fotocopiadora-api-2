@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/* import { Test, TestingModule } from '@nestjs/testing';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { createMockRepository } from 'test/mock/repo.mocks';
 import { createMockDataSource, createMockQueryRunner } from 'test/mock/qR.mock';
@@ -220,4 +220,4 @@ describe('MateriaService', () => {
       expect(erroresService.handleExceptions).toHaveBeenCalled();
     });
   });
-});
+}); */

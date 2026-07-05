@@ -1,4 +1,4 @@
-import { TestEntity, TestEntityDto } from "@src/base/__test__/base.service.spec";
+/* import { TestEntity, TestEntityDto } from "@src/base/__test__/base.service.spec";
 import { mockUser } from "./user.mock";
 import { BaseDto } from "@src/base/dto/baseDto";
 
@@ -8,7 +8,6 @@ export const mockEntity: TestEntity = {
   deleted: false,
   fechaCreacion: new Date(),
   fechaActualizacion: new Date(),
-  user: mockUser,
 };
 
 
@@ -20,4 +19,4 @@ export const mockDtoTestRetorno: TestEntityDto = {
   deleted: false,
   fechaCreacion: new Date(),
   fechaActualizacion: new Date(),
-}
+} */

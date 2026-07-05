@@ -422,7 +422,8 @@ export abstract class BaseService<
 
       if (!saved) throw new NotFoundException(`No se pudo reactivar el dato con id ${id}${entidadError ? ` de ${entidadError}` : ''}`);
 
-      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(saved);
+      const retorno: EntidadDatoMapType[K] | undefined= this.remplaceToReturn(saved);
+      if(!retorno)  throw new NotFoundException(`No se pudo reactivar el dato con id ${id}${entidadError ? ` de ${entidadError}` : ''}`);
       if (!qR) {
         const payload: Mensaje = {
           mensaje: Mens.REHACER,
@@ -483,7 +484,8 @@ export abstract class BaseService<
   async createDatoCx({ dto, entidad, qR }: CreateProp<CrearDto, K>): Promise<EntidadDatoMapType[K]> {
     try {
       const newElemento: T = await this.createDato({ dto, qR, entidad });
-      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(newElemento);
+      const retorno: EntidadDatoMapType[K] | undefined= this.remplaceToReturn(newElemento);
+      if(!retorno)  throw new NotFoundException(`No se pudo crear el dato`);
 
       this.gateway.actualizacionDato({
         mensaje: Mens.CREAR,
@@ -525,7 +527,9 @@ export abstract class BaseService<
       if (!newElemento)
         throw new NotFoundException(`No se pudo actualizar el elemento ${id}`);
 
-      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(newElemento.dato);
+      const retorno: EntidadDatoMapType[K] | undefined= this.remplaceToReturn(newElemento.dato);
+
+      if(!retorno)  throw new NotFoundException(`No se pudo editar el dato con id ${id}${entidadError ? ` de ${entidadError}` : ''}`);
 
       if (newElemento.isQr) {
         this.gateway.actualizacionDato({
@@ -561,7 +565,11 @@ export abstract class BaseService<
     try {
       const find: { datos: T[], total: number } = await this.getDato({ qR, entidadError, relaciones, orden, selected, limite, offset });
 
-      const retorno: EntidadDatoMapType[K][] = find.datos.map(d => this.remplaceToReturn(d));
+      const retorno: EntidadDatoMapType[K][]= (find.datos?? [] ) .flatMap(e => {
+            const esp = this.remplaceToReturn(e);
+            return esp ? [esp] : [];
+          });
+      
       return {
         datos: retorno,
         total: find.total,
@@ -576,7 +584,8 @@ export abstract class BaseService<
   async getDatoByIdCx({ id, qR, relaciones, entidadError, selected }: GetIdProp<T>): Promise<EntidadDatoMapType[K]> {
     try {
       const dato: T = await this.getDatoByIdOrFail({ qR, entidadError, relaciones, id, selected });
-      const retorno: EntidadDatoMapType[K] = this.remplaceToReturn(dato);
+      const retorno: EntidadDatoMapType[K] | undefined= this.remplaceToReturn(dato);
+      if(!retorno)  throw new NotFoundException(`No se encontro el dato ${id} que busacaba`);
       return retorno;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer todos los  ${entidadError} de la base de datos`)

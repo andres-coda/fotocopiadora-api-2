@@ -23,8 +23,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    @Inject(forwardRef(() => PedidoService))
-    private readonly pedidoService: PedidoService,
   ) {
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
   }

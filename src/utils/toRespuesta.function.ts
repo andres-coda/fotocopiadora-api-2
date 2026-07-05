@@ -9,9 +9,9 @@ import { DtoPedidoItemRespuesta } from "@src/pedido_item/dto/pedido_item.dto"
 import { Especificaciones } from "@src/pedido_item/interface/especificaciones.interface"
 import { DtoPedidoRespuesta } from "@src/pedido/dto/pedido.dto"
 import { Pedido } from "@src/pedido/entity/pedido.entity"
-import { Stock } from "@src/stock/entity/stock.entity"
+import { Stock } from "@src/libro/entity/stock.entity"
 
-type tipoResumen = ClienteResumen | Stock;
+type tipoResumen = ClienteResumen;
 
 export function toRespuestaBase<T extends Base | undefined>(dato: T): DtoBaseRetorno | undefined {
   if (!dato) return undefined;

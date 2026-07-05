@@ -22,6 +22,7 @@ export interface GetPedidoItemBusqueda{
   listo: number;
   retirado:number;
   cancelado: number;
+  stock:number;
   fecha_creacion: Date;
   fecha_entrega: string;
   importe_total:number;

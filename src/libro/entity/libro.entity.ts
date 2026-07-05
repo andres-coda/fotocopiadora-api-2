@@ -26,7 +26,7 @@ export class Libro {
   @OneToMany(() => PedidoItem, pedidoItem => pedidoItem.libro)
   pedidoItems!: PedidoItem[];
 
-  @ManyToMany(() => Propuesta, propuesta => propuesta.libro)
+  @ManyToMany(() => Propuesta, propuesta => propuesta.libros)
   @JoinTable({ name: "propuesta_libro_empresa" })
   propuesta!: Propuesta[];
 

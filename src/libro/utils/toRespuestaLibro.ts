@@ -9,7 +9,7 @@ export const toRespuestaLibroEmptresXlibro = (libro:Libro) =>{
     cantidadPg: libro.cantidadPg,
     adhesivos: libro.adhesivo,
     especificacionesDefecto: libro.especificacionesDefecto,
-    //descripcion: libro.descripcion   
+    //detalles: libro.descripcion   
   }
 }
 
@@ -21,7 +21,7 @@ export const toRespuestaLibroEmpresa = (dato?:RetornoVistaLibroProp):DtoLibroEmp
     cantidadPg: dato.cantidad_pg,
     adhesivos: dato.cantidad_adhesivo,
     especificacionesDefecto: dato.especificaciones_defecto,
-    descripcion: dato.descripcion    
+    detalleImpresion: dato.detalle_impresion    
   }
 }
 
@@ -33,6 +33,7 @@ export const toRespuestaLibro = (dato?: RetornoVistaLibroProp): DtoLibroRespuest
   const libro: DtoLibroRespuesta = {
     ...libroEmpresa,
     nombre: dato.nombre,
+    descripcion: dato.descripcion,
     edicion: dato.edicion,
     autor: dato.autor,
     anio: dato.anio,

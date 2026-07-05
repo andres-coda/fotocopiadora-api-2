@@ -12,8 +12,7 @@ export const mockSede:Sede = {
   fechaActualizacion: new Date('2024-01-02T00:00:00Z'),
   deleted: false,
   nombre: 'Sede Principal',
-  libroPedidos:[],
-  user:mockUser,
+  idEmpresa: '12'
 }
 
 export const mockDtoCrearSede: DtoSedeCrear = {
