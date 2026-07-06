@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+/* import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddIndexes1717520000003 implements MigrationInterface {
 
@@ -19,4 +19,4 @@ export class AddIndexes1717520000003 implements MigrationInterface {
 
   }
 
-}
+} */

@@ -11,6 +11,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async signIn(@Body() dto: LoginDto): Promise<{ access_token: string }> {
+    console.log('Estoy en el controller login')
     return this.authService.signIn(dto.nombre, dto.password);
   }
 

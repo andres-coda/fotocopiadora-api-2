@@ -15,7 +15,8 @@ export class AuthService {
   ) { }
 
     async signIn(nombre: string, password: string): Promise<{ access_token: string }> {
-    const rows = await this.dataSource.query(
+    console.log(`Usuario: ${nombre}, contraseña: ${password}`)
+      const rows = await this.dataSource.query(
       `SELECT id, nombre, rol, id_empresa
        FROM usuario
        WHERE nombre = $1
@@ -24,6 +25,7 @@ export class AuthService {
       [nombre, password],
     );
 
+    console.log('rows ',rows)
     if (!rows.length) throw new UnauthorizedException('Credenciales inválidas');
 
     const user = rows[0];

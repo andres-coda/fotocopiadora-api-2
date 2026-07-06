@@ -1,16 +1,18 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOneOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp,  UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, GetDatoProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta } from './dto/cliente.dto';
 import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
-import { PedidoService } from '../pedido/pedido.service';
 import { clienteResumenRespuesta } from './dto/cliente_resumen.dto';
+import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { toRespuestaClienteXbusqueda } from './utils/toRespuestaCliente';
+import { ClienteRetorno } from './interface/cliente_retorno.interface';
 
 interface getClientes {
   usuarioId: string;
@@ -25,6 +27,28 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     protected readonly gatewayGateway: GatewayGateway,
   ) {
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
+  }
+
+  async getDato({ qR, relaciones = [], entidadError = undefined, orden = undefined, selected = undefined, limite, offset }: GetProp<Cliente>): Promise<{ datos: Cliente[], total: number }> {
+    try {
+      const criterio: FindManyOptions = {
+        relations: ['resumen'],
+        where: { deleted: false },
+        order: {
+          'resumen': {
+            'pendiente': 'ASC'
+          }
+        },
+        take: limite ?? 20,
+        skip: offset ?? 0
+      }
+
+      const [datos, total] = await qR.manager.findAndCount(Cliente, criterio);
+
+      return { datos, total };
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer los datos ${entidadError && `de ${entidadError}`}`)
+    }
   }
 
   // Obtiene un cliente a partir de su telefono.
@@ -99,24 +123,20 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     busqueda: string,
     limite = 20,
     offset = 0,
-    qR?: QueryRunner,
-  ): Promise<DtoClienteRespuesta[]> {
+    qR: QueryRunner,
+  ): Promise<RetornoGenericoServiceGet<DtoClienteRespuesta>> {
     try {
-      const runner = qR ?? this.dataSource.createQueryRunner();
-      if (!qR) {
-        await runner.connect();
-        // El GUC no está seteado fuera del interceptor,
-        // así que este path solo se usa internamente con cuidado.
-      }
 
-      const rows = await runner.query(
+
+      const rows = await qR.query(
         `SELECT * FROM fc_busqueda_cliente($1, $2, $3)`,
         [busqueda, limite, offset],
       );
 
-      if (!qR) await runner.release();
-
-      return rows.map((r: Cliente) => this.remplaceToReturn(r));
+      return {
+        total: Number(rows[0]?.total ?? 0),
+        datos: rows.map((r: ClienteRetorno) => toRespuestaClienteXbusqueda(r)),
+      }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar clientes`);
     }

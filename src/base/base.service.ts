@@ -571,10 +571,10 @@ export abstract class BaseService<
           });
       
       return {
-        datos: retorno,
         total: find.total,
         limite: limite,
-        pagina: offset + 1
+        pagina: offset + 1,
+        datos: retorno,
       };
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer todos los  ${entidadError} de la base de datos`)

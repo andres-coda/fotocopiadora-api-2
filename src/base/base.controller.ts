@@ -53,12 +53,13 @@ export abstract class BaseController<
    */
   @Get()
   @HttpCode(200)
-  @UseGuards(UsuarioGuard, AdminGuard)
+  @UseGuards(UsuarioGuard)
   async findAll(
     @Query('pagina') pagina = 1,
     @Query('limite') limite = 20,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGet<K>> {
+    console.log('Entre al pedido')
     const offset = (pagina - 1) * limite;
     const datoRetorno:RetornoGet<K>= await this.baseService.getDatoCx({
       entidadError: this.entidadError,
@@ -83,7 +84,7 @@ export abstract class BaseController<
    */
   @Get(':id')
   @HttpCode(200)
-  @UseGuards(UsuarioGuard, AdminGuard)
+  @UseGuards(UsuarioGuard)
   async findOne(
     @Param('id') id: string,  
     @Request() req: RequestWithUser,
@@ -104,7 +105,7 @@ export abstract class BaseController<
    * @returns Una promesa que resuelve a true si la operación fue exitosa.
    */
   @Patch(':id/rehacer')
-  @UseGuards(UsuarioGuard, AdminGuard)
+  @UseGuards(UsuarioGuard)
   async undoDeleteConstante(
     @Param('id') id: string,
     @Request() req: RequestWithUser,
@@ -124,7 +125,7 @@ export abstract class BaseController<
    * @returns Una promesa que resuelve a true si la eliminación fue exitosa.
    */
   @Delete(':id/eliminar')
-  @UseGuards(UsuarioGuard, AdminGuard)
+  @UseGuards(UsuarioGuard)
   async deleteConstante(
     @Param('id') id: string,
     @Request() req: RequestWithUser,
@@ -144,7 +145,7 @@ export abstract class BaseController<
    * @returns Una promesa que resuelve a true si el borrado lógico fue exitoso.
    */
   @Delete(':id')
-  @UseGuards(UsuarioGuard, AdminGuard)
+  @UseGuards(UsuarioGuard)
   async softDeleteConstante(
     @Param('id') id: string,
     @Request() req: RequestWithUser,
@@ -165,7 +166,7 @@ export abstract class BaseController<
    * @returns Una promesa que resuelve a true si la creación fue exitosa.
    */
   @Post()
-  @UseGuards(UsuarioGuard, AdminGuard)
+  @UseGuards(UsuarioGuard)
   async createDato(
     @Body() datos: CrearDto,
     @Request() req: RequestWithUser,
@@ -186,7 +187,7 @@ export abstract class BaseController<
    * @returns Una promesa que resuelve a true si la actualización fue exitosa.
    */
   @Put(':id')
-  @UseGuards(UsuarioGuard, AdminGuard)
+  @UseGuards(UsuarioGuard)
   async updateDato(
     @Param('id') id: string,
     @Body() datos: EditarDto,

@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+/* import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreateTriggerPedido1717520000001 implements MigrationInterface {
 
@@ -95,3 +95,4 @@ export class CreateTriggerPedido1717520000001 implements MigrationInterface {
   }
 
 }
+ */

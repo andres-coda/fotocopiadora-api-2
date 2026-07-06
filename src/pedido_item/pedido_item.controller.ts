@@ -4,10 +4,38 @@ import { PedidoItemService } from './pedido_item.service';
 import { DtoCambiarEstadoItem, DtoLibroPedidoCrear, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 
+export enum OrdenPedidoItem {
+  ESTADO = 'estado',
+  FECHA_CREACION = 'fecha_creacion',
+  ENTREGA = 'fecha_entrega',
+}
+
 @Controller('item')
 @UseGuards(UsuarioGuard)
 export class PedidoItemController {
   constructor(private readonly itemService: PedidoItemService) { }
+
+  @Get()
+  @HttpCode(200)
+  async getItems(
+    @Request() req: RequestWithUser,
+    @Query('limite') limite = 20,
+    @Query('pagina') pagina = 1,
+    @Query('orden') orden: OrdenPedidoItem = OrdenPedidoItem.ESTADO
+  ): Promise<DtoPedidoItemRespuesta[]> {
+
+    const offset = (Number(pagina) - 1) * Number(limite);
+    const items: DtoPedidoItemRespuesta[] = await this.itemService.getItems({
+      limite: Number(limite),
+      offset,
+      qR: req.queryRunner,
+      orden
+    });
+
+    return items;
+  }
+
+
 
   @Get('/:idPedido/pedido')
   @HttpCode(200)

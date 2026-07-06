@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+/* import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreateTriggerClienteResumen1717520000004
   implements MigrationInterface {
@@ -81,3 +81,4 @@ END
   }
 
 }
+ */

@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+/* import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreateTriggerStock1717520000002 implements MigrationInterface {
 
@@ -90,3 +90,4 @@ export class CreateTriggerStock1717520000002 implements MigrationInterface {
   }
 
 }
+ */

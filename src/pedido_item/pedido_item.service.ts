@@ -18,6 +18,7 @@ import { Especificaciones } from './interface/especificaciones.interface';
 import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
 import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById } from './interface/pedido_item_busqueda.interface';
 import { toRespuestaItemsPedidoByLibro, toRespuestaPedidoItem, toRespuestaPedidoItemCompleto } from './utils/toRespuestaItem';
+import { GetGenericoProp } from '@src/interface/general.interface';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.PEDIDO>, "entidad"> {
   pedido: Pedido
@@ -79,6 +80,21 @@ export class PedidoItemService {
       return pedido_item;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido id ${id_pedido} nro ${nro_pedido}`);
+    }
+  }
+
+  async getItems({qR, limite = 20, offset = 0, orden}:GetGenericoProp):Promise<DtoPedidoItemRespuesta[]> {
+    try {
+
+      const newOrden = orden ?? 'estado';
+      const rows = await qR.query(
+        `SELECT * FROM vw_pedidos_item ORDER BY ${newOrden} LIMIT $1 OFFSET $2`,
+        [limite, offset]
+      );
+
+      return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al leer los items de pedidos`);
     }
   }
 

@@ -6,4 +6,8 @@ export interface ClienteRetorno {
   pendiente?: number;
   listo?:number;
   retirado?:number;
+  cancelado?:number;
+  fecha_creacion:Date;
+  fecha_actualizacion:Date;
+  deleted:boolean
 }
