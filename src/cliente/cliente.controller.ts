@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Query, Request, UseGuards } from '@nestjs/common';
 import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';

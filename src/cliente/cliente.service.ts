@@ -5,7 +5,7 @@ import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } 
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, GetDatoProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad } from '../gateway/dto/gatewayDto.dto';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta } from './dto/cliente.dto';
 import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
@@ -13,6 +13,8 @@ import { clienteResumenRespuesta } from './dto/cliente_resumen.dto';
 import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { toRespuestaClienteXbusqueda } from './utils/toRespuestaCliente';
 import { ClienteRetorno } from './interface/cliente_retorno.interface';
+import { ClienteResumen } from './entity/clienteResumen.entity';
+import { Mens } from '@src/gateway/enum/Mens.enum';
 
 interface getClientes {
   usuarioId: string;
@@ -68,6 +70,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         where: { telefono: dato },
       });
 
+      console.log('Criterio de busqueda: ', criterio);
       return qR
         ? qR.manager.findOne(Cliente, criterio)
         : await this.baseRepository.findOne(criterio);
@@ -204,6 +207,34 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.telefono || dto.email} en el registro de ${entidad}`)
     }
   }
+
+  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<DtoClienteRespuesta> {
+    try {
+      const newElemento: Cliente = await this.createDato({ dto, qR, entidad });
+      const rows: ClienteResumen[] = await qR.query(
+        'SELECT * FROM resumen_cliente WHERE id_cliente = $1', [newElemento.id]
+      )
+      if (!rows || rows.length === 0) throw new NotFoundException('No se encontro el resumen para el nuevo cliente');
+      const newCliente: Cliente = { ...newElemento, resumen: rows[0] };
+      const retorno: DtoClienteRespuesta | undefined = this.remplaceToReturn(newCliente);
+
+      if (!retorno) throw new NotFoundException(`No se pudo crear el cliente ${dto.telefono ?? dto.email}`);
+
+      this.gateway.actualizacionDato({
+        mensaje: Mens.CREAR,
+        entidad,
+        dato: retorno,
+      } as Mensaje);
+
+      return retorno;
+    } catch (error) {
+      throw this.erroresService.handleExceptions(
+        error,
+        `Error al intentar crear el nuevo cliente`,
+      );
+    }
+  }
+
 
   async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Cliente, DtoClienteEditar, typeof Entidad.CLIENTE>): Promise<UpdateRetorno<Cliente>> {
     try {

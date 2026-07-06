@@ -170,7 +170,7 @@ export abstract class BaseService<
   ): TOptions {
     const mergeRelaciones = mergeRelationsBase(this.mergeRelations<T>(relaciones, relacionBase));
     const selectedBaseObservaciones: SelectedDeep<T> = this.mergeSelected(
-      selectedBase, { user: { id: true }, } as unknown as SelectedDeep<T>
+      selectedBase,{} as unknown as SelectedDeep<T>
     );
 
     const finalSelected = selected
