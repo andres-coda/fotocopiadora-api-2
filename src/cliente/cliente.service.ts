@@ -20,6 +20,11 @@ interface getClientes {
   usuarioId: string;
 }
 
+interface DeshacerEliminarProp{
+  qR:QueryRunner;
+  cliente: Cliente;
+}
+
 @Injectable()
 export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente, DtoClienteCrear, DtoClienteEditar> {
   constructor(
@@ -31,7 +36,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async getDato({ qR, relaciones = [], entidadError = undefined, orden = undefined, selected = undefined, limite, offset }: GetProp<Cliente>): Promise<{ datos: Cliente[], total: number }> {
+  async getDato({ qR, relaciones = [], entidadError = undefined, orden = undefined, selected = undefined, limite, offset }: GetProp<Cliente>): Promise<RetornoGenericoServiceGet<Cliente>> {
     try {
       const criterio: FindManyOptions = {
         relations: ['resumen'],
@@ -70,7 +75,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         where: { telefono: dato },
       });
 
-      console.log('Criterio de busqueda: ', criterio);
       return qR
         ? qR.manager.findOne(Cliente, criterio)
         : await this.baseRepository.findOne(criterio);
@@ -190,21 +194,30 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         selected: CLIENTE_X_RESUMEN_SELECTED
       });
 
-      if (clienteExistente) return clienteExistente;
-
+      if (clienteExistente) return await this.deshacerEliminar({cliente:clienteExistente, qR});
+    
       const cliente: Cliente = new Cliente();
       cliente.nombre = dto.nombre;
       cliente.telefono = dto.telefono;
       cliente.email = dto.email;
 
-      const newCliente: Cliente = qR
-        ? await qR.manager.save(Cliente, cliente)
-        : await this.clienteRepository.save(cliente);
+      const newCliente: Cliente = await qR.manager.save(Cliente, cliente);
 
       return newCliente;
-
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.telefono || dto.email} en el registro de ${entidad}`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear el cliente ${dto.telefono || dto.email}`)
+    }
+  }
+
+  async deshacerEliminar({cliente, qR}:DeshacerEliminarProp):Promise<Cliente>{
+    try{
+      if(!cliente.deleted) return cliente;
+      cliente.deleted = false;
+      const newCliente:Cliente = await qR.manager.save(Cliente, cliente);
+
+      return newCliente;
+    } catch(er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar deshacer eliminar del cliente ${cliente.telefono ?? cliente.email}`)
     }
   }
 
@@ -235,7 +248,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     }
   }
 
-
   async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Cliente, DtoClienteEditar, typeof Entidad.CLIENTE>): Promise<UpdateRetorno<Cliente>> {
     try {
       const cliente: Cliente = await this.getDatoByIdOrFail({
@@ -263,7 +275,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.telefono || id} en el registro de clientes`)
     }
   }
-
 
   remplaceToReturn(entidad: Cliente): DtoClienteRespuesta {
     const base = this.remplaceToBase(entidad);

@@ -1,17 +1,23 @@
-import { Controller } from '@nestjs/common';
-import { BaseController } from '../base/base.controller';
-import { Entidad } from '../gateway/dto/gatewayDto.dto';
-import { Especificacion } from './entity/especificacion.entity';
-import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
-import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
+import { Controller, Get, HttpCode, Query, Request, UseGuards } from '@nestjs/common';
 import { EspecificacionService } from './especificacion.service';
-import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from './default/relacion.default';
+import { UsuarioGuard } from '@src/auth/guard/user.guard';
+import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
+import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
 
 @Controller('especificacion')
-export class EspecificacionController  extends BaseController<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar, EspecificacionService> {
+@UseGuards(UsuarioGuard)
+export class EspecificacionController {
   constructor(
     protected readonly especificacionService: EspecificacionService,
-  ) {
-    super(especificacionService, Entidad.ESP, 'esp', [ESPECIFICACION_RELATIONS], 'nombre', SELECTED_ESPECIFICACION)
+  ) { }
+
+  @Get()
+  @HttpCode(200)
+  async findAll(
+    @Request() req: RequestWithUser,
+  ): Promise<DtoEspecificaionRetorno[]> {
+    const retorno: DtoEspecificaionRetorno[] = await this.especificacionService.getEspecificacionesCx(req.queryRunner);
+    return retorno
   }
+
 }

@@ -1,5 +1,5 @@
-import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
-
-export class DtoEspecificaionRetorno extends DtoBaseRetorno{
+export class DtoEspecificaionRetorno{
+  id!: string;
   nombre!: string;  
+  deleted!: boolean;
 }

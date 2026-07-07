@@ -1,42 +1,100 @@
-import { Injectable } from '@nestjs/common';
-import { BaseService } from '../base/base.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, In, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetIdsProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Especificacion } from './entity/especificacion.entity';
 import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
-import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
-import { ESPECIFICACION_RELATIONS, SELECTED_ESPECIFICACION } from './default/relacion.default';
 import { Especificaciones } from '../pedido_item/interface/especificaciones.interface';
 import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
-import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { CreateGenericoProp, GetGenericoByIdProp, UpdateGenericoProp } from '@src/interface/general.interface';
 
-export interface GetEspNombres extends Omit<GetIdsProp<Especificacion>, 'ids'> {
-  nombres: Especificaciones[]
+export interface GetEspNombresProp extends Pick<GetGenericoByIdProp, 'qR'> {
+  nombres: Especificaciones[];
 }
 
 @Injectable()
-export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especificacion, DtoEspecificacionCrear, DtoEspecificacionEditar> {
+export class EspecificacionService {
   constructor(
     @InjectRepository(Especificacion) private readonly especificacionRepository: Repository<Especificacion>,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-  ) {
-    super(especificacionRepository, dataSource, erroresService, gatewayGateway)
+  ) { }
+
+  async getEspecificacionByNombre({ id, qR }: GetGenericoByIdProp): Promise<Especificacion | undefined> {
+    try {
+      const criterio: FindOneOptions = {
+        where: { nombre: id }
+      }
+
+      const esp: Especificacion | undefined = await qR.manager.findOne(Especificacion, criterio);
+
+      return esp;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar buscar por nombre la especificacion ${id}`)
+    }
   }
 
-  async createDato({ dto, qR, entidad }: CreateProp<DtoEspecificacionCrear,typeof Entidad.ESP>): Promise<Especificacion> {
+  async getEspecificaciones(qR:QueryRunner ): Promise<Especificacion[]> {
     try {
-      const espExiste: Especificacion | null = await this.getDatoByName({
-        dato: dto.nombre,
-        qR,
-        relaciones: [ESPECIFICACION_RELATIONS],
-        selected: SELECTED_ESPECIFICACION,
-        entidadError: 'especificacion'
+      const criterio: FindManyOptions = {
+        where: {deleted: false}
+      }
+
+      const esp: Especificacion[ ]= await qR.manager.find(Especificacion, criterio);
+
+      return esp;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer todas las especificaciones`)
+    }
+  }
+
+  async getEspecificacionesByNombres({ nombres, qR }: GetEspNombresProp): Promise<Especificacion[]> {
+    try {
+      const criterio: FindManyOptions = {
+        where: { nombre: In(nombres) }
+      }
+
+      const esp: Especificacion[] = await qR.manager.find(Especificacion, criterio);
+
+      return esp;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar buscar por nombres las especificaciones`)
+    }
+  }
+
+  async getEspecificacionById({ id, qR }: GetGenericoByIdProp): Promise<Especificacion | undefined> {
+    try {
+      const criterio: FindOneOptions = {
+        where: { id: id }
+      }
+      const esp: Especificacion | undefined = await qR.manager.findOne(Especificacion, criterio);
+      return esp;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar buscar por id la especificacion ${id}`)
+    }
+  }
+
+  async getEspecificacionByIdOrFaild({ id, qR }: GetGenericoByIdProp): Promise<Especificacion> {
+    try {
+      const esp: Especificacion | undefined = await this.getEspecificacionById({ id, qR });
+
+      if (!esp) throw new NotFoundException(`No se encontro la especificación con el id ${id}`);
+
+      if (esp.deleted === true) throw new NotFoundException(`La especificación con id ${id} fue eliminada`);
+
+      return esp;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar buscar por id la especificacion ${id}`)
+    }
+  }
+
+  async createEspecificacion({ dto, qR }: CreateGenericoProp<DtoEspecificacionCrear>): Promise<Especificacion> {
+    try {
+      const espExiste: Especificacion | undefined = await this.getEspecificacionByNombre({
+        id: dto.nombre,
+        qR
       });
 
       if (espExiste) return espExiste;
@@ -44,49 +102,46 @@ export class EspecificacionService extends BaseService<typeof Entidad.ESP,Especi
       const especificacion: Especificacion = new Especificacion();
       especificacion.nombre = dto.nombre;
 
-      const newEspecificacion: Especificacion = qR
-        ? await qR.manager.save(Especificacion, especificacion)
-        : await this.especificacionRepository.save(especificacion);
+      const newEspecificacion: Especificacion = await qR.manager.save(Especificacion, especificacion);
 
       return newEspecificacion;
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear la especificación ${dto.nombre}`)
     }
   }
 
-  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Especificacion, DtoEspecificacionEditar, typeof Entidad.ESP>): Promise<UpdateRetorno<Especificacion>> {
+  async updateEspecificacion({ dto, qR, id }: UpdateGenericoProp<DtoEspecificacionCrear>): Promise<Especificacion> {
     try {
-      const especificacion: Especificacion = await this.getDatoByIdOrFail({
-        id,
-        qR,
-        relaciones,
-        selected,
-        entidadError
-      });
+      const especificacion: Especificacion = await this.getEspecificacionByIdOrFaild({ id, qR });
 
-      if(dto.nombre === especificacion.nombre) return {dato:especificacion, isQr:false};
+      if (dto.nombre === especificacion.nombre) return especificacion;
 
       especificacion.nombre = dto.nombre;
 
-      const newEspecificacion: Especificacion = qR
-        ? await qR.manager.save(Especificacion, especificacion)
-        : await this.especificacionRepository.save(especificacion);
+      const newEspecificacion: Especificacion = await qR.manager.save(Especificacion, especificacion);
 
-      return {dato: especificacion, isQr:true };
+      return newEspecificacion;
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre} en el registro de especificacions`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar la especificación ${dto.nombre}`)
+    }
+  }
+
+  async getEspecificacionesCx(qR: QueryRunner):Promise<DtoEspecificaionRetorno[]>{
+    try{
+      const esp:Especificacion[] = await this.getEspecificaciones(qR);
+      return esp.map(e=> this.remplaceToReturn(e));
+    } catch(er) {
+      throw this.erroresService.handleExceptions(er,'Error al intentar leer las especificaciones para el controlador')
     }
   }
 
   remplaceToReturn(entidad: Especificacion): DtoEspecificaionRetorno {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-
     return {
-      ...base,
-
-      nombre: entidad.nombre
+      id: entidad.id,
+      nombre: entidad.nombre,
+      deleted: entidad.deleted ?? false
     }
   }
 }

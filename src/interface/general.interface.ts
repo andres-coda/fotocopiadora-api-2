@@ -1,6 +1,13 @@
 import { QueryRunner } from "typeorm";
 
+export interface CreateGenericoProp<T>{
+  dto:T;
+  qR:QueryRunner;
+}
 
+export interface UpdateGenericoProp<T> extends CreateGenericoProp<T>{
+  id:string;
+}
 
 export interface GetGenericoProp{
   qR:QueryRunner;

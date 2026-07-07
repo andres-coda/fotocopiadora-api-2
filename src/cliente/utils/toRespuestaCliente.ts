@@ -21,7 +21,7 @@ export const toRespuestaCliente = (dato?: Cliente): DtoClienteRespuesta | undefi
 export const toRespuestaClienteXbusqueda = (dato?: ClienteRetorno): DtoClienteRespuesta | undefined => {
   if (!dato) return undefined;
   let resumen: DtoResumenClienteRespuesta | undefined;
-  if (dato.pendiente && dato.listo && dato.cancelado && dato.retirado) {
+  if (dato.pendiente != undefined && dato.listo != undefined && dato.cancelado != undefined && dato.retirado != undefined) {
     resumen = {
       pendiente: dato.pendiente,
       listo: dato.listo,

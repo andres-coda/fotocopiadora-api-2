@@ -1,14 +1,18 @@
-import { Base } from "../../base/entity/base.entity";
 import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
-import { Column, Entity } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('especificacion')
-export class Especificacion extends Base {
+export class Especificacion{
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;  
 
-  @Column({ type: 'varchar', length: 30 })
+  @Column({ type: 'varchar', length: 10 })
   nombre!: Especificaciones;
 
+  @Column({ default: false })
+  deleted?: boolean;
+
   constructor() {
-    super()
+    this.deleted = false;
   }
 }

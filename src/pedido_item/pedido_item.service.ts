@@ -161,12 +161,9 @@ export class PedidoItemService {
         ],
       );
       if (dto.especificaciones?.length) {
-        const especficaciones: Especificacion[] = await this.espService.getDatosByNombres({
+        const especficaciones: Especificacion[] = await this.espService.getEspecificacionesByNombres({
           nombres: dto.especificaciones || [],
           qR,
-          relaciones: [ESPECIFICACION_RELATIONS],
-          entidadError: 'pedido',
-          selected: SELECTED_ESPECIFICACION
         });
 
 
