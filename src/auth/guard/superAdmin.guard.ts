@@ -20,8 +20,8 @@ export class SuperAdminGuard implements CanActivate {
 
       request.user = { ...usuario, id: usuario.sub };
       return true;
-    } catch {
-      throw new UnauthorizedException('Token inválido o permisos insuficientes');
+    } catch (er){
+      throw new UnauthorizedException(er, 'Token inválido o permisos insuficientes');
     }
   }
 }

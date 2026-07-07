@@ -111,6 +111,23 @@ export class EspecificacionService {
     }
   }
 
+  async createEspecificacionCx({ dto, qR }: CreateGenericoProp<DtoEspecificacionCrear>): Promise<DtoEspecificaionRetorno> {
+    try {
+      const esp: Especificacion = await this.createEspecificacion({
+        dto,
+        qR
+      });
+
+      const newEsp = this.remplaceToReturn(esp);
+      if(!newEsp) throw new NotFoundException(`No se pudo crear la especificación ${dto.nombre}`)
+      
+        return newEsp;
+
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear la especificación ${dto.nombre} en el crear especificación controller`)
+    }
+  }
+
   async updateEspecificacion({ dto, qR, id }: UpdateGenericoProp<DtoEspecificacionCrear>): Promise<Especificacion> {
     try {
       const especificacion: Especificacion = await this.getEspecificacionByIdOrFaild({ id, qR });
