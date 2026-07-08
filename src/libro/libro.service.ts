@@ -13,6 +13,7 @@ import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
 import { RetornoVistaLibroProp } from './interface/libro.interface';
 import { toRespuestaLibro, toRespuestaLibroEmptresXlibro } from './utils/toRespuestaLibro';
+import { RetornoGenericoControllerGet, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 interface GetLibroProp {
   limite?: number,
@@ -55,17 +56,22 @@ export class LibroService {
 
   ) { }
 
-  async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<DtoLibroRespuesta[]> {
+  async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
       const rows = await qR.query(
         `SELECT * FROM fc_busqueda_libro($1, $2, $3)`,
         [busqueda, limite, offset]
       );
-      return rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+      return {
+        total: Number(rows[0]?.total ?? 0),
+        datos: rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+      }
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
     }
   }
+
+
 
   async getLibroCompletoByIdOrdFail({ id, qR }: GetLibroByIdProp): Promise<DtoLibroRespuesta> {
     try {
@@ -118,14 +124,22 @@ export class LibroService {
     }
   }
 
-  async getLibroEmpresa({ qR, limite, offset }: GetLibroProp): Promise<DtoLibroRespuesta[]> {
+  async getLibroEmpresa({ qR, limite, offset }: GetLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
+      const totalR = await qR.query(
+        'SELECT COUNT(*) FROM wv_libro_busqueda WHERE deleted = false'
+      );
+
       const rows = await qR.query(
         'SELECT * FROM vw_libro_busqueda WHERE deleted = false ORDER BY pendiente DESC, listo DESC LIMIT $1 OFFSET $2',
         [limite, offset]
       );
 
-      return rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+      return {
+        total: totalR,
+        datos: rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+      }
+
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar leer la pagina de libros ${offset}`);
     }

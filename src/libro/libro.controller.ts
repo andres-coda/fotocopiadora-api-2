@@ -5,6 +5,7 @@ import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
+import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -33,65 +34,79 @@ export class LibroController {
     @Query('q') busqueda: string,
     @Query('limite') limite = 20,
     @Query('pagina') pagina = 1,
-  ): Promise<DtoLibroRespuesta[]> {
+  ): Promise<RetornoGenericoControllerGet<DtoLibroRespuesta>> {
     const offset = (Number(pagina) - 1) * Number(limite);
     if (busqueda) {
-      return await this.libroService.buscarLibro({
+      const retorno = await this.libroService.buscarLibro({
         limite: Number(limite),
         offset,
         qR: req.queryRunner,
         busqueda
       });
+
+      return {
+        total: retorno.total,
+        limite,
+        pagina,
+        datos: retorno.datos
+      }
     }
 
-    return await this.libroService.getLibroEmpresa({
+    const retorno = await this.libroService.getLibroEmpresa({
       limite: Number(limite),
       offset,
       qR: req.queryRunner
     });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
   }
 
-    @Post()
-    @HttpCode(201)
-    async createLibro(
-      @Body() dto: DtoLibroCrear,
-      @Request() req: RequestWithUser,
-    ): Promise<DtoLibroRespuesta> {
-      const libro = await this.libroService.createLibroCompleto({
-        dto,
-        qR: req.queryRunner,
-        entidad: Entidad.LIBRO
-      });
-      return libro;
-    }
+  @Post()
+  @HttpCode(201)
+  async createLibro(
+    @Body() dto: DtoLibroCrear,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoLibroRespuesta> {
+    const libro = await this.libroService.createLibroCompleto({
+      dto,
+      qR: req.queryRunner,
+      entidad: Entidad.LIBRO
+    });
+    return libro;
+  }
 
-    @Put(':idLibro')
-    @HttpCode(201)
-    async updateLibro(
-      @Param('idLibro') idLibro: string,
-      @Body() dto: DtoLibroCrear,
-      @Request() req: RequestWithUser,
-    ): Promise<DtoLibroEmpresaRespuesta> {
-      const libro = await this.libroService.updateLibroEmpresa({
-        id: idLibro,
-        dto,
-        qR: req.queryRunner,
-        entidad: Entidad.LIBRO
-      });
-      return libro;
-    }
+  @Put(':idLibro')
+  @HttpCode(201)
+  async updateLibro(
+    @Param('idLibro') idLibro: string,
+    @Body() dto: DtoLibroCrear,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoLibroEmpresaRespuesta> {
+    const libro = await this.libroService.updateLibroEmpresa({
+      id: idLibro,
+      dto,
+      qR: req.queryRunner,
+      entidad: Entidad.LIBRO
+    });
+    return libro;
+  }
 
-    @Delete(':idLibro')
-    @HttpCode(201)
-    async deleteLibro(
-      @Param('idLibro') idLibro: string,
-      @Request() req: RequestWithUser,
-    ): Promise<boolean> {
-      const libro = await this.libroService.deleteLibroEmpresa({
-        id: idLibro,
-        qR: req.queryRunner,
-      });
-      return libro;
-    }
+  @Delete(':idLibro')
+  @HttpCode(201)
+  async deleteLibro(
+    @Param('idLibro') idLibro: string,
+    @Request() req: RequestWithUser,
+  ): Promise<boolean> {
+    const libro = await this.libroService.deleteLibroEmpresa({
+      id: idLibro,
+      qR: req.queryRunner,
+    });
+    return libro;
+  }
 
 }
