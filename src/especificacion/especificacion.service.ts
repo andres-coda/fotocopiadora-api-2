@@ -8,6 +8,7 @@ import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { Especificaciones } from '../pedido_item/interface/especificaciones.interface';
 import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
 import { CreateGenericoProp, GetGenericoByIdProp, UpdateGenericoProp } from '@src/interface/general.interface';
+import { toRespuestaBase } from '@src/utils/toRespuesta.function';
 
 export interface GetEspNombresProp extends Pick<GetGenericoByIdProp, 'qR'> {
   nombres: Especificaciones[];
@@ -25,7 +26,10 @@ export class EspecificacionService {
   async getEspecificacionByNombre({ id, qR }: GetGenericoByIdProp): Promise<Especificacion | undefined> {
     try {
       const criterio: FindOneOptions = {
-        where: { nombre: id }
+        where: { 
+          nombre: id,
+          deleted: false
+         }
       }
 
       const esp: Especificacion | undefined = await qR.manager.findOne(Especificacion, criterio);
@@ -36,13 +40,13 @@ export class EspecificacionService {
     }
   }
 
-  async getEspecificaciones(qR:QueryRunner ): Promise<Especificacion[]> {
+  async getEspecificaciones(qR: QueryRunner): Promise<Especificacion[]> {
     try {
       const criterio: FindManyOptions = {
-        where: {deleted: false}
+        where: { deleted: false }
       }
 
-      const esp: Especificacion[ ]= await qR.manager.find(Especificacion, criterio);
+      const esp: Especificacion[] = await qR.manager.find(Especificacion, criterio);
 
       return esp;
     } catch (er) {
@@ -50,10 +54,26 @@ export class EspecificacionService {
     }
   }
 
+    async getEspecificacionesEliminadas(qR: QueryRunner): Promise<DtoEspecificaionRetorno[]> {
+    try {
+      const criterio: FindManyOptions = {
+        where: { deleted: true }
+      }
+
+      const esp: Especificacion[] = await qR.manager.find(Especificacion, criterio);
+
+      return esp.map(e=>this.remplaceToReturn(e));
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer las especificaciones eliminadas`)
+    }
+  }
   async getEspecificacionesByNombres({ nombres, qR }: GetEspNombresProp): Promise<Especificacion[]> {
     try {
       const criterio: FindManyOptions = {
-        where: { nombre: In(nombres) }
+        where: { 
+          nombre: In(nombres),
+          deleted: false
+         }
       }
 
       const esp: Especificacion[] = await qR.manager.find(Especificacion, criterio);
@@ -119,9 +139,9 @@ export class EspecificacionService {
       });
 
       const newEsp = this.remplaceToReturn(esp);
-      if(!newEsp) throw new NotFoundException(`No se pudo crear la especificación ${dto.nombre}`)
-      
-        return newEsp;
+      if (!newEsp) throw new NotFoundException(`No se pudo crear la especificación ${dto.nombre}`)
+
+      return newEsp;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear la especificación ${dto.nombre} en el crear especificación controller`)
@@ -145,12 +165,47 @@ export class EspecificacionService {
     }
   }
 
-  async getEspecificacionesCx(qR: QueryRunner):Promise<DtoEspecificaionRetorno[]>{
-    try{
-      const esp:Especificacion[] = await this.getEspecificaciones(qR);
-      return esp.map(e=> this.remplaceToReturn(e));
-    } catch(er) {
-      throw this.erroresService.handleExceptions(er,'Error al intentar leer las especificaciones para el controlador')
+  async updateEspecificacionCx({ id, dto, qR }: UpdateGenericoProp<DtoEspecificacionCrear>): Promise<DtoEspecificaionRetorno> {
+    try {
+      const especificacion: Especificacion = await this.updateEspecificacion({ id, qR, dto });
+
+      const newEspecificacion: DtoEspecificaionRetorno = this.remplaceToReturn(especificacion);
+
+      return newEspecificacion;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar la especificación ${dto.nombre} en el controlador`)
+    }
+  }
+
+  async getEspecificacionesCx(qR: QueryRunner): Promise<DtoEspecificaionRetorno[]> {
+    try {
+      const esp: Especificacion[] = await this.getEspecificaciones(qR);
+      return esp.map(e => this.remplaceToReturn(e));
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, 'Error al intentar leer las especificaciones para el controlador')
+    }
+  }
+
+  async getEspecificacionByIdCx({id, qR}:GetGenericoByIdProp): Promise<DtoEspecificaionRetorno> {
+    try {
+      const esp: Especificacion = await this.getEspecificacionByIdOrFaild({id,qR});
+      return this.remplaceToReturn(esp);
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer la especificación id ${id} para el controlador`)
+    }
+  }
+
+  async deleteEspecificacion({ id, qR }: GetGenericoByIdProp): Promise<boolean> {
+    try {
+      const esp: Especificacion | undefined= await this.getEspecificacionById({id, qR});
+      if(!esp) throw new NotFoundException(`No se encontro la especificación ${id}`);
+      if(esp.deleted === true) return true;
+      
+      const newEsp: Especificacion = await qR.manager.save(Especificacion, esp);
+      return true;
+      
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar eliminar la especificación id ${id}`);
     }
   }
 
