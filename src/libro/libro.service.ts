@@ -3,7 +3,7 @@ import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { DtoLibroEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, In, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, ILike, In, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp } from '../base/interface/base.interface';
@@ -11,9 +11,9 @@ import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
-import { RetornoVistaLibroProp } from './interface/libro.interface';
-import { toRespuestaLibro, toRespuestaLibroEmptresXlibro } from './utils/toRespuestaLibro';
-import { RetornoGenericoControllerGet, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { RetornoLibroNombreProp, RetornoVistaLibroProp } from './interface/libro.interface';
+import { toRespuestaLibro, toRespuestaLibroEmptresXlibro, toRespuestaLibroNombre } from './utils/toRespuestaLibro';
+import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 interface GetLibroProp {
   limite?: number,
@@ -40,10 +40,6 @@ interface EditarLibroProp extends GetLibroByIdProp {
   entidad: typeof Entidad.LIBRO
 }
 
-interface GetPedidoItemByLibroProp extends GetLibroProp {
-  id_libro: string;
-}
-
 @Injectable()
 export class LibroService {
   constructor(
@@ -55,6 +51,47 @@ export class LibroService {
     private readonly propuestaService: PropuestaService,
 
   ) { }
+
+  async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+    try {
+      const [totalR] = await qR.query(
+        "SELECT COUNT(*) AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%'",
+        [busqueda]
+      )
+  
+      const rows = await qR.query(
+        "SELECT * FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%' LIMIT $2 OFFSET $3",
+        [busqueda, limite, offset]
+      )
+      
+      const newDatos = rows
+        .map((r:RetornoLibroNombreProp) => toRespuestaLibroNombre(r))
+        .filter((d:DtoLibroRespuesta) => d !== undefined);
+
+      return {
+        total: totalR.total,
+        datos: newDatos
+      }
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
+    }
+  }
+
+
+  async buscarLibroCompleto({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+    try {
+      const rows = await qR.query(
+        `SELECT * FROM fc_busqueda_libro_completo($1, $2, $3)`,
+        [busqueda, Number(limite), Number(offset)]
+      );
+      return {
+        total: Number(rows[0]?.total ?? 0),
+        datos: rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+      }
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
+    }
+  }
 
   async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
@@ -70,8 +107,6 @@ export class LibroService {
       this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
     }
   }
-
-
 
   async getLibroCompletoByIdOrdFail({ id, qR }: GetLibroByIdProp): Promise<DtoLibroRespuesta> {
     try {
@@ -126,17 +161,19 @@ export class LibroService {
 
   async getLibroEmpresa({ qR, limite, offset }: GetLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
-      const totalR = await qR.query(
-        'SELECT COUNT(*) FROM wv_libro_busqueda WHERE deleted = false'
+
+      console.log(`Limite: ${limite} , offset: ${offset} ;`)
+      const [totalR] = await qR.query(
+        'SELECT COUNT(*) as total FROM vw_libro_busqueda WHERE deleted = false'
       );
 
       const rows = await qR.query(
         'SELECT * FROM vw_libro_busqueda WHERE deleted = false ORDER BY pendiente DESC, listo DESC LIMIT $1 OFFSET $2',
-        [limite, offset]
+        [Number(limite), Number(offset)]
       );
 
       return {
-        total: totalR,
+        total: totalR.total,
         datos: rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
       }
 

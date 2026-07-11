@@ -20,9 +20,15 @@ export interface LibroDefaultProp {
   especificacionesDefecto?: Especificaciones[];
 }
 
-export interface RetornoVistaLibroProp{
+export interface RetornoLibroNombreProp{
   id: string;
   nombre: string;
+  id_materia: string;
+  materia: string;
+  editorial?: string;
+}
+
+export interface RetornoVistaLibroProp extends RetornoLibroNombreProp{
   descripcion?:string;
   edicion: number;
   autor?:string;
@@ -33,15 +39,12 @@ export interface RetornoVistaLibroProp{
   cantidad_pg:number;
   cantidad_adhesivo?:number;
   especificaciones_defecto?:Especificaciones[];
-  materia:string;
-  editorial?:string;
   pendiente:number;
   listo:number;
   retirado:number;
   cancelado:number;
   stock: number;
   id_empresa:string;
-  id_materia:string;
   detalle_impresion?:string;
 }
 

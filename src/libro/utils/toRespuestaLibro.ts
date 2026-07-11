@@ -1,6 +1,6 @@
-import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from "../dto/libroRetorno.dto";
+import { DtoLibroEmpresaRespuesta, DtoLibroNombreRespuesta, DtoLibroRespuesta } from "../dto/libroRetorno.dto";
 import { Libro } from "../entity/libro.entity";
-import { RetornoVistaLibroProp } from "../interface/libro.interface";
+import { RetornoLibroNombreProp, RetornoVistaLibroProp } from "../interface/libro.interface";
 
 export const toRespuestaLibroEmptresXlibro = (libro:Libro) =>{
   return {
@@ -22,6 +22,21 @@ export const toRespuestaLibroEmpresa = (dato?:RetornoVistaLibroProp):DtoLibroEmp
     adhesivos: dato.cantidad_adhesivo,
     especificacionesDefecto: dato.especificaciones_defecto,
     detalleImpresion: dato.detalle_impresion    
+  }
+}
+
+export const toRespuestaLibroNombre = (dato?:RetornoLibroNombreProp): DtoLibroNombreRespuesta | undefined => {
+  if(!dato ) return undefined;
+  
+  return {
+    id: dato.id,
+    nombre: dato.nombre,
+    materia: {
+      nombre: dato.materia,
+      deleted: false,
+      id: dato.id_materia
+    },
+    editorial: dato.editorial,
   }
 }
 

@@ -14,6 +14,63 @@ export class LibroController {
     protected readonly libroService: LibroService,
   ) { }
 
+  @Get('/completo')
+  @HttpCode(200)
+  async getLibrosCompletoBusqueda(
+    @Request() req: RequestWithUser,
+    @Query('q') busqueda: string,
+    @Query('limite') limite = 20,
+    @Query('pagina') pg = 1,
+  ): Promise<RetornoGenericoControllerGet<DtoLibroRespuesta> | undefined> {
+    const pagina: number = pg > 0 ? Number(pg) : 1;
+    const offset = (Number(pagina) - 1) * Number(limite);
+
+    if (!busqueda || busqueda.length < 3) return undefined;
+
+    const retorno = await this.libroService.buscarLibroCompleto({
+      limite: Number(limite),
+      offset,
+      qR: req.queryRunner,
+      busqueda
+    });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
+  }
+
+  @Get('/nombre')
+  @HttpCode(200)
+  async getLibrosNombreBusqueda(
+    @Request() req: RequestWithUser,
+    @Query('q') busqueda: string,
+    @Query('limite') limite = 20,
+    @Query('pagina') pg = 1,
+  ): Promise<RetornoGenericoControllerGet<DtoLibroRespuesta> | undefined> {
+    const pagina: number = pg > 0 ? Number(pg) : 1;
+    const offset = (Number(pagina) - 1) * Number(limite);
+
+    if (!busqueda || busqueda.length < 3) return undefined;
+
+    const retorno = await this.libroService.buscarLibroNombre({
+      limite: Number(limite),
+      offset,
+      qR: req.queryRunner,
+      busqueda
+    });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
+  }
+
+
   @Get('/:idLibro')
   @HttpCode(200)
   async getLibroById(
@@ -33,8 +90,9 @@ export class LibroController {
     @Request() req: RequestWithUser,
     @Query('q') busqueda: string,
     @Query('limite') limite = 20,
-    @Query('pagina') pagina = 1,
+    @Query('pagina') pg = 1,
   ): Promise<RetornoGenericoControllerGet<DtoLibroRespuesta>> {
+    const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
     if (busqueda) {
       const retorno = await this.libroService.buscarLibro({

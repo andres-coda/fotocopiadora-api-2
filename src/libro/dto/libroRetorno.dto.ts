@@ -35,6 +35,13 @@ export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
   descripcion?: string;
 }
 
+export class DtoLibroNombreRespuesta {
+  id!:string;
+  nombre!: string;
+  editorial?: string;
+  materia?: DtoMateriaRespuesta;
+}
+
 
 
 
