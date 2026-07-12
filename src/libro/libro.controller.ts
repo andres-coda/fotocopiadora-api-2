@@ -132,8 +132,7 @@ export class LibroController {
   ): Promise<DtoLibroRespuesta> {
     const libro = await this.libroService.createLibroCompleto({
       dto,
-      qR: req.queryRunner,
-      entidad: Entidad.LIBRO
+      qR: req.queryRunner
     });
     return libro;
   }
@@ -148,8 +147,7 @@ export class LibroController {
     const libro = await this.libroService.updateLibroEmpresa({
       id: idLibro,
       dto,
-      qR: req.queryRunner,
-      entidad: Entidad.LIBRO
+      qR: req.queryRunner
     });
     return libro;
   }

@@ -13,7 +13,7 @@ import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
 import { RetornoLibroNombreProp, RetornoVistaLibroProp } from './interface/libro.interface';
 import { toRespuestaLibro, toRespuestaLibroEmptresXlibro, toRespuestaLibroNombre } from './utils/toRespuestaLibro';
-import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 
 interface GetLibroProp {
   limite?: number,
@@ -52,7 +52,7 @@ export class LibroService {
 
   ) { }
 
-  async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
       const [totalR] = await qR.query(
         "SELECT COUNT(*) AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%'",
@@ -78,7 +78,7 @@ export class LibroService {
   }
 
 
-  async buscarLibroCompleto({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async buscarLibroCompleto({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
       const rows = await qR.query(
         `SELECT * FROM fc_busqueda_libro_completo($1, $2, $3)`,
@@ -93,7 +93,7 @@ export class LibroService {
     }
   }
 
-  async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BuscarLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
       const rows = await qR.query(
         `SELECT * FROM fc_busqueda_libro($1, $2, $3)`,
@@ -108,7 +108,7 @@ export class LibroService {
     }
   }
 
-  async getLibroCompletoByIdOrdFail({ id, qR }: GetLibroByIdProp): Promise<DtoLibroRespuesta> {
+  async getLibroCompletoByIdOrdFail({ id, qR }: GetGenericoByIdProp): Promise<DtoLibroRespuesta> {
     try {
       const [row]: RetornoVistaLibroProp[] = await qR.query(
         'SELECT * FROM vw_libro_busqueda WHERE id = $1', [id]
@@ -122,7 +122,7 @@ export class LibroService {
     }
   }
 
-  async getLibroEmpresaByIdOrdFail({ id, qR }: GetLibroByIdProp): Promise<Libro> {
+  async getLibroEmpresaByIdOrdFail({ id, qR }: GetGenericoByIdProp): Promise<Libro> {
     try {
       const [row] = await qR.query(
         'SELECT * FROM libro_empresa WHERE id = $1 ',
@@ -159,7 +159,7 @@ export class LibroService {
     }
   }
 
-  async getLibroEmpresa({ qR, limite, offset }: GetLibroProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async getLibroEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
 
       console.log(`Limite: ${limite} , offset: ${offset} ;`)
@@ -182,12 +182,12 @@ export class LibroService {
     }
   }
 
-  async createLibroCompleto({ dto, qR, entidad }: CreateProp<DtoLibroCrear, typeof Entidad.LIBRO>): Promise<DtoLibroRespuesta> {
+  async createLibroCompleto({ dto, qR }: CreateGenericoProp<DtoLibroCrear>): Promise<DtoLibroRespuesta> {
     try {
 
       const [rows]: RetornoVistaLibroProp[] = await qR.query(
         'SELECT * FROM fc_crear_libro($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
-        [dto.nombre, dto.editorial, dto.materia, dto.cantidadPg, dto.adhesivos, JSON.stringify(dto.especificacionesDefecto ?? []), null, dto.nivel, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, JSON.stringify(dto.componentes ?? [])]
+        [dto.nombre, dto.editorial, dto.materia, dto.cantidadPg, dto.adhesivos ?? 0, JSON.stringify(dto.especificacionesDefecto ?? []), null, dto.nivel, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, JSON.stringify(dto.componentes ?? [])]
       )
 
       const libro: DtoLibroRespuesta | undefined = toRespuestaLibro(rows);
@@ -196,7 +196,7 @@ export class LibroService {
 
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
-        entidad: entidad,
+        entidad: Entidad.LIBRO,
         dato: libro
       }
 
@@ -205,11 +205,11 @@ export class LibroService {
       return libro;
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear el libro ${dto.nombre} en crear libro completo`)
     }
   }
 
-  async updateLibroEmpresa({ dto, qR, id, entidad }: EditarLibroProp): Promise<DtoLibroEmpresaRespuesta> {
+  async updateLibroEmpresa({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<DtoLibroEmpresaRespuesta> {
     try {
       const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
 
@@ -228,7 +228,7 @@ export class LibroService {
     }
   }
 
-  async updateLibroCompleto({ dto, qR, id }: EditarLibroProp): Promise<DtoLibroRespuesta> {
+  async updateLibroCompleto({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<DtoLibroRespuesta> {
     await qR.query(
       `UPDATE libro_completo SET
        anio        = COALESCE($2, anio),
@@ -246,7 +246,7 @@ export class LibroService {
     return this.getLibroCompletoByIdOrdFail({ id, qR });
   }
 
-  async deleteLibroEmpresa({ id, qR }: GetLibroByIdProp): Promise<boolean> {
+  async deleteLibroEmpresa({ id, qR }: GetGenericoByIdProp): Promise<boolean> {
     try {
       const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
       if (libro.deleted) throw new NotFoundException('El libro no existe, no se puede eliminar');

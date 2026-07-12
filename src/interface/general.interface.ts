@@ -9,6 +9,13 @@ export interface UpdateGenericoProp<T> extends CreateGenericoProp<T>{
   id:string;
 }
 
+export interface BusquedaGenericoProp{
+  limite?: number,
+  offset?: number,
+  qR: QueryRunner,
+  busqueda: string,
+}
+
 export interface GetGenericoProp{
   qR:QueryRunner;
   limite?:number;
