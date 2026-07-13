@@ -51,7 +51,7 @@ export interface EditarProp<T extends Base, P extends BaseDto, K extends keyof E
 
 export interface EditarElementoProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends EditarProp<T,P, K> {}
 
-export interface EditarElementoControllerProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends Omit<EditarElementoProp<T,P, K>, 'qR'>{}
+export interface EditarElementoControllerProp<T extends Base, P extends BaseDto, K extends keyof EntidadDatoMapType> extends EditarElementoProp<T,P, K>{}
 
 export interface CreateProp<P extends BaseDto, K extends keyof EntidadDatoMapType> extends Pick<GenericoProp, 'qR'> {
   dto: P;

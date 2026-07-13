@@ -192,7 +192,7 @@ export abstract class BaseController<
     @Body() datos: EditarDto,
     @Request() req: RequestWithUser,
   ): Promise<EntidadDatoMapType[K]> {
-    const dto: EditarElementoControllerProp<T, EditarDto, K> & { qR: any } = {
+    const dto: EditarElementoControllerProp<T, EditarDto, K> = {
       dto: datos,
       id,
       entidad: this.entidad,
