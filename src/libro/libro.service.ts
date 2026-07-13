@@ -140,7 +140,7 @@ export class LibroService {
     try {
       const criterio: FindManyOptions = {
         where: {
-          id: In(ids),
+          id_libro: In(ids),
         },
       };
       const libros: Libro[] = await qR.manager.find(Libro, criterio);

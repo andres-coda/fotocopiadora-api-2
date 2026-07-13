@@ -1,35 +1,78 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Precio } from './entity/precio.entity';
 import { DtoPrecioCrear, DtoPrecioEditar, DtoPrecioRespuesta } from './dto/precio.dto';
-import { PRECIO_RELATIONS, PRECIO_SELECTED } from './default/relacion';
-import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 
 @Injectable()
-export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar> {
+export class PrecioService {
   constructor(
     @InjectRepository(Precio) private readonly precioRepository: Repository<Precio>,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-  ) {
-    super(precioRepository, dataSource, erroresService, gatewayGateway)
+  ) { }
+
+  async getDatoByIdOrFail({ id, qR }: GetGenericoByIdProp): Promise<Precio> {
+    try {
+      const precio: Precio | null = await this.getDatoById({ id, qR });
+      if (!precio) throw new NotFoundException(`El precio id ${id} no se encontro en la base de datos`);
+      return precio
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer el ${id} en la tabla de precios`)
+    }
   }
 
-  async createDato({ dto, qR, entidad }: CreateProp<DtoPrecioCrear, typeof Entidad.PRECIO>): Promise<Precio> {
+  async getDatos({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<Precio>> {
+    try {
+      const criterio: FindManyOptions = {
+        order: {
+          'nombre': 'ASC'
+        },
+        take: limite ?? 20,
+        skip: offset ?? 0
+      }
+
+      const [datos, total] = await qR.manager.findOne(Precio, criterio);
+
+      return { datos, total }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer los precios de la pagina ${offset}`)
+    }
+  }
+
+  async getDatoById({ id, qR }: GetGenericoByIdProp): Promise<Precio | null> {
+    try {
+      const criterio: FindOneOptions = {
+        where: { id: id }
+      }
+
+      return await qR.manager.findOne(Precio, criterio);
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer el precio ${id}`)
+    }
+  }
+
+  async getDatoByName({ id, qR }: GetGenericoByIdProp): Promise<Precio | null> {
+    try {
+      const criterio: FindOneOptions = {
+        where: { nombre: id }
+      }
+
+      return await qR.manager.findOne(Precio, criterio);
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer el precio ${id}`)
+    }
+  }
+
+  async createDato({ dto, qR }: CreateGenericoProp<DtoPrecioCrear>): Promise<Precio> {
     try {
       const precioExistente: Precio | null = await this.getDatoByName({
-        dato: dto.nombre,
-        qR,
-        relaciones: [PRECIO_RELATIONS],
-        selected: PRECIO_SELECTED,
-        entidadError: 'precio'
+        id: dto.nombre,
+        qR
       });
 
       if (precioExistente) return precioExistente;
@@ -45,42 +88,70 @@ export class PrecioService extends BaseService<typeof Entidad.PRECIO, Precio, Dt
       return newPrecio;
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.nombre} en el registro de ${entidad}`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar crear el precio ${dto.nombre}`)
     }
   }
 
-  async updateDato({ dto, qR, id, entidadError, relaciones, selected, entidad }: EditarProp<Precio, DtoPrecioEditar, typeof Entidad.PRECIO>): Promise<UpdateRetorno<Precio>> {
+  async updateDato({ dto, qR, id }: UpdateGenericoProp<DtoPrecioEditar>): Promise<Precio> {
     try {
       const precio: Precio = await this.getDatoByIdOrFail({
         id,
-        qR,
-        relaciones,
-        selected,
-        entidadError
+        qR
       });
-      if(precio.descripcion && precio.descripcion.length != 0 ) {
+      if (precio.descripcion && precio.descripcion.length != 0) {
         throw new NotFoundException('No puede editar el nombre de los precios usados para calcular el valor de los libros');
       }
-      if(!dto.nombre || precio.nombre === dto.nombre) return {dato:precio, isQr:false};
-      
-      precio.nombre = dto.nombre;
+      if (!dto.nombre || precio.nombre === dto.nombre) return precio;
 
-      const newPrecio: Precio = qR
-        ? await qR.manager.save(Precio, precio)
-        : await this.precioRepository.save(precio);
+      precio.nombre = dto.nombre ?? precio.nombre;
 
-      return { dato: newPrecio, isQr: true }
+      const newPrecio: Precio = await qR.manager.save(Precio, precio);
+
+      return newPrecio;
 
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de precios`)
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar el precio ${dto.nombre || id}`)
+    }
+  }
+
+  async updatePrecio({ dto, qR, id }: UpdateGenericoProp<DtoPrecioEditar>): Promise<DtoPrecioRespuesta> {
+    try {
+      const precio: Precio = await this.getDatoByIdOrFail({
+        id,
+        qR
+      });
+      if (precio.descripcion && precio.descripcion.length != 0) {
+        throw new NotFoundException('No puede editar el nombre de los precios usados para calcular el valor de los libros');
+      }
+      if (!dto.nombre || precio.nombre === dto.nombre) return this.remplaceToReturn(precio);
+
+      precio.nombre = dto.nombre ?? precio.nombre;
+      precio.descripcion = dto.descripcion ?? precio.descripcion;
+
+      const newPrecio: Precio = await qR.manager.save(Precio, precio);
+
+      return this.remplaceToReturn(newPrecio);
+
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar el precio ${dto.nombre || id}`)
+    }
+  }
+
+  async deletePrecio({ id, qR }: GetGenericoByIdProp): Promise<boolean> {
+    try {
+      const precio: Precio = await this.getDatoByIdOrFail({ id, qR });
+
+      const newPrecio: Precio = await qR.manager.remove(Precio, precio);
+      if (!newPrecio) throw new NotFoundException(`Fallo el intento de eliminar el precio id ${id}`)
+      return true
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar eliminar el precio ${id}`)
     }
   }
 
   remplaceToReturn(entidad: Precio): DtoPrecioRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-
     return {
-      ...base,
+      id: entidad.id,
       nombre: entidad.nombre,
       descripcion: entidad.descripcion,
     }

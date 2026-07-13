@@ -1,9 +1,11 @@
 import { Base } from "../../base/entity/base.entity";
-import { Column, Entity } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity('precio')
-export class Precio extends Base {
+export class Precio{
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ type: 'varchar', length: 64 })
   nombre!: string;
@@ -12,6 +14,5 @@ export class Precio extends Base {
   descripcion?: string;
 
   constructor() {
-    super()
   }
 }

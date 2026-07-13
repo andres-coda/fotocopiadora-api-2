@@ -4,36 +4,27 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateDefaultProp, CreateProp, EditarProp, GenericoProp, GetProp, RetornoGet, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad, EntidadDatoMapType, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { CreateDefaultProp, CreateProp, EditarProp, GetIdProp, GetProp, RetornoGet, UpdateRetorno } from '../base/interface/base.interface';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Propuesta } from './entity/propuesta_pedido.entity';
 import { DtoPropuestaCrear } from './dto/propuesta_pedidoCrear.dto';
 import { DtoPropuestaEditar } from './dto/propuesta_pedidoEditar.dto';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
-import { PROPUESTA_RELATIONS, PROPUESTA_SELECTED } from './default/relacion';
 import { DtoPropuestaRespuesta } from './dto/propuestaRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
-import { DtoLibroRespuesta } from '../libro/dto/libroRetorno.dto';
-import { User } from '@src/user/entity/user.entity';
-import { PROPUESTA_DEFAULT } from './default/propuesta.default';
-import { Componente } from '@src/componente/entity/componente.entity';
 import { toRespuestaPropuesta } from './utils/toRespuestaPropuesta';
-import { toRespuestaLibro, toRespuestaLibroEmpresa, toRespuestaLibroEmptresXlibro } from '@src/libro/utils/toRespuestaLibro';
-import { GetGenericoByIdProp, GetGenericoProp } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { PropuestaVistaProp } from './interface/propuesta.interface';
 
-
-
-interface NombreProp {
-  nombre: string,
-  nivel: string,
-  componentes: string[]
+interface GetTotalIdsProp {
+  total: number;
+  id: string;
 }
 
-interface PropuestaDefaultProp extends Pick<GenericoProp, 'qR'> {
-  libros: Libro[],
-  usuario: User,
+interface QuitarLibrosProp extends GetGenericoByIdProp{
+  id_libros: string[];
 }
 
 
@@ -52,12 +43,30 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
   async getPropuesta({ qR, limite, offset, orden }: GetGenericoProp): Promise<{ datos: DtoPropuestaRespuesta[], total: number }> {
     try {
-      const [row] = await qR.query(
-        'SELECT fc_obtener_propuestas($1, $2, $3) as resultado',
-        [limite, offset, orden]
+      const ordenSql = orden === 'DESC' ? 'DESC' : 'ASC';
+
+      const total: GetTotalIdsProp[] = await qR.query(
+        `SELECT id, count(*) over() as total 
+        from propuesta 
+        order by nombre ${ordenSql} 
+        limit $1 offset $2`,
+        [limite, offset]
       );
 
-      return { datos: toRespuestaPropuesta(row.resultado), total:row.total };
+      if (total.length === 0) return { datos: [], total: 0 }
+      const ids: string[] = total.map(t => t.id);
+
+      const row: PropuestaVistaProp[] = await qR.query(
+        `SELECT * 
+        from vw_propuesta
+        where id_propuesta = ANY($1::uuid[])`,
+        [ids]
+      )
+
+      return {
+        datos: toRespuestaPropuesta(row),
+        total: total[0].total,
+      };
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar leer las propusetas`)
     }
@@ -68,10 +77,10 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
       const find: { datos: DtoPropuestaRespuesta[], total: number } = await this.getPropuesta({ qR, limite, offset });
 
       return {
-        datos: find.datos,
         total: find.total,
         limite: limite,
-        pagina: offset + 1
+        pagina: offset + 1,
+        datos: find.datos,
       };
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer todos los  ${entidadError} de la base de datos`)
@@ -81,7 +90,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
   async getPropuestaById({ qR, id }: GetGenericoByIdProp): Promise<DtoPropuestaRespuesta> {
     try {
       const rows = await qR.query(
-        'SELECT * FROM vw_propuesta WHERE id = $1 ORDER BY nombre',
+        'SELECT * FROM vw_propuesta WHERE id_propuesta = $1 ORDER BY nombre',
         [id]
       );
 
@@ -93,31 +102,67 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     }
   }
 
+  async getDatoByIdCx({ id, qR, relaciones, entidadError, selected }: GetIdProp<Propuesta>): Promise<DtoPropuestaRespuesta> {
+    try {
+      return await this.getPropuestaById({id, qR});
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar leer la propusetas ${id}`)
+    }
+  }
+
+  async buscarPropuesta({busqueda, qR, limite, offset}:BusquedaGenericoProp):Promise<RetornoGenericoServiceGet<DtoPropuestaRespuesta>>{
+    try{
+       const total: GetTotalIdsProp[] = await qR.query(
+        `SELECT id, count(*) over() as total 
+        from propuesta 
+        WHERE nombre ILIKE '%' || $3 || '%'
+        order by nombre ASC 
+        limit $1 offset $2`,
+        [limite, offset, busqueda]
+      );
+
+      console.log('total: ', total)
+      if (total.length === 0) return { datos: [], total: 0 }
+      const ids: string[] = total.map(t => t.id);
+
+      const row: PropuestaVistaProp[] = await qR.query(
+        `SELECT * 
+        from vw_propuesta
+        where id_propuesta = ANY($1::uuid[])`,
+        [ids]
+      )
+
+      return {
+        datos: toRespuestaPropuesta(row),
+        total: total[0].total,
+      };
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar obtener las propuesta que coinciden con ${busqueda}`)
+    }
+  }
+
 
   async createDato({ dto, qR, entidad }: CreateProp<DtoPropuestaCrear, typeof Entidad.PROPUESTA_PEDIDO>): Promise<Propuesta> {
     try {
 
-      const libros: Libro[] = await this.libroService.getLibrosByIds({
-        ids: dto.libros,
-        qR,
-      });
+      const [propuesta] = await qR.query(
+        `INSERT INTO propuesta(nombre)
+          VALUES ($1)
+          RETURNING id`,
+        [dto.nombre]
+      );
 
-      const propuesta: Propuesta = new Propuesta();
-      propuesta.nombre = dto.nombre;
-      propuesta.libros = libros;
+      const values = dto.libros
+        .map((_, i) => `($${i + 1}, $${dto.libros.length + 1})`)
+        .join(', ');
 
-      const newPropuesta: Propuesta = qR
-        ? await qR.manager.save(Propuesta, propuesta)
-        : await this.propuestaRepository.save(propuesta);
+      await qR.query(
+        `INSERT INTO propuesta_libro_empresa(id_libro, id_propuesta)
+          VALUES ${values}`,
+        [...dto.libros, propuesta.id]
+      );
 
-      const payload: Mensaje = {
-        mensaje: Mens.CREAR,
-        entidad,
-        dato: newPropuesta
-      }
-
-      this.gatewayGateway.actualizacionDato(payload);
-
+      const newPropuesta: Propuesta = await this.getDatoByIdOrFail({ id: propuesta.id, qR })
 
       return newPropuesta;
 
@@ -172,6 +217,20 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de propuestas`)
+    }
+  }
+
+  async quitarLibro({id, id_libros, qR}:QuitarLibrosProp): Promise<boolean>{
+    try {
+      qR.query(
+        `DELETE FROM propuesta_libro_empresa 
+        where id_propuesta = $1 AND id_libro = ANY($2::uuid[])`,
+        [id, id_libros]
+      )
+
+      return true;
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar quitar libros de la propuesta ${id}`)
     }
   }
 

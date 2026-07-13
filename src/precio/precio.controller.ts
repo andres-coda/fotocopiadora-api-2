@@ -1,16 +1,57 @@
-import { Controller } from '@nestjs/common';
-import { BaseController } from '../base/base.controller';
-import { Entidad } from '../gateway/dto/gatewayDto.dto';
-import { Precio } from './entity/precio.entity';
-import { DtoPrecioCrear, DtoPrecioEditar } from './dto/precio.dto';
+import { Body, Controller, Delete, Get, HttpCode, Param, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { DtoPrecioEditar, DtoPrecioRespuesta } from './dto/precio.dto';
 import { PrecioService } from './precio.service';
-import { PRECIO_RELATIONS, PRECIO_SELECTED, PRECIO_SELECTED_BY_ID } from './default/relacion';
+import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
+import { RetornoGenericoControllerGet, UpdateGenericoProp } from '@src/interface/general.interface';
+import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 
 @Controller('precio')
-export class PrecioController extends BaseController<typeof Entidad.PRECIO, Precio, DtoPrecioCrear, DtoPrecioEditar, PrecioService> {
+@UseGuards(SuperAdminGuard)
+export class PrecioController {
   constructor(
     protected readonly precioService: PrecioService,
-  ) {
-    super(precioService, Entidad.PRECIO, 'precio', [PRECIO_RELATIONS], 'nombre', PRECIO_SELECTED_BY_ID, undefined, PRECIO_SELECTED)
+  ) { }
+  @Get()
+  @HttpCode(200)
+  async findAll(
+    @Query('pagina') pagina = 1,
+    @Query('limite') limite = 20,
+    @Request() req: RequestWithUser,
+  ): Promise<RetornoGenericoControllerGet<DtoPrecioRespuesta>> {
+    const offset = (pagina - 1) * limite;
+    const retorno = await this.precioService.getDatos({
+      limite,
+      offset,
+      qR: req.queryRunner
+    });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
+  }
+
+  @Delete(':id')
+  async softDeleteConstante(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<boolean> {
+    return this.precioService.deletePrecio({id, qR:req.queryRunner});
+  }
+
+  @Put(':id')
+  async updateDato(
+    @Param('id') id: string,
+    @Body() datos: DtoPrecioEditar,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoPrecioRespuesta> {
+    const dto: UpdateGenericoProp<DtoPrecioEditar> = {
+      dto: datos,
+      id,
+      qR: req.queryRunner,
+    };
+    return this.precioService.updatePrecio(dto);
   }
 }

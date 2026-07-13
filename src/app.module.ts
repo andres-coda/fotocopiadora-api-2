@@ -32,6 +32,7 @@ import { PedidoItem } from './pedido_item/entity/pedido_item.entity';
 import { ClienteResumen } from './cliente/entity/clienteResumen.entity';
 import { LibroResumen } from './libro/entity/libro_resumen.entity';
 import { Stock } from './libro/entity/stock.entity';
+import { PrecioEmpresa } from './precio/entity/precio_empresa.entity';
 
 @Module({
    imports: [
@@ -58,6 +59,7 @@ import { Stock } from './libro/entity/stock.entity';
         PedidoItem,
         Pedido,
         Precio,
+        PrecioEmpresa,
         Propuesta,
         Sede,
         Stock,

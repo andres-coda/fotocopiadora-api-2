@@ -12,16 +12,16 @@ import { Precio } from './precio.entity';
 @Entity('precio_empresa')
 export class PrecioEmpresa {
   @PrimaryColumn({ type: 'uuid', name: 'id_empresa' })
-  idEmpresa!: string;
+  id_empresa!: string;
 
   @PrimaryColumn({ type: 'uuid', name: 'id_precio' })
-  idPrecio!: string;
+  id_precio!: string;
 
   @CreateDateColumn({ name: 'fecha_creacion' })
-  fechaCreacion?: Date;
+  fecha_creacion?: Date;
 
   @UpdateDateColumn({ name: 'fecha_actualizacion' })
-  fechaActualizacion?: Date;
+  fecha_actualizacion?: Date;
 
   @Column({ default: false })
   deleted?: boolean;

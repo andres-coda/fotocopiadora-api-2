@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { PrecioEmpresa } from './entity/precio_empresa.entity';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
@@ -10,6 +10,7 @@ import { Mens } from '@src/gateway/enum/Mens.enum';
 import { PrecioService } from './precio.service';
 import { Precio } from './entity/precio.entity';
 import { UpdateRetorno } from '@src/base/interface/base.interface';
+import { CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 
 
 @Injectable()
@@ -21,23 +22,28 @@ export class PrecioEmpresaService {
     private readonly erroresService: ErroresService,
     private readonly gateway: GatewayGateway,
     private readonly precioService: PrecioService
-  ) {}
+  ) { }
 
   /**
    * Devuelve todos los precios de la empresa actual.
    * El RLS filtra automáticamente por id_empresa.
    * Hace join con precio para traer nombre y descripcion.
    */
-  async getPreciosEmpresa(qR?: QueryRunner): Promise<DtoPrecioEmpresaRespuesta[]> {
+  async getPreciosEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoPrecioEmpresaRespuesta>> {
     try {
-      const repo = qR ? qR.manager.getRepository(PrecioEmpresa) : this.precioEmpresaRepo;
-
-      const precios = await repo.find({
+      const criterio: FindManyOptions = {
         relations: ['precio'],
-        order: { precio: { nombre: 'ASC' } } as any,
-      });
+        order: { precio: { nombre: 'ASC' } },
+        take: limite ?? 20,
+        skip: offset ?? 0
+      }
 
-      return precios.map((pe) => this.toRespuesta(pe));
+      const [datos, total] = await qR.manager.findAndCount(PrecioEmpresa, criterio);
+
+      return {
+        total,
+        datos: datos.map((pe) => this.toRespuesta(pe))
+      }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, 'Error al leer precios de la empresa');
     }
@@ -47,23 +53,30 @@ export class PrecioEmpresaService {
    * Busca un precio de empresa por idPrecio.
    * RLS garantiza que solo se accede al de la empresa actual.
    */
-  async getPrecioEmpresaById(
-    idPrecio: string,
-    qR?: QueryRunner,
-  ): Promise<DtoPrecioEmpresaRespuesta> {
+  async getPrecioEmpresaByIdOrFail({ id, qR }: GetGenericoByIdProp): Promise<PrecioEmpresa> {
     try {
-      const repo = qR ? qR.manager.getRepository(PrecioEmpresa) : this.precioEmpresaRepo;
-
-      const pe = await repo.findOne({
-        where: { idPrecio },
+      const criterio: FindOneOptions = {
         relations: ['precio'],
-      });
+        where: { id_precio: id }
+      }
 
-      if (!pe) throw new NotFoundException(`No se encontró el precio ${idPrecio} para esta empresa`);
+      const precio = await qR.manager.findOne(PrecioEmpresa, criterio);
 
-      return this.toRespuesta(pe);
+      if (!precio) throw new NotFoundException(`No se encontró el precio ${id} para esta empresa`);
+
+      return precio;
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al leer precio ${idPrecio}`);
+      throw this.erroresService.handleExceptions(er, `Error al leer precio ${id}`);
+    }
+  }
+
+  async getPrecioEmpresaByIdOrFailCx({ id, qR }: GetGenericoByIdProp): Promise<DtoPrecioEmpresaRespuesta> {
+    try {
+      const precio: PrecioEmpresa = await this.getPrecioEmpresaByIdOrFail({ qR, id });
+
+      return this.toRespuesta(precio)
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al leer precio ${id}`);
     }
   }
 
@@ -73,41 +86,30 @@ export class PrecioEmpresaService {
    * Si la BD no tiene DEFAULT, obtenemos el id_empresa del GUC:
    *   SELECT current_setting('app.empresa_id')
    */
-  async createPrecioEmpresa(
-    dto: DtoPrecioEmpresaCrear,
-    qR: QueryRunner,
-  ): Promise<DtoPrecioEmpresaRespuesta> {
+  async createPrecioEmpresa({ dto, qR }: CreateGenericoProp<DtoPrecioEmpresaCrear>): Promise<DtoPrecioEmpresaRespuesta> {
     try {
 
-      let precio:Precio | null = await this.precioService.getDatoByName({
-        dato:dto.nombre,
+      let precio: Precio | null = await this.precioService.getDatoByName({
+        id: dto.nombre,
         qR,
-        entidadError: 'precio'
       });
 
-      if(!precio){
-        precio = await this.precioService.createDato({dto, qR, entidad: Entidad.PRECIO});
+      if (!precio) {
+        precio = await this.precioService.createDato({ dto, qR });
       }
 
       const pe = new PrecioEmpresa();
-      pe.idPrecio =precio.id;
+      pe.id_precio = precio.id;
       pe.importe = dto.importe;
       pe.detalles = dto.detalles;
 
       const saved = await qR.manager.save(PrecioEmpresa, pe);
+      const newPrecio: PrecioEmpresa = {
+        ...saved,
+        precio
+      }
 
-      // Recargar con la relación precio para devolver nombre
-      const conRelacion = await qR.manager.findOne(PrecioEmpresa, {
-        where: { idEmpresa: saved.idEmpresa, idPrecio: saved.idPrecio },
-        relations: ['precio'],
-      });
-
-      const retorno = this.toRespuesta(conRelacion!);
-     /*  this.gateway.actualizacionDato({
-        mensaje: Mens.CREAR,
-        entidad: Entidad.PRECIO,
-        dato: retorno,
-      } as Mensaje); */
+      const retorno = this.toRespuesta(newPrecio!);
 
       return retorno;
     } catch (er) {
@@ -115,75 +117,63 @@ export class PrecioEmpresaService {
     }
   }
 
-  async updatePrecioEmpresa(
-    idPrecio: string,
-    dto: DtoPrecioEmpresaEditar,
-    qR: QueryRunner,
-  ): Promise<DtoPrecioEmpresaRespuesta> {
+  async updatePrecioEmpresa({ id, dto, qR }: UpdateGenericoProp<DtoPrecioEmpresaEditar>): Promise<DtoPrecioEmpresaRespuesta> {
     try {
-      let precio: UpdateRetorno<Precio> | undefined;
-      if(dto.nombre) {
+      let precio: Precio | undefined;
+      if (dto.nombre) {
         precio = await this.precioService.updateDato({
-          dto: {nombre: dto.nombre}, 
-          qR, 
-          id:idPrecio, 
-          entidadError:'precio',
-          entidad:Entidad.PRECIO
+          dto: { nombre: dto.nombre },
+          qR,
+          id
         })
       }
 
-      const pe = await qR.manager.findOne(PrecioEmpresa, {
-        where: { idPrecio },
-        relations: ['precio'],
-      });
-
-      if (!pe) throw new NotFoundException(`No se encontró el precio ${idPrecio} para esta empresa`);
+      const pe = await this.getPrecioEmpresaByIdOrFail({ id, qR });
 
       if (dto.importe !== undefined) pe.importe = dto.importe;
       if (dto.detalles !== undefined) pe.detalles = dto.detalles;
 
       const saved = await qR.manager.save(PrecioEmpresa, pe);
-      const retorno = this.toRespuesta({ ...saved, precio: pe.precio });
+      const retorno = this.toRespuesta({ ...pe, ...saved });
 
-     /*  this.gateway.actualizacionDato({
-        mensaje: Mens.EDITAR,
-        entidad: Entidad.PRECIO,
-        dato: retorno,
-      } as Mensaje); */
+      /*  this.gateway.actualizacionDato({
+         mensaje: Mens.EDITAR,
+         entidad: Entidad.PRECIO,
+         dato: retorno,
+       } as Mensaje); */
 
       return retorno;
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al editar precio ${idPrecio}`);
+      throw this.erroresService.handleExceptions(er, `Error al editar precio ${id}`);
     }
   }
 
-  async deletePrecioEmpresa(idPrecio: string, qR: QueryRunner): Promise<boolean> {
+  async deletePrecioEmpresa({ id, qR }: GetGenericoByIdProp): Promise<boolean> {
     try {
-      const pe = await qR.manager.findOne(PrecioEmpresa, { where: { idPrecio } });
-      if (!pe) throw new NotFoundException(`No se encontró el precio ${idPrecio}`);
+      const pe = await this.getPrecioEmpresaByIdOrFail({ id, qR });
 
       await qR.manager.remove(PrecioEmpresa, pe);
 
       this.gateway.actualizacionDato({
         mensaje: Mens.ELIMINAR,
         entidad: Entidad.PRECIO,
-        id: idPrecio,
+        id: id,
       } as Mensaje);
 
       return true;
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al eliminar precio ${idPrecio}`);
+      throw this.erroresService.handleExceptions(er, `Error al eliminar precio ${id}`);
     }
   }
 
   private toRespuesta(pe: PrecioEmpresa): DtoPrecioEmpresaRespuesta {
     return {
-      idPrecio: pe.idPrecio,
-      idEmpresa: pe.idEmpresa,
+      idPrecio: pe.id_precio,
+      idEmpresa: pe.id_empresa,
       nombre: pe.precio?.nombre ?? '',
       descripcion: pe.precio?.descripcion,
-      fecha_actualizacion:pe.fechaActualizacion,
-      fecha_creacion: pe.fechaCreacion,
+      fecha_actualizacion: pe.fecha_actualizacion,
+      fecha_creacion: pe.fecha_creacion,
       delete: pe.deleted ?? false,
       importe: Number(pe.importe),
       detalles: pe.detalles,
