@@ -59,7 +59,6 @@ export abstract class BaseController<
     @Query('limite') limite = 20,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGet<K>> {
-    console.log('Entre al pedido')
     const offset = (pagina - 1) * limite;
     const datoRetorno:RetornoGet<K>= await this.baseService.getDatoCx({
       entidadError: this.entidadError,

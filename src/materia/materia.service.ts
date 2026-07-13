@@ -12,6 +12,7 @@ import { DtoMateriaEditar } from './dto/materiaEditar.dto';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
 import { DtoMateriaRespuesta } from './dto/materiaRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 @Injectable()
 export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar> {
@@ -60,8 +61,8 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
         entidadError
       });
 
-      if(dto.nombre === materia.nombre) return {dato:materia, isQr:false};
-      
+      if (dto.nombre === materia.nombre) return { dato: materia, isQr: false };
+
       materia.nombre = dto.nombre || materia.nombre;
 
       const newMateria: Materia = qR
@@ -75,11 +76,22 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
     }
   }
 
+  async getDatoTodosCx({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoMateriaRespuesta>> {
+    try {
+      const datos = await this.getDatoTodos({qR, limite, offset, entidadError: 'materia'});
+      return {
+        total: datos.total,
+        datos: datos.datos.map(d=> this.remplaceToReturn(d))
+      }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer todas las materias`)
+    }
+  }
   remplaceToReturn(entidad: Materia): DtoMateriaRespuesta {
-    const base:DtoBaseRetorno = this.remplaceToBase(entidad);
-    return{
-      ... base,
-      
+    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
+    return {
+      ...base,
+
       nombre: entidad.nombre
     }
   }

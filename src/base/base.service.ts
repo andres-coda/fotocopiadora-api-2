@@ -285,7 +285,7 @@ export abstract class BaseService<
     try {
       const dato: T | null = await this.getDatoById({ id, qR, relaciones, entidadError, selected });
       if (!dato) throw new NotFoundException(`No se encontro el ${entidadError ? entidadError : 'dato'} en la base de datos`);
-      if (dato.deleted) throw new NotFoundException(`El ${entidadError ? entidadError : 'dato'} ha sido eliminado con anterioridad`);
+      if (dato.deleted) throw new NotFoundException(`El dato de ${entidadError ? entidadError : 'dato'} ha sido eliminado con anterioridad`);
       return dato;
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar leer el dato con id ${id} ${entidadError && `de ${entidadError}`}`)

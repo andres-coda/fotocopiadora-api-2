@@ -293,7 +293,7 @@ export class PedidoItemService {
          RETURNING id_pedido, id`,
         [
           pedido.id,
-          libro.idLibro,
+          libro.id_libro,
           dto.sede_id,
           dto.cantidad,
           dto.detalles ?? null,
@@ -314,7 +314,7 @@ export class PedidoItemService {
   async createEspecificacionXpedido(pi: PedidoItem, qR: QueryRunner, libro: Libro, esp?: Especificaciones[]): Promise<Especificaciones[]> {
     try {
       const dtoEsp: Especificaciones[] = !esp || esp.length === 0
-        ? libro.especificacionesDefecto ?? []
+        ? libro.especificaciones_defecto ?? []
         : esp ?? [];
 
       if (dtoEsp.length) {

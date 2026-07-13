@@ -6,6 +6,7 @@ import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.
 import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
+import { Role } from '@src/auth/rol/rol.enum';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -144,12 +145,21 @@ export class LibroController {
     @Body() dto: DtoLibroCrear,
     @Request() req: RequestWithUser,
   ): Promise<DtoLibroEmpresaRespuesta> {
-    const libro = await this.libroService.updateLibroEmpresa({
-      id: idLibro,
-      dto,
-      qR: req.queryRunner
-    });
-    return libro;
+    if(req.user.role === Role.SuperAdmin) {
+      const libro = await this.libroService.updateLibroCompleto({
+        id: idLibro,
+        dto,
+        qR: req.queryRunner
+      });
+      return libro;
+    } else {
+      const libro = await this.libroService.updateLibroEmpresa({
+        id: idLibro,
+        dto,
+        qR: req.queryRunner
+      });
+      return libro;
+    }
   }
 
   @Delete(':idLibro')

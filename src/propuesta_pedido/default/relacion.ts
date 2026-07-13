@@ -11,9 +11,9 @@ export const PROPUESTA_SELECTED: SelectedDeep<Propuesta> = {
   ...SELECTED_BASE,
   nombre: true,
   libros: {
-    idLibro: true,
-    cantidadPg: true,
-    adhesivo: true,
-    especificacionesDefecto:true,
+    id_libro: true,
+    cantidad_pg: true,
+    cantidad_adhesivo: true,
+    especificaciones_defecto:true,
   }
 }

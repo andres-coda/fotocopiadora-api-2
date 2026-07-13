@@ -6,22 +6,22 @@ import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryColumn } from 
 @Entity('libro_empresa')
 export class Libro {
   @PrimaryColumn({ type: 'uuid', name: 'id_libro' })
-  idLibro!: string;
+  id_libro!: string;
 
   @PrimaryColumn({ type: 'uuid', name: 'id_empresa' })
-  idEmpresa!: string;
+  id_empresa!: string;
 
   @Column({ type: 'boolean', default: false })
   deleted!: boolean;
 
-  @Column({ type: 'int' })
-  cantidadPg!: number;
+  @Column({ type: 'int', name: 'cantidad_pg' })
+  cantidad_pg!: number;
 
   @Column({ type: 'int', nullable: true, name: 'cantidad_adhesivo' })
-  adhesivo?: number;
+  cantidad_adhesivo?: number;
 
-  @Column({ type: 'jsonb', nullable: true })
-  especificacionesDefecto?: Especificaciones[];
+  @Column({ type: 'jsonb', nullable: true, name:'especificaciones_defecto' })
+  especificaciones_defecto?: Especificaciones[];
 
   @OneToMany(() => PedidoItem, pedidoItem => pedidoItem.libro)
   pedidoItems!: PedidoItem[];

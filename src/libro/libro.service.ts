@@ -125,7 +125,7 @@ export class LibroService {
   async getLibroEmpresaByIdOrdFail({ id, qR }: GetGenericoByIdProp): Promise<Libro> {
     try {
       const [row] = await qR.query(
-        'SELECT * FROM libro_empresa WHERE id = $1 ',
+        'SELECT * FROM libro_empresa WHERE id_libro = $1 ',
         [id]
       );
       if (!row) throw new NotFoundException(`Libro ${id} no encontrado`);
@@ -212,14 +212,12 @@ export class LibroService {
   async updateLibroEmpresa({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<DtoLibroEmpresaRespuesta> {
     try {
       const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
-
-      libro.cantidadPg = dto.cantidadPg ?? libro.cantidadPg;
-      libro.adhesivo = dto.adhesivos ?? libro.adhesivo;
-      libro.especificacionesDefecto = dto.especificacionesDefecto ?? libro.especificacionesDefecto;
-
-      const newLibro: Libro = qR
-        ? await qR.manager.save(Libro, libro)
-        : await this.libroRepository.save(libro);
+      
+      libro.cantidad_pg = dto.cantidadPg ?? libro.cantidad_pg;
+      libro.cantidad_adhesivo = dto.adhesivos ?? libro.cantidad_adhesivo;
+      libro.especificaciones_defecto = dto.especificacionesDefecto ?? libro.especificaciones_defecto;
+      console.log('libro: ', libro)
+      const newLibro: Libro = await qR.manager.save(Libro, libro)
 
       return toRespuestaLibroEmptresXlibro(newLibro);
 

@@ -4,11 +4,11 @@ import { RetornoLibroNombreProp, RetornoVistaLibroProp } from "../interface/libr
 
 export const toRespuestaLibroEmptresXlibro = (libro:Libro) =>{
   return {
-    id: libro.idLibro,
+    id: libro.id_libro,
     deleted: libro.deleted,
-    cantidadPg: libro.cantidadPg,
-    adhesivos: libro.adhesivo,
-    especificacionesDefecto: libro.especificacionesDefecto,
+    cantidadPg: libro.cantidad_pg,
+    adhesivos: libro.cantidad_adhesivo,
+    especificacionesDefecto: libro.especificaciones_defecto,
     //detalles: libro.descripcion   
   }
 }

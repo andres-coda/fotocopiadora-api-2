@@ -136,7 +136,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         entidadError
       });
 
-      const actuales = propuesta.libros?.map(l => l.idLibro);
+      const actuales = propuesta.libros?.map(l => l.id_libro);
       const nuevos = dto.libros;
 
       const setActual = new Set(actuales);
