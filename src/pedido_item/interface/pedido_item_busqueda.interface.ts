@@ -37,6 +37,7 @@ export interface GetPedidoItemBusqueda{
   id_sede: string;
   id_libro: string;
   id_materia: string;
+  total:number;
 }
 
 export interface RetornoVistaItemsPedidoLibroById{
@@ -56,6 +57,8 @@ export interface RetornoVistaItemsPedidoLibroById{
   anillados:number;
   archivos:number;
   sede:string
+  id_cliente:string;
   telefono:string;
   email:string;
+  total:number;
 }

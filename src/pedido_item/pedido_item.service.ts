@@ -18,7 +18,7 @@ import { Especificaciones } from './interface/especificaciones.interface';
 import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
 import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById } from './interface/pedido_item_busqueda.interface';
 import { toRespuestaItemsPedidoByLibro, toRespuestaPedidoItem, toRespuestaPedidoItemCompleto } from './utils/toRespuestaItem';
-import { GetGenericoProp } from '@src/interface/general.interface';
+import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.PEDIDO>, "entidad"> {
   pedido: Pedido
@@ -29,6 +29,7 @@ interface PedidoItemByLibroProp{
   qR:QueryRunner;
   limite?:number;
   offset?:number;
+  id_empresa:string;
 }
 
 interface ItemsByPedidoId extends Omit<PedidoItemByLibroProp, 'id_libro'>{
@@ -83,7 +84,7 @@ export class PedidoItemService {
     }
   }
 
-  async getItems({qR, limite = 20, offset = 0, orden}:GetGenericoProp):Promise<DtoPedidoItemRespuesta[]> {
+  async getItems({qR, limite = 20, offset = 0, orden}:GetGenericoProp):Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
     try {
 
       const newOrden = orden ?? 'estado';
@@ -92,21 +93,29 @@ export class PedidoItemService {
         [limite, offset]
       );
 
-      return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+      const datos:DtoPedidoItemRespuesta[] = rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+      return {
+        total: rows[0].total,
+        datos,
+      }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al leer los items de pedidos`);
     }
   }
 
-  async getItemByPedido({id_pedido, qR, limite = 20, offset = 0}:ItemsByPedidoId):Promise<DtoPedidoItemRespuesta[]> {
+  async getItemByPedido({id_pedido, qR, limite = 20, offset = 0}:ItemsByPedidoId):Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
     try {
 
       const rows = await qR.query(
-        `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 LIMIT $2 OFFSET $3`,
+        `SELECT *, count(*) over() AS total_local FROM vw_pedidos_item WHERE id_pedido = $1 LIMIT $2 OFFSET $3`,
         [id_pedido, limite, offset]
       );
 
-      return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+      const datos = rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+      return {
+        total:rows[0].total_local ?? 0,
+        datos
+      }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al leer los items del pedido ${id_pedido}`);
     }
@@ -126,19 +135,22 @@ export class PedidoItemService {
     }
   }
 
-  async getItemsPedidoByLibroId({ id_libro, qR, limite = 20, offset = 0 }: PedidoItemByLibroProp): Promise<DtoPedidoItemRespuesta[]> {
+  async getItemsPedidoByLibroId({ id_libro, qR, limite = 20, offset = 0, id_empresa }: PedidoItemByLibroProp): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
     try {
       const rows: RetornoVistaItemsPedidoLibroById[] = await qR.query(
-        'SELECT * FROM vw_pedido_libro where pi.id_libro = $1 ORDER BY estado ASC, fecha_entrega ASC LIMIT $2 OFFSET $3',
+        'SELECT * FROM vw_pedido_libro pi where pi.id_libro = $1 ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3',
         [id_libro, limite, offset]
       )
-      if (!rows) return [];
+      if (!rows) return {datos:[], total:0};
 
       const itemsPedido: DtoPedidoItemRespuesta[] = rows
         .map((r) => toRespuestaItemsPedidoByLibro(r))
         .filter((item): item is DtoPedidoItemRespuesta => item !== undefined);
 
-      return itemsPedido ?? [];
+      return {
+        datos:itemsPedido,
+        total: rows[0].total
+      };
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar extraer los pedidos del libro ${id_libro}`);
     }

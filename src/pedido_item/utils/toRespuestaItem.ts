@@ -33,7 +33,12 @@ export const toRespuestaItemsPedidoByLibro = (dato?:RetornoVistaItemsPedidoLibro
     archivos: dato.archivos,
     anillados: dato.anillados,
     sena: dato.sena,
-    items: []
+    items: [] ,
+    cliente:{
+      id: dato.id_cliente,
+      telefono: dato.telefono,
+      email: dato.email
+    }
   }
   const sede: DtoSedeRespuesta = {
     id: dato.id_sede,
