@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOneOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { UsuarioCrear } from './dto/userCrear.dto';
 import { EditarUsuario, ModificarRole } from './interface/usuario.interface';
 import { Role } from '@src/auth/rol/rol.enum';
+import { GetGenericoProp, RetornoGenericoControllerGet, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 @Injectable()
 export class UserService {
@@ -17,6 +18,24 @@ export class UserService {
     protected readonly erroresService: ErroresService,
     protected readonly gateway: GatewayGateway,
   ) {
+  }
+
+  async getUsuarios({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<User>> {
+    try {
+ 
+      const criterio: FindManyOptions = {
+        take: limite ?? 20,
+        skip: offset ?? 0
+      }
+
+      const [datos, total] = await qR.manager.findAndCount(User, criterio);
+
+      return {
+        datos, total
+      }
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer todos los usuarios`)
+    }
   }
 
   async getDatoByIdOrFail(id: string, qR: QueryRunner): Promise<User> {
@@ -78,12 +97,12 @@ export class UserService {
       return newUsuario;
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar crear el dato ${datos.nombre} en usuario`)
-    } 
+    }
   }
 
   // Actualiza los datos de un usuario existente.
   // Lanza una excepción si el usuario no existe.
-  async updateUsuario(dto:EditarUsuario, qR: QueryRunner): Promise<User> {
+  async updateUsuario(dto: EditarUsuario, qR: QueryRunner): Promise<User> {
     try {
       const usuario: User = await this.getDatoByIdOrFail(dto.id, qR);
       usuario.nombre = dto.datos.nombre;
@@ -97,7 +116,7 @@ export class UserService {
   }
 
   // Modifica el rol de un usuario.
-  async modifyUsuarioRole(dto:ModificarRole, qR: QueryRunner): Promise<User> {
+  async modifyUsuarioRole(dto: ModificarRole, qR: QueryRunner): Promise<User> {
     try {
       const usuario: User = await this.getDatoByIdOrFail(dto.id, qR);
       usuario.role = dto.role;

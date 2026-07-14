@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthService } from '../auth/auth.service';
 import { UsuarioGuard } from '../auth/guard/user.guard';
@@ -9,14 +9,34 @@ import { AdminGuard } from '../auth/guard/admin.guard';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { Role } from '@src/auth/rol/rol.enum';
 import type { EditarUsuario, ModificarRole } from './interface/usuario.interface';
+import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 
 @Controller('user')
 @UseGuards(UsuarioGuard)
 export class UserController {
   public constructor(
     private readonly userService: UserService,
-    private readonly authService: AuthService,
   ) { }
+
+  @Get()
+  @HttpCode(200)
+  @UseGuards(AdminGuard)
+  async getUsuario(
+    @Query('pagina') pagina = 1,
+    @Query('limite') limite = 20,
+    @Request() req: RequestWithUser,
+  ): Promise<RetornoGenericoControllerGet<User>> {
+    const offset = (pagina - 1) * limite;
+
+    const retorno = await this.userService.getUsuarios({ qR: req.queryRunner, limite, offset });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
+  }
 
   @Get(':id')
   @HttpCode(200)
@@ -25,8 +45,8 @@ export class UserController {
     @Request() req: RequestWithUser,
   ): Promise<User> {
     const usuario = req.user;
-    if(!usuario) throw new NotFoundException('Permiso denegado. Tienes que tener una cuenta para ingresar');
-    if(usuario.role === Role.Operador && usuario.sub != id ) throw new NotFoundException('Permiso denegado. Tienes que ser el usuario logueado para acceder a tus datos');
+    if (!usuario) throw new NotFoundException('Permiso denegado. Tienes que tener una cuenta para ingresar');
+    if (usuario.role === Role.Operador && usuario.sub != id) throw new NotFoundException('Permiso denegado. Tienes que ser el usuario logueado para acceder a tus datos');
     if (!usuario || id != usuario.sub) throw new NotFoundException("Acción prohibida. Solo puedes acceder a tus datos");
 
     return await this.userService.getDatoByIdOrFail(id, req.queryRunner);
@@ -34,19 +54,18 @@ export class UserController {
 
   @Post()
   @HttpCode(201)
+  @UseGuards(AdminGuard)
   async createUsuario(
     @Body() datos: UsuarioCrear,
     @Request() req: RequestWithUser,
-  ): Promise<{ access_token: string }> {
+  ): Promise<boolean> {
     console.log('controller crear usuario')
     const user: User = await this.userService.createUsuario(datos, req.queryRunner);
     if (!user) throw new BadRequestException('No se pudo crear el usuario');
-    const token = await this.authService.signIn(user.email, user.password);
-    return token
+    return true
   }
 
   @Put()
-  @UseGuards(UsuarioGuard)
   async updateUsuario(
     @Request() req: RequestWithUser,
     @Body() datos: EditarUsuario

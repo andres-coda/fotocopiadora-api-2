@@ -15,20 +15,15 @@ export class AuthService {
   ) { }
 
     async signIn(nombre: string, password: string): Promise<{ access_token: string }> {
-    console.log(`Usuario: ${nombre}, contraseña: ${password}`)
-      const rows = await this.dataSource.query(
-      `SELECT id, nombre, rol, id_empresa
-       FROM usuario
-       WHERE nombre = $1
-         AND password_hash = $2
-         AND deleted = false`,
+      
+      const [row] = await this.dataSource.query(
+      `SELECT * FROM fc_login($1, $2)`,
       [nombre, password],
     );
+    
+    if (!row) throw new UnauthorizedException('Credenciales inválidas');
 
-    console.log('rows ',rows)
-    if (!rows.length) throw new UnauthorizedException('Credenciales inválidas');
-
-    const user = rows[0];
+    const user = row;
 
     const payload: AuthParcialDto = {
       sub: user.id,

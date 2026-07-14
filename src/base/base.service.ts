@@ -9,6 +9,7 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { BaseDto } from './dto/baseDto';
 import { BASE_RELATIONS, mergeNestedRelations, mergeRelationsBase, mergeSimpleRelations, relacionesAString } from '../utils/relacion';
 import { DtoBaseRetorno } from './dto/baseRetorno.dto';
+import { GetGenericoProp } from '@src/interface/general.interface';
 
 /**
  * Servicio base genérico para todas las entidades del sistema.

@@ -44,7 +44,7 @@ import { PrecioEmpresa } from './precio/entity/precio_empresa.entity';
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USERNAME || 'postgres',
+      username: process.env.DB_USERNAME || 'app_role',
       password: process.env.DB_PASSWORD || 'root',
       database: process.env.DB_NAME || 'fotocopiadora',
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,

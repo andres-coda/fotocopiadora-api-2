@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
@@ -13,6 +13,7 @@ import { DtoSedeEditar } from './dto/sedeEditar.dto';
 import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
 import { DtoSedeRespuesta } from './dto/sedeRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 @Injectable()
 export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar> {
@@ -23,6 +24,29 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
     protected readonly gatewayGateway: GatewayGateway,
   ) {
     super(sedeRepository, dataSource, erroresService, gatewayGateway)
+  }
+
+  async getSedesTodas({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoSedeRespuesta>> {
+    try {
+      const newOffset: number = Number(offset) > 0 ? Number(offset) : 0;
+      const criterio: FindManyOptions = {
+        take: limite ?? 20,
+        skip: newOffset        
+      }
+      const [datos, total] = await qR.manager.findAndCount(Sede, criterio);
+
+      const retorno: DtoSedeRespuesta[] = (datos ?? []).flatMap(e => {
+        const esp = this.remplaceToReturn(e);
+        return esp ? [esp] : [];
+      });
+
+      return {
+        total,
+        datos: retorno,
+      }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer los datos eliminados y no eliminados de sede`)
+    }
   }
 
   async createDato({ dto, qR, entidad }: CreateProp<DtoSedeCrear, typeof Entidad.SEDE>): Promise<Sede> {
@@ -60,7 +84,7 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
         selected,
         entidadError
       });
-      if(sede.nombre === dto.nombre) return {dato: sede, isQr: false};
+      if (sede.nombre === dto.nombre) return { dato: sede, isQr: false };
 
       sede.nombre = dto.nombre;
 

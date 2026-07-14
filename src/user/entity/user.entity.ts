@@ -44,7 +44,7 @@ export class User {
   * Role del usuario. Valores posibles: super_admin | admin | operador.
   * Validado por el constraint ch_tipos_rol en la BD.
   */
-  @Exclude()
+  //@Exclude()
   @Column({ type: 'varchar', length: 20, name: 'rol', default: Role.Operador })
   role!: Role;
 
