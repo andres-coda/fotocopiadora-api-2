@@ -46,6 +46,8 @@ export interface RetornoVistaLibroProp extends RetornoLibroNombreProp{
   stock: number;
   id_empresa:string;
   detalle_impresion?:string;
+  id_libro?:string;
+  id_emrpesa?:string;
 }
 
 

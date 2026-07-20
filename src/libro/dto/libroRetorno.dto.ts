@@ -17,6 +17,7 @@ export class DtoLibroEmpresaRespuesta extends DtoBaseRetorno {
   adhesivos?: number;
   cantidadPg!: number;
   detalleImpresion?:string;
+  id_empresa?:string;
 }
 
 export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {

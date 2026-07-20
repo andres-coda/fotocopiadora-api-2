@@ -121,7 +121,6 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         [limite, offset, busqueda]
       );
 
-      console.log('total: ', total)
       if (total.length === 0) return { datos: [], total: 0 }
       const ids: string[] = total.map(t => t.id);
 

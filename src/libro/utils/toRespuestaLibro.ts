@@ -21,7 +21,8 @@ export const toRespuestaLibroEmpresa = (dato?:RetornoVistaLibroProp):DtoLibroEmp
     cantidadPg: dato.cantidad_pg,
     adhesivos: dato.cantidad_adhesivo,
     especificacionesDefecto: dato.especificaciones_defecto,
-    detalleImpresion: dato.detalle_impresion    
+    detalleImpresion: dato.detalle_impresion,
+    id_empresa: dato.id_empresa,    
   }
 }
 

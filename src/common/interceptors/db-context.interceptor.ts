@@ -26,7 +26,7 @@ import { Observable, from, switchMap, tap } from 'rxjs';
  */
 @Injectable()
 export class DbContextInterceptor implements NestInterceptor {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();

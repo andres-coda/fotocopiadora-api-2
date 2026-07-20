@@ -59,7 +59,6 @@ export class UserController {
     @Body() datos: UsuarioCrear,
     @Request() req: RequestWithUser,
   ): Promise<boolean> {
-    console.log('controller crear usuario')
     const user: User = await this.userService.createUsuario(datos, req.queryRunner);
     if (!user) throw new BadRequestException('No se pudo crear el usuario');
     return true

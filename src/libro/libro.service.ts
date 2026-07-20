@@ -162,7 +162,6 @@ export class LibroService {
   async getLibroEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
 
-      console.log(`Limite: ${limite} , offset: ${offset} ;`)
       const [totalR] = await qR.query(
         'SELECT COUNT(*) as total FROM vw_libro_busqueda WHERE deleted = false'
       );
@@ -216,7 +215,7 @@ export class LibroService {
       libro.cantidad_pg = dto.cantidadPg ?? libro.cantidad_pg;
       libro.cantidad_adhesivo = dto.adhesivos ?? libro.cantidad_adhesivo;
       libro.especificaciones_defecto = dto.especificacionesDefecto ?? libro.especificaciones_defecto;
-      console.log('libro: ', libro)
+     
       const newLibro: Libro = await qR.manager.save(Libro, libro)
 
       return toRespuestaLibroEmptresXlibro(newLibro);
