@@ -171,6 +171,7 @@ export class PrecioEmpresaService {
       idPrecio: pe.id_precio,
       idEmpresa: pe.id_empresa,
       nombre: pe.precio?.nombre ?? '',
+      abreviatura: pe.precio?.abreviatura,
       descripcion: pe.precio?.descripcion,
       fecha_actualizacion: pe.fecha_actualizacion,
       fecha_creacion: pe.fecha_creacion,

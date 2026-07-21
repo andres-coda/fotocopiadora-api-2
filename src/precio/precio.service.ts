@@ -80,6 +80,7 @@ export class PrecioService {
       const precio: Precio = new Precio();
       precio.nombre = dto.nombre;
       precio.descripcion = dto.descripcion;
+      precio.abreviatura = dto.abreviatura;
 
       const newPrecio: Precio = qR
         ? await qR.manager.save(Precio, precio)
@@ -104,6 +105,7 @@ export class PrecioService {
       if (!dto.nombre || precio.nombre === dto.nombre) return precio;
 
       precio.nombre = dto.nombre ?? precio.nombre;
+      precio.descripcion = dto.descripcion ?? precio.descripcion;
 
       const newPrecio: Precio = await qR.manager.save(Precio, precio);
 
@@ -154,6 +156,7 @@ export class PrecioService {
       id: entidad.id,
       nombre: entidad.nombre,
       descripcion: entidad.descripcion,
+      abreviatura: entidad.abreviatura,
     }
   }
 }

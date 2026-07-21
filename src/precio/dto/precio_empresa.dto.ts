@@ -33,4 +33,5 @@ export class DtoPrecioEmpresaRespuesta {
   descripcion?: string;
   importe!: number;
   detalles?: string;
+  abreviatura?:string;
 }
