@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm';
 import { PrecioEmpresa } from './entity/precio_empresa.entity';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
@@ -9,8 +9,7 @@ import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { PrecioService } from './precio.service';
 import { Precio } from './entity/precio.entity';
-import { UpdateRetorno } from '@src/base/interface/base.interface';
-import { CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 
 
 @Injectable()
@@ -34,6 +33,30 @@ export class PrecioEmpresaService {
       const criterio: FindManyOptions = {
         relations: ['precio'],
         order: { precio: { nombre: 'ASC' } },
+        take: limite ?? 20,
+        skip: offset ?? 0
+      }
+
+      const [datos, total] = await qR.manager.findAndCount(PrecioEmpresa, criterio);
+
+      return {
+        total,
+        datos: datos.map((pe) => this.toRespuesta(pe))
+      }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, 'Error al leer precios de la empresa');
+    }
+  }
+
+  async getPreciosEmpresaBusqueda({ qR, limite, offset, busqueda }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoPrecioEmpresaRespuesta>> {
+    try {
+      const criterio: FindManyOptions = {
+        relations: ['precio'],
+        where: {
+          precio: {
+            nombre: Like(`%${busqueda}%`)
+          }
+        },
         take: limite ?? 20,
         skip: offset ?? 0
       }

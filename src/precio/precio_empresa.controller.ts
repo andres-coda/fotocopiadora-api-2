@@ -18,13 +18,26 @@ export class PrecioEmpresaController {
   @Get()
   @HttpCode(200)
   async getAll(
+    @Query('q') busqueda: string,
     @Query('limite') limite = 20,
     @Query('pagina') pagDto = 1,
     @Request() req: RequestWithUser
   ): Promise<RetornoGenericoControllerGet<DtoPrecioEmpresaRespuesta>> {
+
+
     const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
     const offset = (pagina - 1) * limite;
-    const datos = await this.precioEmpresaService.getPreciosEmpresa({ qR: req.queryRunner, limite, offset });
+    if (!busqueda || busqueda.length < 3) {
+      const datos = await this.precioEmpresaService.getPreciosEmpresa({ qR: req.queryRunner, limite, offset });
+      return {
+        total: datos.total,
+        limite,
+        pagina,
+        datos: datos.datos
+      }
+    }
+
+    const datos = await this.precioEmpresaService.getPreciosEmpresaBusqueda({ qR: req.queryRunner, busqueda, limite, offset });
 
     return {
       total: datos.total,
