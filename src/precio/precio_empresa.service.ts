@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, ILike, Repository } from 'typeorm';
 import { PrecioEmpresa } from './entity/precio_empresa.entity';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
@@ -54,7 +54,7 @@ export class PrecioEmpresaService {
         relations: ['precio'],
         where: {
           precio: {
-            nombre: Like(`%${busqueda}%`)
+            nombre: ILike(`%${busqueda}%`)
           }
         },
         take: limite ?? 20,
