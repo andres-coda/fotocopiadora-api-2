@@ -194,7 +194,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
         selected: CLIENTE_X_RESUMEN_SELECTED
       });
 
-      if (clienteExistente) return await this.deshacerEliminar({cliente:clienteExistente, qR});
+      if(clienteExistente) return clienteExistente;
     
       const cliente: Cliente = new Cliente();
       cliente.nombre = dto.nombre;
@@ -224,11 +224,15 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
   async createDatoCx({ dto, entidad, qR }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<DtoClienteRespuesta> {
     try {
       const newElemento: Cliente = await this.createDato({ dto, qR, entidad });
-      const rows: ClienteResumen[] = await qR.query(
-        'SELECT * FROM resumen_cliente WHERE id_cliente = $1', [newElemento.id]
-      )
-      if (!rows || rows.length === 0) throw new NotFoundException('No se encontro el resumen para el nuevo cliente');
-      const newCliente: Cliente = { ...newElemento, resumen: rows[0] };
+      const newCliente:Cliente = await this.getDatoByIdOrFail({
+        id: newElemento.id,
+        qR,
+        relaciones:[CLIENTE_RELATIONS],
+        selected: CLIENTE_X_RESUMEN_SELECTED
+      });
+
+      if (!newCliente) throw new NotFoundException('No se encontro el resumen para el nuevo cliente');
+      
       const retorno: DtoClienteRespuesta | undefined = this.remplaceToReturn(newCliente);
 
       if (!retorno) throw new NotFoundException(`No se pudo crear el cliente ${dto.telefono ?? dto.email}`);
