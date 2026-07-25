@@ -562,7 +562,7 @@ export abstract class BaseService<
     }
   }
 
-  async getDatoCx({ qR, relaciones = [], entidadError = undefined, orden = undefined, selected = undefined, limite = 50, offset = 0 }: GetProp<T>): Promise<RetornoGet<K>> {
+  async getDatoCx({ qR, relaciones = [], entidadError = undefined, orden = undefined, selected = undefined, limite = 50, offset = 0 }: GetProp<T>): Promise<{ datos: EntidadDatoMapType[K][], total: number }> {
     try {
       const find: { datos: T[], total: number } = await this.getDato({ qR, entidadError, relaciones, orden, selected, limite, offset });
 
@@ -573,8 +573,6 @@ export abstract class BaseService<
       
       return {
         total: find.total,
-        limite: limite,
-        pagina: offset + 1,
         datos: retorno,
       };
     } catch (er) {

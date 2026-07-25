@@ -48,7 +48,12 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
         qR: req.queryRunner
       });
 
-      return datoRetorno
+      return {
+        total:datoRetorno.total,
+        limite,
+        pagina,
+        datos: datoRetorno.datos
+      }
     }
 
     const retorno = await this.clienteService.buscarClientes(

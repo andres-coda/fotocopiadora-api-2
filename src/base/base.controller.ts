@@ -43,7 +43,7 @@ export abstract class BaseController<
     protected readonly selected?: SelectedDeep<T>,
     protected readonly relacionesGenerales?: RelationsKey<T>[],
     protected readonly selectedGeneral?: SelectedDeep<T>,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todos los elementos activos asociados al usuario autenticado.
@@ -60,17 +60,22 @@ export abstract class BaseController<
     @Request() req: RequestWithUser,
   ): Promise<RetornoGet<K>> {
     const offset = (pagina - 1) * limite;
-    const datoRetorno:RetornoGet<K>= await this.baseService.getDatoCx({
+    const datoRetorno: { datos: EntidadDatoMapType[K][], total: number } = await this.baseService.getDatoCx({
       entidadError: this.entidadError,
       relaciones: this.relacionesGenerales ?? this.relaciones,
       selected: this.selectedGeneral ?? this.selected,
       orden: this.orden,
-      limite, 
+      limite,
       offset,
       qR: req.queryRunner
     });
 
-    return datoRetorno
+    return {
+      total: datoRetorno.total,
+      limite,
+      pagina,
+      datos: datoRetorno.datos,
+    }
   }
 
 
@@ -85,7 +90,7 @@ export abstract class BaseController<
   @HttpCode(200)
   @UseGuards(UsuarioGuard)
   async findOne(
-    @Param('id') id: string,  
+    @Param('id') id: string,
     @Request() req: RequestWithUser,
   ): Promise<EntidadDatoMapType[K]> {
     return this.baseService.getDatoByIdCx({
@@ -93,7 +98,7 @@ export abstract class BaseController<
       entidadError: this.entidadError,
       relaciones: this.relaciones,
       selected: this.selected,
-      qR:req.queryRunner
+      qR: req.queryRunner
     });
   }
 
@@ -117,7 +122,7 @@ export abstract class BaseController<
     };
     return this.baseService.undoDelete(dto);
   }
-  
+
   /**
    * Elimina permanentemente un elemento de la base de datos.
    * @param id - ID del elemento a eliminar.
