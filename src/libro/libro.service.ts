@@ -54,13 +54,8 @@ export class LibroService {
 
   async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
     try {
-      const [totalR] = await qR.query(
-        "SELECT COUNT(*) AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%'",
-        [busqueda]
-      )
-  
       const rows = await qR.query(
-        "SELECT * FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%' LIMIT $2 OFFSET $3",
+        "SELECT *, count(*) over() AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%' LIMIT $2 OFFSET $3",
         [busqueda, limite, offset]
       )
       
@@ -69,7 +64,7 @@ export class LibroService {
         .filter((d:DtoLibroRespuesta) => d !== undefined);
 
       return {
-        total: totalR.total,
+        total: rows[0].total,
         datos: newDatos
       }
     } catch (er) {
