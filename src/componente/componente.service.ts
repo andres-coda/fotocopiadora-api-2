@@ -1,18 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, ILike, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
-import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
-import { Mens } from '../gateway/enum/Mens.enum';
+import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Componente } from './entity/componente.entity';
 import { DtoComponenteCrear } from './dto/componenteCrear.dto';
 import { DtoComponenteEditar } from './dto/componenteEditar.dto';
 import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from './default/relacion.default';
 import { DtoComponenteRespuesta } from './dto/componenteRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
+import { BusquedaGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 @Injectable()
 export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar> {
@@ -61,7 +61,7 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
         entidadError
       });
 
-      if(componente.nombre === dto.nombre) return {dato:componente, isQr:false};
+      if (componente.nombre === dto.nombre) return { dato: componente, isQr: false };
       componente.nombre = dto.nombre || componente.nombre;
 
       const newComponente: Componente = qR
@@ -72,6 +72,28 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de componente`)
+    }
+  }
+
+  async buscarComponenteNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoComponenteRespuesta>> {
+    try {
+      const criterio: FindManyOptions = {
+        relations: [],
+        where: {
+          nombre: ILike(`%${busqueda}%`)
+        },
+        take: limite ?? 20,
+        skip: offset ?? 0
+      }
+
+      const [datos, total] = await qR.manager.findAndCount(Componente, criterio);
+
+      return {
+        total,
+        datos: datos.map((pe) => this.remplaceToReturn(pe))
+      }
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
     }
   }
 

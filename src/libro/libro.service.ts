@@ -162,7 +162,7 @@ export class LibroService {
       );
 
       const rows = await qR.query(
-        'SELECT * FROM vw_libro_busqueda WHERE deleted = false ORDER BY pendiente DESC, listo DESC LIMIT $1 OFFSET $2',
+        'SELECT * FROM vw_libro_busqueda WHERE deleted = false ORDER BY nombre ASC, nivel ASC LIMIT $1 OFFSET $2',
         [Number(limite), Number(offset)]
       );
 
