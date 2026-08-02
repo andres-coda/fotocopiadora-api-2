@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, ILike, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, ILike, QueryRunner, Repository } from 'typeorm';
 import { PrecioEmpresa } from './entity/precio_empresa.entity';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
@@ -10,6 +10,7 @@ import { Mens } from '@src/gateway/enum/Mens.enum';
 import { PrecioService } from './precio.service';
 import { Precio } from './entity/precio.entity';
 import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
+import { PrecioDefaultProp } from './interface/precio.interface';
 
 
 @Injectable()
@@ -32,7 +33,7 @@ export class PrecioEmpresaService {
     try {
       const criterio: FindManyOptions = {
         relations: ['precio'],
-        order: { precio: { nombre: 'ASC' } },
+        order: { precio: { abreviatura: 'ASC' } },
         take: limite ?? 20,
         skip: offset ?? 0
       }
@@ -186,6 +187,23 @@ export class PrecioEmpresaService {
       return true;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al eliminar precio ${id}`);
+    }
+  }
+
+  async CreatePrecioDefault(preciosDefault: PrecioDefaultProp[], qR:QueryRunner):Promise<DtoPrecioEmpresaRespuesta[]>{
+    try{
+      const preciosCreados:DtoPrecioEmpresaRespuesta[] = [];
+      for(const p of preciosDefault) {
+        let aux:Precio | null= await this.precioService.getDatoByName({id:p.nombre, qR});
+        if(!aux) {
+          aux = await this.precioService.createDato({dto: {nombre:p.nombre, abreviatura:p.abreviatura}, qR});
+        }
+        const precioCompleto:DtoPrecioEmpresaRespuesta = await this.createPrecioEmpresa({dto:{nombre:p.nombre, importe:p.importe}, qR});
+        preciosCreados.push(precioCompleto);
+      }
+      return preciosCreados;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al crear por defecto los precios`);
     }
   }
 

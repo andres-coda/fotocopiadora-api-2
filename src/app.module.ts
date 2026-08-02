@@ -33,6 +33,7 @@ import { ClienteResumen } from './cliente/entity/clienteResumen.entity';
 import { LibroResumen } from './libro/entity/libro_resumen.entity';
 import { Stock } from './libro/entity/stock.entity';
 import { PrecioEmpresa } from './precio/entity/precio_empresa.entity';
+import { EmpresaModule } from './empresa/empresa.module';
 
 @Module({
    imports: [
@@ -81,6 +82,7 @@ import { PrecioEmpresa } from './precio/entity/precio_empresa.entity';
     EspecificacionModule,
     PropuestaPedidoModule,
     ComponenteModule,
+    EmpresaModule,
   ],
   controllers: [],
   providers: [

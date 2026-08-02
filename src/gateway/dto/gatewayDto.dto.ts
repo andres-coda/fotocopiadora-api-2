@@ -2,7 +2,7 @@ import { Mens } from "../enum/Mens.enum";
 import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
 import { DtoComponenteRespuesta } from "../../componente/dto/componenteRetorno.dto";
 import { DtoEspecificaionRetorno } from "../../especificacion/dto/DtoEspecificacionRetorno.dto";
-import { DtoLibroRespuesta } from "../../libro/dto/libroRetorno.dto";
+import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from "../../libro/dto/libroRetorno.dto";
 import { DtoPedidoItemRespuesta } from "../../pedido_item/dto/pedido_item.dto";
 import { DtoMateriaRespuesta } from "../../materia/dto/materiaRetorno.dto";
 import { DtoPedidoRespuesta } from "../../pedido/dto/pedido.dto";
@@ -11,6 +11,7 @@ import { DtoPropuestaRespuesta } from "../../propuesta_pedido/dto/propuestaRetor
 import { DtoSedeRespuesta } from "../../sede/dto/sedeRetorno.dto";
 import { DtoResumenRespuesta } from "../../libro/dto/resumen.dto";
 import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
+import { DtoEmpresaRespuesta } from "@src/empresa/dto/empresa.dto";
 
 export const EntidadDatoMap = {
   cliente: {} as DtoClienteRespuesta,
@@ -22,6 +23,7 @@ export const EntidadDatoMap = {
   precio: {} as DtoPrecioRespuesta,
   propuesta_pedido: {} as DtoPropuestaRespuesta,
   sede: {} as DtoSedeRespuesta,
+  empresa: {} as DtoEmpresaRespuesta,
 } satisfies Record<string, DtoBaseRetorno>;
 
 

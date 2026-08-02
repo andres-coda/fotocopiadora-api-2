@@ -17,56 +17,51 @@ export const PRECIO_DEFAULT: PrecioDefaultProp[] = [
   {
     nombre:NAMES_PRECIO.COLOR_DOBLEFAZ,
     importe: 200,
-    abreviatura: [PrecioAbareviatura.COLOR, PrecioAbareviatura.DOBLE_FAZ]
+    abreviatura: PrecioAbareviatura.COLOR_D_F
   }, 
   {
     nombre:NAMES_PRECIO.COLOR_SIMPLEFAZ,
     importe: 180,
-    abreviatura: [PrecioAbareviatura.COLOR, PrecioAbareviatura.SIMPLE_FAZ]
+    abreviatura: PrecioAbareviatura.COLOR_S_F
   },
   {
     nombre:NAMES_PRECIO.BLANCOYNEGRO_DOBLEFAZ,
     importe: 140,
-    abreviatura: [PrecioAbareviatura.BLANCO_Y_NEGRO, PrecioAbareviatura.DOBLE_FAZ]
+    abreviatura: PrecioAbareviatura.BLANCO_Y_NEGRO_D_F
   },
   {
     nombre:NAMES_PRECIO.BLANCOYNEGRO_SIMPLEFAZ,
     importe: 120,
-    abreviatura: [PrecioAbareviatura.BLANCO_Y_NEGRO, PrecioAbareviatura.SIMPLE_FAZ]
+    abreviatura: PrecioAbareviatura.BLANCO_Y_NEGRO_S_F
   },
   {
     nombre:NAMES_PRECIO.ANILLADO1,
     importe: 2400,
-    abreviatura: [PrecioAbareviatura.ANILLADO_1]
+    abreviatura: PrecioAbareviatura.ANILLADO_1
   },
   {
     nombre:NAMES_PRECIO.ANILLADO2,
     importe: 2500,
-    abreviatura: [PrecioAbareviatura.ANILLADO_2]
+    abreviatura: PrecioAbareviatura.ANILLADO_2
   },
   {
     nombre:NAMES_PRECIO.ANILLADO3,
     importe:2600,
-    abreviatura: [PrecioAbareviatura.ANILLADO_3]
+    abreviatura: PrecioAbareviatura.ANILLADO_3
   },
   {
     nombre:NAMES_PRECIO.ANILLADO4,
     importe: 2700,
-    abreviatura: [PrecioAbareviatura.ANILLADO_4]
+    abreviatura: PrecioAbareviatura.ANILLADO_4
   },
   {
     nombre:NAMES_PRECIO.ADHESIVO,
     importe: 850,
-    abreviatura: [PrecioAbareviatura.ADHESIVO]
-  },
-  {
-    nombre:NAMES_PRECIO.ADHESIVO,
-    importe: 850,
-    abreviatura: [PrecioAbareviatura.ADHESIVO]
+    abreviatura: PrecioAbareviatura.ADHESIVO
   },
   {
     nombre:NAMES_PRECIO.TROKELADO,
     importe: 1700,
-    abreviatura: [PrecioAbareviatura.TROKELADO]
+    abreviatura: PrecioAbareviatura.TROKELADO
   },
 ]
