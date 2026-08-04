@@ -10,6 +10,10 @@ export class DtoPrecioEmpresaCrear extends DtoPrecioCrear{
   @IsOptional()
   @IsString({ message: 'Los detalles deben ser un texto' })
   detalles?: string;
+  
+  @IsOptional()
+  @IsString()
+  idEmpresa?: string;
 }
 
 export class DtoPrecioEmpresaEditar extends DtoPrecioEditar{

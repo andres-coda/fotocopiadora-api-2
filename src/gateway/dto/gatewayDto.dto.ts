@@ -12,6 +12,7 @@ import { DtoSedeRespuesta } from "../../sede/dto/sedeRetorno.dto";
 import { DtoResumenRespuesta } from "../../libro/dto/resumen.dto";
 import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
 import { DtoEmpresaRespuesta } from "@src/empresa/dto/empresa.dto";
+import { DtoNivelRespuesta } from "@src/nivel/dto/nivel.dto";
 
 export const EntidadDatoMap = {
   cliente: {} as DtoClienteRespuesta,
@@ -24,6 +25,7 @@ export const EntidadDatoMap = {
   propuesta_pedido: {} as DtoPropuestaRespuesta,
   sede: {} as DtoSedeRespuesta,
   empresa: {} as DtoEmpresaRespuesta,
+  nivel: {} as DtoNivelRespuesta,
 } satisfies Record<string, DtoBaseRetorno>;
 
 

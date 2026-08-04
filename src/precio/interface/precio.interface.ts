@@ -13,8 +13,8 @@ export enum PrecioAbareviatura {
   TROKELADO = "trokelado",
   BLANCO_Y_NEGRO_D_F = "byn_d_f",
   COLOR_D_F = "color_d_f",
-  ANILLADO_1 = 'Anillado_1',
-  ANILLADO_2 = 'Anillado_2',
-  ANILLADO_3 = 'Anillado_3',
-  ANILLADO_4 = 'Anillado_4',
+  ANILLADO_1 = 'anillado_1',
+  ANILLADO_2 = 'anillado_2',
+  ANILLADO_3 = 'anillado_3',
+  ANILLADO_4 = 'anillado_4',
 }

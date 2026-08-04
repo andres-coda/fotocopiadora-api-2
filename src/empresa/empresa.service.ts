@@ -4,8 +4,7 @@ import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { Empresa } from './entity/empresa.entity';
 import { DtoEmpresaCrear, DtoEmpresaEditar, DtoEmpresaRespuesta } from './dto/empresa.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, ILike, QueryRunner, Repository } from 'typeorm';
-import { DataSource } from 'typeorm/browser';
+import { DataSource, FindManyOptions, ILike, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
@@ -77,7 +76,7 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
     try {
       const newElemento: Empresa = await this.createDato({ dto, qR, entidad });
       
-      const precios = await this.precioService.CreatePrecioDefault(PRECIO_DEFAULT, qR);
+      const precios = await this.precioService.CreatePrecioDefault(PRECIO_DEFAULT, qR, newElemento.id);
       
       const retorno = this.remplaceToReturn(newElemento);
       if(!retorno) throw new NotFoundException(`No se pudo crear la empresa ${dto.nombre}`);

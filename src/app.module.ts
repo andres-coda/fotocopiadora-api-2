@@ -34,6 +34,8 @@ import { LibroResumen } from './libro/entity/libro_resumen.entity';
 import { Stock } from './libro/entity/stock.entity';
 import { PrecioEmpresa } from './precio/entity/precio_empresa.entity';
 import { EmpresaModule } from './empresa/empresa.module';
+import { Empresa } from './empresa/entity/empresa.entity';
+import { NivelModule } from './nivel/nivel.module';
 
 @Module({
    imports: [
@@ -53,6 +55,7 @@ import { EmpresaModule } from './empresa/empresa.module';
         Cliente,
         ClienteResumen,
         Componente,
+        Empresa,
         Especificacion,
         Materia,
         Libro,
@@ -67,7 +70,7 @@ import { EmpresaModule } from './empresa/empresa.module';
         User,
       ],
       synchronize: false,
-      logging: false,
+      logging: true,
     }),
     ErroresModule,
     GateWayModule,
@@ -83,6 +86,7 @@ import { EmpresaModule } from './empresa/empresa.module';
     PropuestaPedidoModule,
     ComponenteModule,
     EmpresaModule,
+    NivelModule,
   ],
   controllers: [],
   providers: [

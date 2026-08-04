@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, ILike, Raw, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { Precio } from './entity/precio.entity';
 import { DtoPrecioCrear, DtoPrecioEditar, DtoPrecioRespuesta } from './dto/precio.dto';
-import { CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 
 @Injectable()
 export class PrecioService {
@@ -59,12 +59,54 @@ export class PrecioService {
   async getDatoByName({ id, qR }: GetGenericoByIdProp): Promise<Precio | null> {
     try {
       const criterio: FindOneOptions = {
-        where: { nombre: id }
+        where: {
+          nombre: Raw(alias => `LOWER(${alias}) = LOWER(:id)`, {
+            id,
+          }),
+        },
       }
 
       return await qR.manager.findOne(Precio, criterio);
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer el precio ${id}`)
+    }
+  }
+
+  async getDatoByAbrev({ id, qR }: GetGenericoByIdProp): Promise<Precio | null> {
+    try {
+      const criterio: FindOneOptions = {
+        where: {
+          abreviatura: Raw(alias => `LOWER(${alias}) = LOWER(:id)`, {
+            id,
+          }),
+        },
+      }
+
+      return await qR.manager.findOne(Precio, criterio);
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer el precio ${id}`)
+    }
+  }
+
+  async getPreciosBusqueda({ qR, limite, offset, busqueda }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoPrecioRespuesta>> {
+    try {
+      const criterio: FindManyOptions = {
+        relations: [],
+        where: {
+            nombre: ILike(`%${busqueda}%`)
+        },
+        take: limite ?? 20,
+        skip: offset ?? 0
+      }
+
+      const [datos, total] = await qR.manager.findAndCount(Precio, criterio);
+
+      return {
+        total,
+        datos: datos.map((pe) => this.remplaceToReturn(pe))
+      }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, 'Error al leer precios');
     }
   }
 

@@ -126,6 +126,7 @@ export class PrecioEmpresaService {
       pe.id_precio = precio.id;
       pe.importe = dto.importe;
       pe.detalles = dto.detalles;
+      if(dto.idEmpresa) pe.id_empresa = dto.idEmpresa;
 
       const saved = await qR.manager.save(PrecioEmpresa, pe);
       const newPrecio: PrecioEmpresa = {
@@ -190,15 +191,17 @@ export class PrecioEmpresaService {
     }
   }
 
-  async CreatePrecioDefault(preciosDefault: PrecioDefaultProp[], qR:QueryRunner):Promise<DtoPrecioEmpresaRespuesta[]>{
+  async CreatePrecioDefault(preciosDefault: PrecioDefaultProp[], qR:QueryRunner, idEmpresa:string):Promise<DtoPrecioEmpresaRespuesta[]>{
     try{
       const preciosCreados:DtoPrecioEmpresaRespuesta[] = [];
       for(const p of preciosDefault) {
-        let aux:Precio | null= await this.precioService.getDatoByName({id:p.nombre, qR});
+        let aux:Precio | null= null;
+        if(p.abreviatura) aux = await this.precioService.getDatoByAbrev({id:p.abreviatura, qR});
+        console.log('precio existente :',aux)
         if(!aux) {
           aux = await this.precioService.createDato({dto: {nombre:p.nombre, abreviatura:p.abreviatura}, qR});
         }
-        const precioCompleto:DtoPrecioEmpresaRespuesta = await this.createPrecioEmpresa({dto:{nombre:p.nombre, importe:p.importe}, qR});
+        const precioCompleto:DtoPrecioEmpresaRespuesta = await this.createPrecioEmpresa({dto:{nombre:p.nombre, importe:p.importe, idEmpresa}, qR});
         preciosCreados.push(precioCompleto);
       }
       return preciosCreados;
