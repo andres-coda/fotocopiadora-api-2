@@ -165,8 +165,8 @@ export class PedidoItemService {
          RETURNING id_pedido, id`,
         [
           dto.pedido_id,
-          dto.libro_id,
-          dto.sede_id,
+          dto.id_libro,
+          dto.id_sede,
           dto.cantidad,
           dto.detalles ?? null,
           EstadoPedido.PENDIENTE,
@@ -297,7 +297,7 @@ export class PedidoItemService {
   async createDatoXEntidad({ dto, qR, pedido }: CreateDatoXEntidadProp): Promise<PedidoItem> {
     try {
       if (!qR) throw new NotFoundException('Para crear un item de pedido debe iniciar una transacción');
-      const libro: Libro = await this.libroService.getLibroEmpresaByIdOrdFail({ id: dto.libro_id, qR });
+      const libro: Libro = await this.libroService.getLibroEmpresaByIdOrdFail({ id: dto.id_libro, qR });
 
       const [pedido_item] = await qR.query(
         `INSERT INTO pedido_item (id_pedido, id_libro, id_sede, id_empresa, cantidad, detalles, estado)
@@ -306,7 +306,7 @@ export class PedidoItemService {
         [
           pedido.id,
           libro.id_libro,
-          dto.sede_id,
+          dto.id_sede,
           dto.cantidad,
           dto.detalles ?? null,
           EstadoPedido.PENDIENTE,

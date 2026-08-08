@@ -7,6 +7,7 @@ import { DtoPedidoCrear, DtoPedidoEditar } from './dto/pedido.dto';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
+import { PEDIDO_RELATIONS, PEDIDO_SELECTED } from './default/relacion';
 
 @Controller('pedido')
 @UseGuards(UsuarioGuard)
@@ -18,7 +19,7 @@ export class PedidoController extends BaseController<
   PedidoService
 > {
   constructor(protected readonly pedidoService: PedidoService) {
-    super(pedidoService, Entidad.PEDIDO, 'pedido', [], 'fechaEntrega');
+    super(pedidoService, Entidad.PEDIDO, 'pedido', [PEDIDO_RELATIONS], 'fechaEntrega', PEDIDO_SELECTED);
   }
 
   /**

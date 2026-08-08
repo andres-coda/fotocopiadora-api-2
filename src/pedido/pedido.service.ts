@@ -29,17 +29,19 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     try {
       if (!qR) throw new NotFoundException('No se pudo crear transacción para la operación');
       if (!dto.cliente && !dto.clienteDatos) throw new NotFoundException('Requiere datos del cliente');
+      console.log(JSON.stringify(dto.pedidoItems, null, 2));
       const [row] = await qR.query(
-        'select * from fc_crear_pedido($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) as resultado',
+        'select * from fc_crear_pedido($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb) as resultado',
         [
           dto.clienteDatos?.telefono, dto.clienteDatos?.email, dto.clienteDatos?.nombre, dto.cliente, dto.fechaEntrega, dto.importeTotal,
-          dto.archivos, dto.anillados, dto.sena, dto.pedidoItems
+          dto.archivos, dto.anillados, dto.sena,JSON.stringify(dto.pedidoItems)
         ]
       );
 
       return row.resultado;
-      
+
     } catch (er) {
+      console.dir(er, { depth: null });
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el dato ${dto.importeTotal} en el registro de ${entidad}`)
     }
   }
@@ -82,8 +84,8 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
   async createDatoCx({ dto, entidad, qR }: CreateProp<DtoPedidoCrear, "pedido">): Promise<DtoPedidoRespuesta> {
     try {
       if (!dto.pedidoItems || dto.pedidoItems.length === 0) throw new NotFoundException('No se puede crear un pedido sin sus items');
-      
-      const retorno: DtoPedidoRespuesta | undefined = await this.createDatoAuxiliar({dto, entidad, qR});
+
+      const retorno: DtoPedidoRespuesta | undefined = await this.createDatoAuxiliar({ dto, entidad, qR });
 
       if (!retorno) throw new NotFoundException(`No se pudo preparar el pedido para su retorno`);
 

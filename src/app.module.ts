@@ -36,6 +36,7 @@ import { PrecioEmpresa } from './precio/entity/precio_empresa.entity';
 import { EmpresaModule } from './empresa/empresa.module';
 import { Empresa } from './empresa/entity/empresa.entity';
 import { NivelModule } from './nivel/nivel.module';
+import { Nivel } from './nivel/entity/nivel.entity';
 
 @Module({
    imports: [
@@ -60,6 +61,7 @@ import { NivelModule } from './nivel/nivel.module';
         Materia,
         Libro,
         LibroResumen,
+        Nivel,
         PedidoItem,
         Pedido,
         Precio,
