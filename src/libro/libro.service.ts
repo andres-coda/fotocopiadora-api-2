@@ -59,6 +59,10 @@ export class LibroService {
         [busqueda, limite, offset]
       )
       
+      if(!rows || rows.length === 0) return {
+        total: 0,
+        datos: []
+      };
       const newDatos = rows
         .map((r:RetornoLibroNombreProp) => toRespuestaLibroNombre(r))
         .filter((d:DtoLibroRespuesta) => d !== undefined);

@@ -37,6 +37,7 @@ import { EmpresaModule } from './empresa/empresa.module';
 import { Empresa } from './empresa/entity/empresa.entity';
 import { NivelModule } from './nivel/nivel.module';
 import { Nivel } from './nivel/entity/nivel.entity';
+import { EditorialModule } from './editorial/editorial.module';
 
 @Module({
    imports: [
@@ -89,6 +90,7 @@ import { Nivel } from './nivel/entity/nivel.entity';
     ComponenteModule,
     EmpresaModule,
     NivelModule,
+    EditorialModule,
   ],
   controllers: [],
   providers: [
