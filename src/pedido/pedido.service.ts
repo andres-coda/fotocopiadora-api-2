@@ -13,6 +13,12 @@ import { DtoPedidoItemRespuesta } from '../pedido_item/dto/pedido_item.dto';
 import { GetPedidoItemBusqueda } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
 import { toRespuestaPedido } from './utils/toRespuestaPedido';
 import { toRespuestaPedidoItemCompleto } from '../pedido_item/utils/toRespuestaItem';
+import { BusquedaGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { EstadoPedido } from './interface/estadoPedido.enum';
+
+interface BusquedaPedidoProp extends BusquedaGenericoProp{
+  estado:EstadoPedido | undefined
+}
 
 @Injectable()
 export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, DtoPedidoCrear, DtoPedidoEditar> {
@@ -106,25 +112,23 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     return toRespuestaPedido(entidad);
   }
 
-  async buscarPedidos(
-    busqueda: string,
-    estado: number | null,
-    limite = 20,
-    offset = 0,
-    qR?: QueryRunner,
-  ): Promise<DtoPedidoItemRespuesta[]> {
+  async buscarPedidos({ busqueda, limite = 20, offset = 0, qR, estado }: BusquedaPedidoProp): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
     try {
-      const runner = qR ?? this.dataSource.createQueryRunner();
-      if (!qR) await runner.connect();
 
-      const rows = await runner.query(
-        `SELECT * FROM fc_buscar_pedido($1, $2, $3, $4)`,
-        [busqueda, estado, limite, offset],
+      const total = await qR.query(
+        `SELECT count(DISTINCT nro_pedido) as total  FROM fc_buscar_pedido($1, $2, 0,0)`,
+        [busqueda, estado],
       );
 
-      if (!qR) await runner.release();
+      const rows = await qR.query(
+        `SELECT * FROM fc_buscar_pedido($1, $2, $3, $4)`,
+        [busqueda, estado, Number(limite), offset],
+      );
 
-      return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+      return {
+        total,
+        datos:rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r))
+      }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, 'Error al buscar pedidos');
     }

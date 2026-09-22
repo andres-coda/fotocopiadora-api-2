@@ -89,8 +89,8 @@ export class PedidoItemService {
 
       const newOrden = orden ?? 'estado';
       const rows = await qR.query(
-        `SELECT * FROM vw_pedidos_item ORDER BY ${newOrden} LIMIT $1 OFFSET $2`,
-        [limite, offset]
+        `SELECT * FROM vw_pedidos_item ORDER BY $3 LIMIT $1 OFFSET $2`,
+        [limite, offset, newOrden]
       );
 
       const datos:DtoPedidoItemRespuesta[] = rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));

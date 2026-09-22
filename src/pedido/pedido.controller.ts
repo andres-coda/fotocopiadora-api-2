@@ -8,6 +8,8 @@ import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
 import { PEDIDO_RELATIONS, PEDIDO_SELECTED } from './default/relacion';
+import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
+import { EstadoPedido } from './interface/estadoPedido.enum';
 
 @Controller('pedido')
 @UseGuards(UsuarioGuard)
@@ -31,18 +33,29 @@ export class PedidoController extends BaseController<
   @HttpCode(200)
   async buscar(
     @Query('q') busqueda = '',
-    @Query('estado') estado: number | undefined,
+    @Query('estado') estado: EstadoPedido | undefined,
     @Query('limite') limite = 20,
-    @Query('pagina') pagina = 1,
+    @Query('pagina') pg = 1,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoItemRespuesta[]> {
+  ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta> | undefined> {
+    const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
-    return this.pedidoService.buscarPedidos(
+
+    if (!busqueda || busqueda.length < 3) return undefined;
+
+    const retorno = await this.pedidoService.buscarPedidos({
       busqueda,
-      estado ? Number(estado) : null,
-      Number(limite),
+      estado,
+      limite,
       offset,
-      req.queryRunner,
-    );
+      qR:req.queryRunner,
+    });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
   }
 }
