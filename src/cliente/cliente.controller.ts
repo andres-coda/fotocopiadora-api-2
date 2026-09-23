@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, ParseEnumPipe, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Get, HttpCode, Param, ParseEnumPipe, Query, Request, UseGuards } from '@nestjs/common';
 import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
@@ -10,6 +10,7 @@ import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
 import { OrdenPedidoCliente } from './interface/cliente_retorno.interface';
+import { OrdenPedidoClientePipe } from '@src/pipe/OrdenPedidoClientePipe';
 
 
 @Controller('cliente')
@@ -81,8 +82,10 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
     @Query('pagina') pagDto = 1,
     @Query(
       'orden',
-      new ParseEnumPipe(OrdenPedidoCliente),
-    ) orden: OrdenPedidoCliente = OrdenPedidoCliente.ESTADO_PEDIDO,
+      new DefaultValuePipe(OrdenPedidoCliente.ESTADO_PEDIDO),
+      OrdenPedidoClientePipe,
+    )
+    orden: OrdenPedidoCliente,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
     const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
