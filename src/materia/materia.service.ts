@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, ILike, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
@@ -12,7 +12,7 @@ import { DtoMateriaEditar } from './dto/materiaEditar.dto';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
 import { DtoMateriaRespuesta } from './dto/materiaRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
-import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
 @Injectable()
 export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar> {
@@ -95,4 +95,26 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
       nombre: entidad.nombre
     }
   }
+
+  async buscarMateriaNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoMateriaRespuesta>> {
+      try {
+        const criterio: FindManyOptions = {
+          relations: [],
+          where: {
+            nombre: ILike(`%${busqueda}%`)
+          },
+          take: limite ?? 20,
+          skip: offset ?? 0
+        }
+  
+        const [datos, total] = await qR.manager.findAndCount(Materia, criterio);
+  
+        return {
+          total,
+          datos: datos.map((pe) => this.remplaceToReturn(pe))
+        }
+      } catch (er) {
+        this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
+      }
+    }
 }

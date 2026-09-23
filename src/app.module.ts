@@ -38,6 +38,7 @@ import { Empresa } from './empresa/entity/empresa.entity';
 import { NivelModule } from './nivel/nivel.module';
 import { Nivel } from './nivel/entity/nivel.entity';
 import { EditorialModule } from './editorial/editorial.module';
+import { Editorial } from './editorial/entity/editorial.entity';
 
 @Module({
    imports: [
@@ -57,6 +58,7 @@ import { EditorialModule } from './editorial/editorial.module';
         Cliente,
         ClienteResumen,
         Componente,
+        Editorial,
         Empresa,
         Especificacion,
         Materia,

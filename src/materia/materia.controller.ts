@@ -11,7 +11,7 @@ import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
-import { DeletProp, EditarElementoControllerProp } from '@src/base/interface/base.interface';
+import { DeletProp, EditarElementoControllerProp, RetornoGet } from '@src/base/interface/base.interface';
 import { DtoMateriaRespuesta } from './dto/materiaRetorno.dto';
 
 @Controller('materia')
@@ -23,14 +23,57 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
     super(materiaService, Entidad.MATERIA, 'materia', [MATERIA_RELATIONS], 'nombre', MATERIA_SELECTED)
   }
 
+
+  @Get('nombre')
+  @HttpCode(200)
+  async buscarMateria(
+    @Query('q') busqueda: string,
+    @Query('pagina') pg = 1,
+    @Query('limite') limite = 20,
+    @Request() req: RequestWithUser,
+  ): Promise<RetornoGet<typeof Entidad.MATERIA>> {
+    const pagina: number = pg > 0 ? Number(pg) : 1;
+    const offset = (Number(pagina) - 1) * Number(limite);
+    if (busqueda) {
+      const retorno = await this.materiaService.buscarMateriaNombre({
+        limite: Number(limite),
+        offset,
+        qR: req.queryRunner,
+        busqueda
+      });
+
+      return {
+        total: retorno.total,
+        limite,
+        pagina,
+        datos: retorno.datos
+      }
+    }
+
+    const retorno = await this.materiaService.getDatoTodosCx({
+      limite,
+      offset,
+      qR: req.queryRunner
+    });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
+  }
+
   @Get('todos')
   @HttpCode(200)
   async findAllTodos(
-    @Query('pagina') pagina = 1,
+    @Query('pagina') pg = 1,
     @Query('limite') limite = 20,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<DtoBaseRetorno>> {
-    const offset = (pagina - 1) * limite;
+    const pagina: number = pg > 0 ? Number(pg) : 1;
+    const offset = (Number(pagina) - 1) * Number(limite);
+
     const retorno = await this.materiaService.getDatoTodosCx({
       limite,
       offset,
