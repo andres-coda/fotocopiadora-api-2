@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, GetDatoProp, GetIdProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
 import { DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta } from './dto/cliente.dto';
@@ -12,12 +12,19 @@ import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacio
 import { clienteResumenRespuesta } from './dto/cliente_resumen.dto';
 import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { toRespuestaClienteXbusqueda } from './utils/toRespuestaCliente';
-import { ClienteRetorno } from './interface/cliente_retorno.interface';
+import { ClienteRetorno, OrdenPedidoCliente } from './interface/cliente_retorno.interface';
 import { ClienteResumen } from './entity/clienteResumen.entity';
 import { Mens } from '@src/gateway/enum/Mens.enum';
+import { RetornoVistaItemsPedidoLibroById } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
+import { toRespuestaItemsPedidoByLibro } from '@src/pedido_item/utils/toRespuestaItem';
+import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
 
-interface getClientes {
-  usuarioId: string;
+interface getClienteById {
+  id: string;
+  qR:QueryRunner;
+  ofset?: number;
+  limite?: number;
+  orden: OrdenPedidoCliente;
 }
 
 interface DeshacerEliminarProp{
@@ -290,4 +297,26 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       resumen: clienteResumenRespuesta(entidad.resumen)
     };
   };
+
+  async getClienteById({ id, qR, ofset = 0, limite = 10, orden = OrdenPedidoCliente.ESTADO_PEDIDO }: getClienteById): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
+    try {
+      const rows = await qR.query(
+        `SELECT *, count(*) over() AS total
+          FROM vw_pedido_libro
+          WHERE id_cliente = $1
+          ORDER BY ${orden}
+          LIMIT $2 OFFSET $3`,
+        [id, limite, ofset, orden],
+      );
+
+      if (!rows || rows.length === 0) throw new NotFoundException(`El cliente ${id} no existe o fue eliminado recientemente`)
+
+      return {
+        total: Number(rows[0]?.total ?? 0),
+        datos: rows.map((r: RetornoVistaItemsPedidoLibroById) => toRespuestaItemsPedidoByLibro(r)),
+      }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar obtener el cliente ${id}`);
+    }
+  }
 }

@@ -11,3 +11,9 @@ export interface ClienteRetorno {
   fecha_actualizacion:Date;
   deleted:boolean
 }
+
+export enum OrdenPedidoCliente {
+  FECHA_ENTREGA = 'fecha_entrega',
+  ESTADO_PEDIDO = 'estado_pedido',
+  SEDE = 'sede',
+}

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseEnumPipe, Query, Request, UseGuards } from '@nestjs/common';
 import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
@@ -8,6 +8,8 @@ import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacio
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
+import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
+import { OrdenPedidoCliente } from './interface/cliente_retorno.interface';
 
 
 @Controller('cliente')
@@ -49,7 +51,7 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
       });
 
       return {
-        total:datoRetorno.total,
+        total: datoRetorno.total,
         limite,
         pagina,
         datos: datoRetorno.datos
@@ -62,6 +64,37 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
       Number(offset),
       req.queryRunner,
     );
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos
+    }
+  }
+
+  @Get('idCliente/:id')
+  @HttpCode(200)
+  async getClienteById(
+    @Param('id') idLibro: string,
+    @Query('limite') limite = 20,
+    @Query('pagina') pagDto = 1,
+    @Query(
+      'orden',
+      new ParseEnumPipe(OrdenPedidoCliente),
+    ) orden: OrdenPedidoCliente = OrdenPedidoCliente.ESTADO_PEDIDO,
+    @Request() req: RequestWithUser,
+  ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
+    const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
+    const offset = (pagina - 1) * limite;
+
+    const retorno = await this.clienteService.getClienteById({
+      id: idLibro,
+      qR: req.queryRunner,
+      ofset: offset,
+      limite,
+      orden
+    });
 
     return {
       total: retorno.total,

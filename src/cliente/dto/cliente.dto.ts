@@ -53,3 +53,4 @@ export class DtoClienteRespuesta extends DtoBaseRetorno{
   email?: string;  
   resumen?:DtoResumenClienteRespuesta;
 }
+
