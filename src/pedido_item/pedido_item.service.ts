@@ -39,7 +39,6 @@ interface ItemsByPedidoId extends Omit<PedidoItemByLibroProp, 'id_libro'>{
 interface PedidoItemGeneralProp {
   qR: QueryRunner;
   nro_pedido: number;
-  id_pedido: string;
 }
 interface EditarPedidoItem extends PedidoItemGeneralProp {
   dto: DtoPedidoItemEditar;
@@ -67,12 +66,11 @@ export class PedidoItemService {
     private readonly espService: EspecificacionService,
   ) { }
 
-  async getDatoByIdOrFail({ id_pedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<PedidoItem> {
+  async getDatoByIdOrFail({ nro_pedido, qR }: PedidoItemGeneralProp): Promise<PedidoItem> {
     try {
       const criterio: FindOneOptions = {
-        relations: ['especificacon', 'sede'],
+        relations: [ 'sede'],
         where: {
-          'id_pedido': id_pedido,
           'id': nro_pedido
         }
       }
@@ -80,7 +78,7 @@ export class PedidoItemService {
       if (!pedido_item) throw new NotFoundException(`No se encontro el item de pedido número ${nro_pedido}`);
       return pedido_item;
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido id ${id_pedido} nro ${nro_pedido}`);
+      throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido nro ${nro_pedido}`);
     }
   }
 
@@ -121,17 +119,17 @@ export class PedidoItemService {
     }
   }
 
-  async getPedidoItemByIdCx({ id_pedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<DtoPedidoItemRespuesta[]> {
+  async getPedidoItemByIdCx({  nro_pedido, qR }: PedidoItemGeneralProp): Promise<DtoPedidoItemRespuesta[]> {
     try {
 
       const rows = await qR.query(
-        `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 AND ($2::int IS NULL OR id = $2)`,
-        [id_pedido, nro_pedido || null]
+        `SELECT * FROM vw_pedidos_item WHERE id = $2`,
+        [ nro_pedido || null]
       );
 
       return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
     } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido id ${id_pedido} nro ${nro_pedido}`);
+      throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido nro ${nro_pedido}`);
     }
   }
 
@@ -190,7 +188,7 @@ export class PedidoItemService {
       }
 
       // Recargamos el item creado con sus relaciones
-      const item: PedidoItem = await this.getDatoByIdOrFail({ id_pedido: row.id_pedido, nro_pedido: row.id, qR })
+      const item: PedidoItem = await this.getDatoByIdOrFail({  nro_pedido: row.id, qR })
 
       if (!item) throw new NotFoundException('No se pudo crear el item del pedido');
       return item;
@@ -247,9 +245,9 @@ export class PedidoItemService {
     }
   }
 
-  async updateDato({ dto, qR, nro_pedido, id_pedido }: EditarPedidoItem): Promise<PedidoItem> {
+  async updateDato({ dto, qR, nro_pedido }: EditarPedidoItem): Promise<PedidoItem> {
     try {
-      const pedido_items: DtoPedidoItemRespuesta[] = await this.getPedidoItemByIdCx({ id_pedido, nro_pedido, qR });
+      const pedido_items: DtoPedidoItemRespuesta[] = await this.getPedidoItemByIdCx({ nro_pedido, qR });
       if (pedido_items.length != 1) throw new NotFoundException(`El pedido tiene mas de un item con el mismo nro, o no se encontro el item con el nro ${nro_pedido}`);
       const pedido_item: DtoPedidoItemRespuesta = pedido_items[0];
 
@@ -272,10 +270,9 @@ export class PedidoItemService {
         estado = $3,
         id_sede = $4,
         id_libro = $5
-        WHERE id_pedido = $6
-        AND id = $7
+        WHERE id = $6
         RETURNING *`,
-        [cantidad, detalles, estado, sedeId, libroId, id_pedido, nro_pedido]
+        [cantidad, detalles, estado, sedeId, libroId, nro_pedido]
       )
 
       return row;
@@ -285,9 +282,9 @@ export class PedidoItemService {
     }
   }
 
-  async updateDatoCx({ dto, qR, nro_pedido, id_pedido }: EditarPedidoItem): Promise<DtoPedidoItemRespuesta> {
+  async updateDatoCx({ dto, qR, nro_pedido }: EditarPedidoItem): Promise<DtoPedidoItemRespuesta> {
     try {
-      const pedido_Item: PedidoItem = await this.updateDato({ dto, qR, nro_pedido, id_pedido });
+      const pedido_Item: PedidoItem = await this.updateDato({ dto, qR, nro_pedido });
       return this.remplaceToReturn(pedido_Item);
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar item de libro en pedidos`)
@@ -344,10 +341,10 @@ export class PedidoItemService {
     }
   }
 
-  async cambiarEstadoCx({ estado, id_pedido, nro_pedido, qR }: CambioEstado): Promise<DtoPedidoItemRespuesta> {
+  async cambiarEstadoCx({ estado, nro_pedido, qR }: CambioEstado): Promise<DtoPedidoItemRespuesta> {
     try {
+      console.log('Numero pedido: ',nro_pedido)
       const pedido_item: PedidoItem = await this.getDatoByIdOrFail({
-        id_pedido,
         nro_pedido,
         qR,
       });
@@ -372,10 +369,10 @@ export class PedidoItemService {
     return respuesta;
   }
 
-  async deleteItem({ id_pedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<boolean> {
+  async deleteItem({ nro_pedido, qR }: PedidoItemGeneralProp): Promise<boolean> {
     try {
       const item = await qR.manager.findOne(PedidoItem, {
-        where: { 'idPedido': id_pedido, 'id': nro_pedido },
+        where: { 'id': nro_pedido },
       });
 
       if (!item) throw new NotFoundException(`No se encontró el item ${nro_pedido}`);

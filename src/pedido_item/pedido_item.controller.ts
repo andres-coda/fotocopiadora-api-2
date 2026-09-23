@@ -43,12 +43,12 @@ export class PedidoItemController {
 
 
 
-  @Get('/:idPedido/pedido')
+  @Get('pedido/:idPedido')
   @HttpCode(200)
   async getItemsByPedido(
     @Param('idPedido') idPedido: string,
     @Request() req: RequestWithUser,
-    @Query('limite') limite = 20,
+    @Query('limite') limite = 1000,
     @Query('pagina') pagina = 1,
   ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
     const id_empresa = req.user.idEmpresa;
@@ -119,18 +119,18 @@ export class PedidoItemController {
     @Body() dto: DtoPedidoItemEditar,
     @Request() req: RequestWithUser,
   ): Promise<DtoPedidoItemRespuesta> {
-    return this.itemService.updateDatoCx({ id_pedido: idPedido, nro_pedido: Number(nroItem), dto, qR: req.queryRunner });
+    return this.itemService.updateDatoCx({ nro_pedido: Number(nroItem), dto, qR: req.queryRunner });
   }
 
-  @Patch('/:idPedido/pedido:nroItem/estado')
+  @Patch('estado/:nroItem')
   @HttpCode(200)
   async cambiarEstado(
-    @Param('idPedido') idPedido: string,
-    @Param('nroItem') nroItem: number,
+    @Param('nroItem') nroItem: string,
     @Body() dto: DtoCambiarEstadoItem,
     @Request() req: RequestWithUser,
   ): Promise<DtoPedidoItemRespuesta> {
-    return this.itemService.cambiarEstadoCx({ id_pedido: idPedido, nro_pedido: Number(nroItem), estado: dto.estado, qR: req.queryRunner });
+      console.log('Numero pedido: ',nroItem)
+    return this.itemService.cambiarEstadoCx({ nro_pedido: Number(nroItem), estado: dto.estado, qR: req.queryRunner });
   }
 
   @Delete('/:idPedido/pedido:nroItem')
@@ -140,6 +140,6 @@ export class PedidoItemController {
     @Param('nroItem') nroItem: number,
     @Request() req: RequestWithUser,
   ): Promise<boolean> {
-    return this.itemService.deleteItem({ id_pedido: idPedido, nro_pedido: Number(nroItem), qR: req.queryRunner });
+    return this.itemService.deleteItem({ nro_pedido: Number(nroItem), qR: req.queryRunner });
   }
 }
