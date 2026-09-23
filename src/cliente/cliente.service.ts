@@ -306,7 +306,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
           WHERE id_cliente = $1
           ORDER BY ${orden}
           LIMIT $2 OFFSET $3`,
-        [id, limite, ofset, orden],
+        [id, limite, ofset],
       );
 
       if (!rows || rows.length === 0) throw new NotFoundException(`El cliente ${id} no existe o fue eliminado recientemente`)
