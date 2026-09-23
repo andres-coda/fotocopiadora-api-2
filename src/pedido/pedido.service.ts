@@ -8,16 +8,22 @@ import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.in
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta } from './dto/pedido.dto';
+import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
 import { DtoPedidoItemRespuesta } from '../pedido_item/dto/pedido_item.dto';
 import { GetPedidoItemBusqueda } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
 import { toRespuestaPedido } from './utils/toRespuestaPedido';
 import { toRespuestaPedidoItemCompleto } from '../pedido_item/utils/toRespuestaItem';
 import { BusquedaGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { EstadoPedido } from './interface/estadoPedido.enum';
+import { OrdenPedidoCliente } from '@src/cliente/interface/cliente_retorno.interface';
 
 interface BusquedaPedidoProp extends BusquedaGenericoProp{
   estado:EstadoPedido | undefined
+}
+
+interface BuscarPedidoByIdClienteProp extends Omit<BusquedaGenericoProp, 'busqueda'> {
+  orden?: OrdenPedidoCliente,
+  idCliente:string;
 }
 
 @Injectable()
@@ -133,5 +139,36 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       throw this.erroresService.handleExceptions(er, 'Error al buscar pedidos');
     }
   }
+
+
+  async buscarPedidosByCliente({ orden=OrdenPedidoCliente.ESTADO_PEDIDO, limite = 20, offset = 0, qR, idCliente }: BuscarPedidoByIdClienteProp): Promise<RetornoGenericoServiceGet<DtoPedidoRespuestaCliente>> {
+    try {
+
+      const pedidos = await qR.query(
+        `SELECT *,count(*) as total  
+        FROM pedido 
+        where id_cliente = $1
+        order by ${orden}
+        LIMIT $2 OFFSET $3
+        `,
+        [idCliente, limite, offset],
+      );
+
+      if(!pedidos || pedidos.length === 0) {
+        return {
+          total: 0,
+          datos: []
+        }
+      }
+
+      return {
+        total: pedidos[0].total,
+        datos:pedidos.map((r: Pedido) => this.remplaceToReturn(r))
+      }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al buscar los pedidos del cliente ${idCliente}`);
+    }
+  }
+  
 
 }

@@ -3,6 +3,7 @@ import { BaseDto } from "../../base/dto/baseDto";
 import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from "class-validator";
 import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto";
 import { DtoResumenClienteRespuesta } from "./cliente_resumen.dto";
+import { DtoPedidoRespuestaCliente } from "@src/pedido/dto/pedido.dto";
 
 // ------------- DTO CREAR ---------------//
 
@@ -52,5 +53,9 @@ export class DtoClienteRespuesta extends DtoBaseRetorno{
   telefono?: string;
   email?: string;  
   resumen?:DtoResumenClienteRespuesta;
+}
+
+export class DtoClienteCompletoRespuesta extends DtoClienteRespuesta{
+  pedidos?:DtoPedidoRespuestaCliente[]
 }
 

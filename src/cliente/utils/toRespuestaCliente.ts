@@ -1,8 +1,13 @@
+import { GetPedidoBusqueda } from "@src/pedido/interface/pedido.interface";
 import { toRespuestaBase, toRespuestaResumen } from "../../utils/toRespuesta.function";
 import { DtoClienteRespuesta } from "../dto/cliente.dto";
 import { DtoResumenClienteRespuesta } from "../dto/cliente_resumen.dto";
 import { Cliente } from "../entity/cliente.entity";
 import { ClienteRetorno } from "../interface/cliente_retorno.interface";
+import { DtoPedidoRespuestaCliente } from "@src/pedido/dto/pedido.dto";
+import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto";
+import { Pedido } from "@src/pedido/entity/pedido.entity";
+import { DtoPedidoItemRespuesta } from "@src/pedido_item/dto/pedido_item.dto";
 
 export const toRespuestaCliente = (dato?: Cliente): DtoClienteRespuesta | undefined => {
   if (!dato) return undefined;

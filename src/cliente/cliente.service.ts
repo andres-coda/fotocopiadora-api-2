@@ -18,6 +18,10 @@ import { Mens } from '@src/gateway/enum/Mens.enum';
 import { RetornoVistaItemsPedidoLibroById } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
 import { toRespuestaItemsPedidoByLibro } from '@src/pedido_item/utils/toRespuestaItem';
 import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
+import { toRespuestaPedido } from '@src/pedido/utils/toRespuestaPedido';
+import { GetPedidoBusqueda } from '@src/pedido/interface/pedido.interface';
+import { DtoPedidoRespuestaCliente } from '@src/pedido/dto/pedido.dto';
+import { PedidoService } from '@src/pedido/pedido.service';
 
 interface getClienteById {
   id: string;
@@ -39,6 +43,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
+    protected readonly pedidoService: PedidoService,
   ) {
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
   }
@@ -297,26 +302,4 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
       resumen: clienteResumenRespuesta(entidad.resumen)
     };
   };
-
-  async getClienteById({ id, qR, ofset = 0, limite = 10, orden = OrdenPedidoCliente.ESTADO_PEDIDO }: getClienteById): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
-    try {
-      const rows = await qR.query(
-        `SELECT *, count(*) over() AS total
-          FROM vw_pedido_libro
-          WHERE id_cliente = $1
-          ORDER BY ${orden}
-          LIMIT $2 OFFSET $3`,
-        [id, limite, ofset],
-      );
-
-      if (!rows || rows.length === 0) throw new NotFoundException(`El cliente ${id} no existe o fue eliminado recientemente`)
-
-      return {
-        total: Number(rows[0]?.total ?? 0),
-        datos: rows.map((r: RetornoVistaItemsPedidoLibroById) => toRespuestaItemsPedidoByLibro(r)),
-      }
-    } catch (er) {
-      throw this.erroresService.handleExceptions(er, `Error al intentar obtener el cliente ${id}`);
-    }
-  }
 }

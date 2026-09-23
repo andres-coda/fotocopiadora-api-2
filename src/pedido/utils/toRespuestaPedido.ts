@@ -6,6 +6,7 @@ import { Pedido } from "../entity/pedido.entity";
 import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
 import { toRespuestaCliente } from "../../cliente/utils/toRespuestaCliente";
 import { toRespuestaPedidoItem } from "../../pedido_item/utils/toRespuestaItem";
+import { GetPedidoBusqueda } from "../interface/pedido.interface";
 
 export const toRespuestaPedido = (dato?: Pedido): DtoPedidoRespuesta | undefined => {
   if (!dato) return undefined;
