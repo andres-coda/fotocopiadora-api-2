@@ -14,6 +14,6 @@ export interface ClienteRetorno {
 
 export enum OrdenPedidoCliente {
   FECHA_ENTREGA = 'fecha_entrega',
-  ESTADO_PEDIDO = 'estado_pedido',
+  ESTADO_PEDIDO = 'estado',
   SEDE = 'sede',
 }

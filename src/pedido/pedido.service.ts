@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
@@ -24,6 +24,7 @@ interface BusquedaPedidoProp extends BusquedaGenericoProp{
 interface BuscarPedidoByIdClienteProp extends Omit<BusquedaGenericoProp, 'busqueda'> {
   orden?: OrdenPedidoCliente,
   idCliente:string;
+  filtroEstado?:EstadoPedido
 }
 
 @Injectable()
@@ -141,30 +142,25 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
   }
 
 
-  async buscarPedidosByCliente({ orden=OrdenPedidoCliente.ESTADO_PEDIDO, limite = 20, offset = 0, qR, idCliente }: BuscarPedidoByIdClienteProp): Promise<RetornoGenericoServiceGet<DtoPedidoRespuestaCliente>> {
+  async buscarPedidosByCliente({ orden=OrdenPedidoCliente.ESTADO_PEDIDO, limite = 20, offset = 0, qR, idCliente, filtroEstado }: BuscarPedidoByIdClienteProp): Promise<RetornoGenericoServiceGet<DtoPedidoRespuestaCliente>> {
     try {
+      const criterio:FindManyOptions = this.crearCriterio({
+        where: {
+          idCliente: idCliente,
+          ...(filtroEstado ? { estado: filtroEstado } : {})
+        },
+        orden: orden as keyof Pedido,
+        limite,
+        offset
+      });
 
-      const pedidos = await qR.query(
-        `SELECT *,count(*) as total  
-        FROM pedido 
-        where id_cliente = $1
-        order by ${orden}
-        LIMIT $2 OFFSET $3
-        `,
-        [idCliente, limite, offset],
-      );
+      
+      const [datos, total] = qR 
+      ? await qR.manager.findAndCount(Pedido, criterio)
+      : await this.baseRepository.findAndCount(criterio);
+      
 
-      if(!pedidos || pedidos.length === 0) {
-        return {
-          total: 0,
-          datos: []
-        }
-      }
-
-      return {
-        total: pedidos[0].total,
-        datos:pedidos.map((r: Pedido) => this.remplaceToReturn(r))
-      }
+      return {total, datos}
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar los pedidos del cliente ${idCliente}`);
     }

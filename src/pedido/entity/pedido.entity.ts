@@ -34,6 +34,9 @@ export class Pedido extends Base {
   @Column({ type: 'uuid', name: 'id_empresa' })
   idEmpresa!: string;
 
+  @Column({ type: 'uuid', name: 'id_cliente' })
+  idCliente!: string;
+
   @ManyToOne(() => Cliente, { nullable: false })
   @JoinColumn({ name: 'id_cliente' })
   cliente!: Cliente;

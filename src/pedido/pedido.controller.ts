@@ -73,6 +73,7 @@ export class PedidoController extends BaseController<
         orden: OrdenPedidoCliente,
     @Query('limite') limite = 20,
     @Query('pagina') pg = 1,
+    @Query('estado') estado: EstadoPedido | undefined = undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<DtoPedidoRespuestaCliente> | undefined> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
@@ -83,6 +84,7 @@ export class PedidoController extends BaseController<
       limite,
       offset,
       qR:req.queryRunner,
+      filtroEstado: estado
     });
 
     return {

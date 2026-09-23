@@ -21,7 +21,6 @@ import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
 import { toRespuestaPedido } from '@src/pedido/utils/toRespuestaPedido';
 import { GetPedidoBusqueda } from '@src/pedido/interface/pedido.interface';
 import { DtoPedidoRespuestaCliente } from '@src/pedido/dto/pedido.dto';
-import { PedidoService } from '@src/pedido/pedido.service';
 
 interface getClienteById {
   id: string;
@@ -43,7 +42,6 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     @InjectDataSource() protected readonly dataSource: DataSource,
     protected readonly erroresService: ErroresService,
     protected readonly gatewayGateway: GatewayGateway,
-    protected readonly pedidoService: PedidoService,
   ) {
     super(clienteRepository, dataSource, erroresService, gatewayGateway)
   }
