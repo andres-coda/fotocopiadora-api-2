@@ -9,6 +9,7 @@ import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
 import { Pedido } from '../pedido/entity/pedido.entity';
 import { ClienteResumen } from './entity/clienteResumen.entity';
+import { ClienteResumenService } from './clienteResumen.service';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { ClienteResumen } from './entity/clienteResumen.entity';
     forwardRef(() => GateWayModule),
   ],
   controllers: [ClienteController],
-  providers: [ClienteService],
-  exports: [ClienteService]
+  providers: [ClienteService, ClienteResumenService],
+  exports: [ClienteService, ClienteResumenService]
 })
 export class ClienteModule { }

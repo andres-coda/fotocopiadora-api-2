@@ -6,7 +6,7 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp } from '../base/interface/base.interface';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { PedidoItem } from './entity/pedido_item.entity';
-import { DtoLibroPedidoCrear, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
+import { DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
 import { PedidoService } from '../pedido/pedido.service';
@@ -19,26 +19,31 @@ import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
 import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById } from './interface/pedido_item_busqueda.interface';
 import { toRespuestaItemsPedidoByLibro, toRespuestaPedidoItem, toRespuestaPedidoItemCompleto } from './utils/toRespuestaItem';
 import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { PEDIDO_ITEM_RELACION, PEDIDO_ITEM_SELECT } from './default/pedido_item.relacion';
+import { ClienteResumenService } from '@src/cliente/clienteResumen.service';
+import { StockService } from '@src/libro/stock.service';
+import { ResumenLibro } from '@src/libro/dto/libroRetorno.dto';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.PEDIDO>, "entidad"> {
   pedido: Pedido
 }
 
-interface PedidoItemByLibroProp{
-  id_libro:string;
-  qR:QueryRunner;
-  limite?:number;
-  offset?:number;
-  id_empresa:string;
+interface PedidoItemByLibroProp {
+  id_libro: string;
+  qR: QueryRunner;
+  limite?: number;
+  offset?: number;
+  id_empresa: string;
 }
 
-interface ItemsByPedidoId extends Omit<PedidoItemByLibroProp, 'id_libro'>{
-  id_pedido:string;
+interface ItemsByPedidoId extends Omit<PedidoItemByLibroProp, 'id_libro'> {
+  id_pedido: string;
 }
 
 interface PedidoItemGeneralProp {
   qR: QueryRunner;
   nro_pedido: number;
+  idPedido: string;
 }
 interface EditarPedidoItem extends PedidoItemGeneralProp {
   dto: DtoPedidoItemEditar;
@@ -54,6 +59,11 @@ interface UpdateDatoEntidadProp {
   dto: DtoPedidoItemEditar;
 }
 
+interface estadoPedidoProp {
+  id: string;
+  qR: QueryRunner;
+}
+
 @Injectable()
 export class PedidoItemService {
   constructor(
@@ -64,15 +74,19 @@ export class PedidoItemService {
     private readonly libroService: LibroService,
     @Inject(forwardRef(() => PedidoService))
     private readonly espService: EspecificacionService,
+    private readonly resumenService: ClienteResumenService,
   ) { }
 
-  async getDatoByIdOrFail({ nro_pedido, qR }: PedidoItemGeneralProp): Promise<PedidoItem> {
+  async getDatoByIdOrFail({ nro_pedido, qR, idPedido }: PedidoItemGeneralProp): Promise<PedidoItem> {
     try {
+      console.log('<<<<<<------- Id pedido getDatoByIdOrFail --->>>> : ', idPedido);
       const criterio: FindOneOptions = {
-        relations: [ 'sede'],
+        relations: PEDIDO_ITEM_RELACION,
         where: {
-          'id': nro_pedido
-        }
+          'id': nro_pedido,
+          'idPedido': idPedido
+        },
+        select: PEDIDO_ITEM_SELECT
       }
       const pedido_item = await qR.manager.findOne(PedidoItem, criterio);
       if (!pedido_item) throw new NotFoundException(`No se encontro el item de pedido número ${nro_pedido}`);
@@ -82,7 +96,7 @@ export class PedidoItemService {
     }
   }
 
-  async getItems({qR, limite = 20, offset = 0, orden}:GetGenericoProp):Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
+  async getItems({ qR, limite = 20, offset = 0, orden }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
     try {
 
       const newOrden = orden ?? 'estado';
@@ -91,7 +105,7 @@ export class PedidoItemService {
         [limite, offset, newOrden]
       );
 
-      const datos:DtoPedidoItemRespuesta[] = rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
+      const datos: DtoPedidoItemRespuesta[] = rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
       return {
         total: rows[0].total,
         datos,
@@ -101,7 +115,7 @@ export class PedidoItemService {
     }
   }
 
-  async getItemByPedido({id_pedido, qR, limite = 20, offset = 0}:ItemsByPedidoId):Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
+  async getItemByPedido({ id_pedido, qR, limite = 20, offset = 0 }: ItemsByPedidoId): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
     try {
 
       const rows = await qR.query(
@@ -111,7 +125,7 @@ export class PedidoItemService {
 
       const datos = rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
       return {
-        total:rows[0].total_local ?? 0,
+        total: rows[0].total_local ?? 0,
         datos
       }
     } catch (er) {
@@ -119,12 +133,12 @@ export class PedidoItemService {
     }
   }
 
-  async getPedidoItemByIdCx({  nro_pedido, qR }: PedidoItemGeneralProp): Promise<DtoPedidoItemRespuesta[]> {
+  async getPedidoItemByIdCx({ idPedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<DtoPedidoItemRespuesta[]> {
     try {
 
       const rows = await qR.query(
-        `SELECT * FROM vw_pedidos_item WHERE id = $2`,
-        [ nro_pedido || null]
+        `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 and nro_pedido = $2`,
+        [idPedido, nro_pedido || null]
       );
 
       return rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r));
@@ -139,14 +153,14 @@ export class PedidoItemService {
         'SELECT * FROM vw_pedido_libro pi where pi.id_libro = $1 ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3',
         [id_libro, limite, offset]
       )
-      if (!rows) return {datos:[], total:0};
+      if (!rows) return { datos: [], total: 0 };
 
       const itemsPedido: DtoPedidoItemRespuesta[] = rows
         .map((r) => toRespuestaItemsPedidoByLibro(r))
         .filter((item): item is DtoPedidoItemRespuesta => item !== undefined);
 
       return {
-        datos:itemsPedido,
+        datos: itemsPedido,
         total: rows[0].total
       };
     } catch (er) {
@@ -188,7 +202,7 @@ export class PedidoItemService {
       }
 
       // Recargamos el item creado con sus relaciones
-      const item: PedidoItem = await this.getDatoByIdOrFail({  nro_pedido: row.id, qR })
+      const item: PedidoItem = await this.getDatoByIdOrFail({ idPedido: row.id_pedido, nro_pedido: row.id, qR })
 
       if (!item) throw new NotFoundException('No se pudo crear el item del pedido');
       return item;
@@ -245,9 +259,9 @@ export class PedidoItemService {
     }
   }
 
-  async updateDato({ dto, qR, nro_pedido }: EditarPedidoItem): Promise<PedidoItem> {
+  async updateDato({ dto, qR, nro_pedido, idPedido }: EditarPedidoItem): Promise<PedidoItem> {
     try {
-      const pedido_items: DtoPedidoItemRespuesta[] = await this.getPedidoItemByIdCx({ nro_pedido, qR });
+      const pedido_items: DtoPedidoItemRespuesta[] = await this.getPedidoItemByIdCx({ idPedido, nro_pedido, qR });
       if (pedido_items.length != 1) throw new NotFoundException(`El pedido tiene mas de un item con el mismo nro, o no se encontro el item con el nro ${nro_pedido}`);
       const pedido_item: DtoPedidoItemRespuesta = pedido_items[0];
 
@@ -282,9 +296,9 @@ export class PedidoItemService {
     }
   }
 
-  async updateDatoCx({ dto, qR, nro_pedido }: EditarPedidoItem): Promise<DtoPedidoItemRespuesta> {
+  async updateDatoCx({ dto, qR, nro_pedido, idPedido }: EditarPedidoItem): Promise<DtoPedidoItemRespuesta> {
     try {
-      const pedido_Item: PedidoItem = await this.updateDato({ dto, qR, nro_pedido });
+      const pedido_Item: PedidoItem = await this.updateDato({ dto, qR, nro_pedido, idPedido });
       return this.remplaceToReturn(pedido_Item);
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar item de libro en pedidos`)
@@ -341,23 +355,58 @@ export class PedidoItemService {
     }
   }
 
-  async cambiarEstadoCx({ estado, nro_pedido, qR }: CambioEstado): Promise<DtoPedidoItemRespuesta> {
+  async cambiarEstadoCx({ estado, nro_pedido, qR, idPedido }: CambioEstado): Promise<DtoPedidoItemCambioEstadoRespuesta | undefined> {
     try {
-      console.log('Numero pedido: ',nro_pedido)
-      const pedido_item: PedidoItem = await this.getDatoByIdOrFail({
-        nro_pedido,
-        qR,
-      });
+      console.log('<<<<<<------- Id pedido servicio cambiarEstadoCx --->>>> : ', idPedido);
 
-      if (pedido_item.estado === estado) return this.remplaceToReturn(pedido_item);
+      await qR.query(
+        `UPDATE pedido_item  SET
+          estado = $1
+         WHERE id = $2 AND id_pedido = $3`,
+        [estado, nro_pedido, idPedido],
+      );
 
-      pedido_item.estado = estado;
+      const [pedidoActualizado] = await qR.query(
+        `SELECT * 
+        FROM vw_cambio_estado
+         WHERE id = $1 AND id_pedido = $2`,
+        [nro_pedido, idPedido],
+      )
 
-      const new_pedido_item: PedidoItem = qR
-        ? await qR.manager.save(PedidoItem, pedido_item)
-        : await this.libroPedidoRepository.save(pedido_item);
+      if(!pedidoActualizado) return undefined;
 
-      return this.remplaceToReturn(new_pedido_item);
+      console.log('<<<<<<------- Pedido actualizado servicio cambiarEstadoCx --->>>> : ', pedidoActualizado);
+      
+      const retorno: DtoPedidoItemCambioEstadoRespuesta = {
+        idPedido: idPedido,
+        id: nro_pedido,
+        estado: pedidoActualizado.estado,
+        fechaActualizacion: pedidoActualizado.fecha_actualizacion, 
+        pedido: {
+          id: idPedido,
+          estado: pedidoActualizado.estado_pedido,
+          cliente: {
+            id: pedidoActualizado.id_cliente,
+            resumen: {
+              retirado: pedidoActualizado.retirado,
+              cancelado: pedidoActualizado.cancelado,
+              listo: pedidoActualizado.listo,
+              pendiente: pedidoActualizado.pendiente
+            }
+          }
+        },
+        libro: {
+          id: pedidoActualizado.id_libro,
+          stock: {
+            retirado: pedidoActualizado.libro_retirado,
+            cancelado: pedidoActualizado.libro_cancelado,
+            listo: pedidoActualizado.libro_listo,
+            pendiente: pedidoActualizado.libro_pendiente
+          }
+        }
+      }
+      console.log('<<<<<<------- Pedido actualizado servicio cambiarEstadoCx --->>>> : ', retorno);
+      return retorno;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el estado del libro`)
     }

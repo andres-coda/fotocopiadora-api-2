@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import { PedidoItemService } from './pedido_item.service';
-import { DtoCambiarEstadoItem, DtoLibroPedidoCrear, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
+import { DtoCambiarEstadoItem, DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 
@@ -119,18 +119,22 @@ export class PedidoItemController {
     @Body() dto: DtoPedidoItemEditar,
     @Request() req: RequestWithUser,
   ): Promise<DtoPedidoItemRespuesta> {
-    return this.itemService.updateDatoCx({ nro_pedido: Number(nroItem), dto, qR: req.queryRunner });
+    return this.itemService.updateDatoCx({idPedido, nro_pedido: Number(nroItem), dto, qR: req.queryRunner });
   }
 
-  @Patch('estado/:nroItem')
+  @Patch('estado/:idPedido/:nroItem')
   @HttpCode(200)
   async cambiarEstado(
     @Param('nroItem') nroItem: string,
+    @Param('idPedido') idPedido: string,
     @Body() dto: DtoCambiarEstadoItem,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoItemRespuesta> {
-      console.log('Numero pedido: ',nroItem)
-    return this.itemService.cambiarEstadoCx({ nro_pedido: Number(nroItem), estado: dto.estado, qR: req.queryRunner });
+  ): Promise<DtoPedidoItemCambioEstadoRespuesta | undefined> {
+    console.log('<<<<<<------- Id pedido controlador--->>>> : ',idPedido);
+    const retorno = this.itemService.cambiarEstadoCx({ idPedido, nro_pedido: Number(nroItem), estado: dto.estado, qR: req.queryRunner });
+    
+      console.log('<<<<<<------- Pedido actualizado controller cambiarEstadoCx --->>>> : ', retorno);
+      return retorno;
   }
 
   @Delete('/:idPedido/pedido:nroItem')
@@ -140,6 +144,6 @@ export class PedidoItemController {
     @Param('nroItem') nroItem: number,
     @Request() req: RequestWithUser,
   ): Promise<boolean> {
-    return this.itemService.deleteItem({ nro_pedido: Number(nroItem), qR: req.queryRunner });
+    return this.itemService.deleteItem({ idPedido, nro_pedido: Number(nroItem), qR: req.queryRunner });
   }
 }

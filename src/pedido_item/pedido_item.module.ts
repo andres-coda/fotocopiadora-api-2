@@ -13,6 +13,7 @@ import { Sede } from '../sede/entity/sede.entity';
 import { Especificacion } from '../especificacion/entity/especificacion.entity';
 import { PedidoItemController } from './pedido_item.controller';
 import { PedidoItemService } from './pedido_item.service';
+import { ClienteModule } from '@src/cliente/cliente.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PedidoItemService } from './pedido_item.service';
     forwardRef(() => EspecificacionModule),
     forwardRef(() => LibroModule),
     forwardRef(() => PedidoModule),
+    forwardRef(() => ClienteModule),
   ],
   controllers: [PedidoItemController],
   providers: [PedidoItemService],

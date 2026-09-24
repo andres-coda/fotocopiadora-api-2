@@ -3,8 +3,9 @@ import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min }
 import { Especificaciones } from "../interface/especificaciones.interface";
 import { EstadoPedido } from "@src/pedido/interface/estadoPedido.enum";
 import { DtoPedidoRespuesta } from "@src/pedido/dto/pedido.dto";
-import { DtoLibroRespuesta } from "@src/libro/dto/libroRetorno.dto";
+import { DtoLibroRespuesta, ResumenLibro } from "@src/libro/dto/libroRetorno.dto";
 import { DtoSedeRespuesta } from "@src/sede/dto/sedeRetorno.dto";
+import { DtoResumenClienteRespuesta } from "@src/cliente/dto/cliente_resumen.dto";
 
 // ------------ Dto Pedido_Item Crear ------------ //
 
@@ -92,6 +93,25 @@ export class DtoPedidoItemRespuesta {
   sede?: DtoSedeRespuesta;
   idSede?: string;
   especificaciones?: Especificaciones[];
+}
+
+export class DtoPedidoItemCambioEstadoRespuesta{
+  idPedido!: string;
+  id!: number;
+  estado!: EstadoPedido;
+  fechaActualizacion?: Date;
+  pedido!: {
+    id: string;
+    estado: EstadoPedido;
+    cliente: {
+      id:string,
+      resumen: DtoResumenClienteRespuesta
+    }
+  }
+  libro!:{
+    id:string;
+    stock: ResumenLibro
+  } 
 }
 
 /* 

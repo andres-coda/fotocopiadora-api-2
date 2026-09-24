@@ -4,7 +4,7 @@ import { DtoComponenteRespuesta } from "../../componente/dto/componenteRetorno.d
 import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { DtoMateriaRespuesta } from "../../materia/dto/materiaRetorno.dto";
 
-interface Resumen {
+export interface ResumenLibro {
   listo: number,
   pendiente: number,
   retirado: number,
@@ -32,7 +32,7 @@ export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
   materia?: DtoMateriaRespuesta;
   propuesta?: DtoPropuestaLibroRetorno[];
   componentes_texto?: string;
-  resumen?: Resumen;
+  resumen?: ResumenLibro;
   descripcion?: string;
 }
 

@@ -18,7 +18,7 @@ export const toRespuestaPedidoItem = (dato?: PedidoItem): DtoPedidoItemRespuesta
     detalles: dato.detalles,
     estado: dato.estado,
     idLibro: dato.libro_id,
-    idSede: sede?.id ?? undefined,
+    idSede: dato.sede_id,
     sede
   }
 }
@@ -110,7 +110,7 @@ export const toRespuestaPedidoItemCompleto = (dato?: GetPedidoItemBusqueda): Dto
   return {
     id: dato.nro_pedido,
     idPedido: dato.id_pedido,
-    cantidad: dato.nro_pedido,
+    cantidad: dato.cantidad,
     detalles: dato.detalles,
     estado: dato.estado,
     especificaciones: dato.especficaciones ?? [],
