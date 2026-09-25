@@ -7,7 +7,7 @@ export interface GetPedidoItemBusqueda{
   cantidad: number;
   detalles?: string;
   estado: EstadoPedido,
-  especficaciones?: Especificaciones[],
+  especificaciones?: Especificaciones[],
   cantidad_pg: number,
   cantidad_adhesivos?: number;
   nombre:string;

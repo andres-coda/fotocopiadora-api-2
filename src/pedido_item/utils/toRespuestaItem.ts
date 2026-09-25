@@ -61,6 +61,8 @@ export const toRespuestaItemsPedidoByLibro = (dato?:RetornoVistaItemsPedidoLibro
 export const toRespuestaPedidoItemCompleto = (dato?: GetPedidoItemBusqueda): DtoPedidoItemRespuesta | undefined => {
   if(!dato) return undefined;
 
+  console.log('Items pedidos ',dato)
+
   const cliente: DtoClienteRespuesta = {
     id: dato.id_cliente,
     deleted: false,
@@ -113,7 +115,7 @@ export const toRespuestaPedidoItemCompleto = (dato?: GetPedidoItemBusqueda): Dto
     cantidad: dato.cantidad,
     detalles: dato.detalles,
     estado: dato.estado,
-    especificaciones: dato.especficaciones ?? [],
+    especificaciones: dato.especificaciones ?? [],
     pedido,
     idLibro: dato.id_libro,
     libro,
