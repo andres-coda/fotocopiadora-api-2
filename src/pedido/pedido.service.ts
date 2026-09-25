@@ -42,7 +42,6 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     try {
       if (!qR) throw new NotFoundException('No se pudo crear transacción para la operación');
       if (!dto.cliente && !dto.clienteDatos) throw new NotFoundException('Requiere datos del cliente');
-      console.log(JSON.stringify(dto.pedidoItems, null, 2));
       const [row] = await qR.query(
         'select * from fc_crear_pedido($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb) as resultado',
         [

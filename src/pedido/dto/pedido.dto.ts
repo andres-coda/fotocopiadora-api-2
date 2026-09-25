@@ -5,6 +5,8 @@ import { DtoLibroPedidoCrearParcial, DtoPedidoItemRespuesta } from "../../pedido
 import { Type } from "class-transformer";
 import { ArrayMinSize, IsArray, IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, IsUUID, Matches, ValidateIf, ValidateNested } from "class-validator";
 import { EstadoPedido } from "../interface/estadoPedido.enum";
+import { ResumenLibro } from "@src/libro/dto/libroRetorno.dto";
+import { DtoResumenClienteRespuesta } from "@src/cliente/dto/cliente_resumen.dto";
 
 //---------- Dto pedido crear ------------------//
 
@@ -16,19 +18,19 @@ export class DtoPedidoCrear extends BaseDto {
   })
   fechaEntrega!: string;
 
-  @IsNotEmpty({message: 'El pedido debe tener un importe total'})
+  @IsNotEmpty({ message: 'El pedido debe tener un importe total' })
   @IsNumber()
   importeTotal!: number;
 
-  @IsNotEmpty({message: 'El pedido debe tener una seña'})
+  @IsNotEmpty({ message: 'El pedido debe tener una seña' })
   @IsNumber()
   sena!: number;
 
-  @IsNotEmpty({message: 'El pedido debe tener la cantidad de anillados'})
+  @IsNotEmpty({ message: 'El pedido debe tener la cantidad de anillados' })
   @IsInt()
   archivos!: number;
 
-  @IsNotEmpty({message: 'El pedido debe tener la cantidad de archivos'})
+  @IsNotEmpty({ message: 'El pedido debe tener la cantidad de archivos' })
   @IsInt()
   anillados!: number;
 
@@ -93,6 +95,28 @@ export class DtoPedidoRespuestaCliente extends DtoPedidoEstadoRespuesta {
   items!: DtoPedidoItemRespuesta[];
 }
 
-export class DtoPedidoRespuesta extends DtoPedidoRespuestaCliente {  
+export class DtoPedidoRespuesta extends DtoPedidoRespuestaCliente {
   cliente?: DtoClienteRespuesta;
+}
+
+class DtoPedidoItemCambioEstadoPedido {
+  libro!: {
+    id: string;
+    stock: ResumenLibro;
+  };
+  fechaActualizacion?: Date;
+  estado!: EstadoPedido;
+  id!: number;
+  idPedido!: string;
+}
+
+export class DtoPedidoCambioEstadoRespuesta {
+  id!: string;
+  estado!: EstadoPedido;
+  fechaActualizacion?: Date;
+  cliente!: {
+    id: string,
+    resumen: DtoResumenClienteRespuesta
+  }
+  items!: DtoPedidoItemCambioEstadoPedido[];
 }

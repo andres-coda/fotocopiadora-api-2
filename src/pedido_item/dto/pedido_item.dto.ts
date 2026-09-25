@@ -103,32 +103,33 @@ export class DtoPedidoItemRespuesta {
   especificaciones?: Especificaciones[];
 }
 
-export class DtoPedidoItemCambioEstadoRespuesta{
+export class DtoPedidoItemCambioEstadoRespuesta {
   idPedido!: string;
   id!: number;
   estado!: EstadoPedido;
   fechaActualizacion?: Date;
   pedido!: {
+    fechaActualizacion?: Date;
     id: string;
     estado: EstadoPedido;
     cliente: {
-      id:string,
+      id: string,
       resumen: DtoResumenClienteRespuesta
     }
   }
-  libro!:{
-    id:string;
+  libro!: {
+    id: string;
     stock: ResumenLibro
-  } 
+  }
 }
 
-export class DtoPedidoItemCambioSedeRespuesta{
+export class DtoPedidoItemCambioSedeRespuesta {
   idPedido!: string;
   id!: number;
   sede!: Sede;
   fechaActualizacion?: Date;
-  idCliente!:string;
-  idLibro!:string;
+  idCliente!: string;
+  idLibro!: string;
 }
 
 /* 

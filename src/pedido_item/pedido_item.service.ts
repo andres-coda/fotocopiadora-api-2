@@ -80,7 +80,6 @@ export class PedidoItemService {
     private readonly libroService: LibroService,
     @Inject(forwardRef(() => PedidoService))
     private readonly espService: EspecificacionService,
-    private readonly sedeService: SedeService,
   ) { }
 
   async getDatoByIdOrFail({ nro_pedido, qR, idPedido }: PedidoItemGeneralProp): Promise<PedidoItem> {

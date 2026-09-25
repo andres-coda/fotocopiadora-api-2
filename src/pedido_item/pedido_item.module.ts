@@ -32,7 +32,6 @@ import { SedeModule } from '@src/sede/sede.module';
     forwardRef(() => LibroModule),
     forwardRef(() => PedidoModule),
     forwardRef(() => ClienteModule),
-    forwardRef(() => SedeModule),
   ],
   controllers: [PedidoItemController],
   providers: [PedidoItemService],
