@@ -6,6 +6,7 @@ import { DtoPedidoRespuesta } from "@src/pedido/dto/pedido.dto";
 import { DtoLibroRespuesta, ResumenLibro } from "@src/libro/dto/libroRetorno.dto";
 import { DtoSedeRespuesta } from "@src/sede/dto/sedeRetorno.dto";
 import { DtoResumenClienteRespuesta } from "@src/cliente/dto/cliente_resumen.dto";
+import { Sede } from "@src/sede/entity/sede.entity";
 
 // ------------ Dto Pedido_Item Crear ------------ //
 
@@ -78,6 +79,13 @@ export class DtoCambiarEstadoItem {
   estado!: EstadoPedido;
 }
 
+//------- Dto cambiar estado del pedido libro -----//
+
+export class DtoCambiarSedeItem {
+  @IsNotEmpty()
+  sedeId!: string;
+}
+
 
 // ------------ Dto Pedido_Item Respuesta ------------ //
 
@@ -112,6 +120,15 @@ export class DtoPedidoItemCambioEstadoRespuesta{
     id:string;
     stock: ResumenLibro
   } 
+}
+
+export class DtoPedidoItemCambioSedeRespuesta{
+  idPedido!: string;
+  id!: number;
+  sede!: Sede;
+  fechaActualizacion?: Date;
+  idCliente!:string;
+  idLibro!:string;
 }
 
 /* 

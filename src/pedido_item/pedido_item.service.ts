@@ -6,7 +6,7 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateProp } from '../base/interface/base.interface';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { PedidoItem } from './entity/pedido_item.entity';
-import { DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
+import { DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemCambioSedeRespuesta, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
 import { Libro } from '../libro/entity/libro.entity';
 import { LibroService } from '../libro/libro.service';
 import { PedidoService } from '../pedido/pedido.service';
@@ -23,6 +23,8 @@ import { PEDIDO_ITEM_RELACION, PEDIDO_ITEM_SELECT } from './default/pedido_item.
 import { ClienteResumenService } from '@src/cliente/clienteResumen.service';
 import { StockService } from '@src/libro/stock.service';
 import { ResumenLibro } from '@src/libro/dto/libroRetorno.dto';
+import { SedeService } from '@src/sede/sede.service';
+import { Sede } from '@src/sede/entity/sede.entity';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.PEDIDO>, "entidad"> {
   pedido: Pedido
@@ -53,6 +55,10 @@ interface CambioEstado extends PedidoItemGeneralProp {
   estado: EstadoPedido;
 }
 
+interface CambioSedeProp extends PedidoItemGeneralProp {
+  sedeId: string;
+}
+
 interface UpdateDatoEntidadProp {
   dato: DtoPedidoItemRespuesta;
   qR: QueryRunner;
@@ -74,12 +80,11 @@ export class PedidoItemService {
     private readonly libroService: LibroService,
     @Inject(forwardRef(() => PedidoService))
     private readonly espService: EspecificacionService,
-    private readonly resumenService: ClienteResumenService,
+    private readonly sedeService: SedeService,
   ) { }
 
   async getDatoByIdOrFail({ nro_pedido, qR, idPedido }: PedidoItemGeneralProp): Promise<PedidoItem> {
     try {
-      console.log('<<<<<<------- Id pedido getDatoByIdOrFail --->>>> : ', idPedido);
       const criterio: FindOneOptions = {
         relations: PEDIDO_ITEM_RELACION,
         where: {
@@ -357,7 +362,6 @@ export class PedidoItemService {
 
   async cambiarEstadoCx({ estado, nro_pedido, qR, idPedido }: CambioEstado): Promise<DtoPedidoItemCambioEstadoRespuesta | undefined> {
     try {
-      console.log('<<<<<<------- Id pedido servicio cambiarEstadoCx --->>>> : ', idPedido);
 
       await qR.query(
         `UPDATE pedido_item  SET
@@ -373,15 +377,14 @@ export class PedidoItemService {
         [nro_pedido, idPedido],
       )
 
-      if(!pedidoActualizado) return undefined;
+      if (!pedidoActualizado) return undefined;
 
-      console.log('<<<<<<------- Pedido actualizado servicio cambiarEstadoCx --->>>> : ', pedidoActualizado);
-      
+
       const retorno: DtoPedidoItemCambioEstadoRespuesta = {
         idPedido: idPedido,
         id: nro_pedido,
         estado: pedidoActualizado.estado,
-        fechaActualizacion: pedidoActualizado.fecha_actualizacion, 
+        fechaActualizacion: pedidoActualizado.fecha_actualizacion,
         pedido: {
           id: idPedido,
           estado: pedidoActualizado.estado_pedido,
@@ -405,10 +408,45 @@ export class PedidoItemService {
           }
         }
       }
-      console.log('<<<<<<------- Pedido actualizado servicio cambiarEstadoCx --->>>> : ', retorno);
       return retorno;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el estado del libro`)
+    }
+  }
+
+  async cambiarSedeCx({ sedeId, nro_pedido, idPedido, qR }: CambioSedeProp): Promise<DtoPedidoItemCambioSedeRespuesta> {
+    try {
+      await qR.query(
+        `UPDATE pedido_item  SET
+          id_sede = $1
+         WHERE id = $2 AND id_pedido = $3`,
+        [sedeId, nro_pedido, idPedido],
+      );
+
+      const [pedidoActualizado] = await qR.query(
+        `SELECT * 
+        FROM vw_cambio_sede
+         WHERE id = $1 AND id_pedido = $2`,
+        [nro_pedido, idPedido],
+      )
+
+      if (!pedidoActualizado) throw new NotFoundException('Error al intentar actualizar la sede del pedido');
+
+      return {
+        idPedido: pedidoActualizado.id_pedido,
+        id: pedidoActualizado.id,
+        sede: {
+          id: pedidoActualizado.id_sede,
+          nombre: pedidoActualizado.sede,
+          idEmpresa: pedidoActualizado.id_empresa
+        },
+        fechaActualizacion: pedidoActualizado.fecha_actualizacion,
+        idCliente: pedidoActualizado.id_cliente,
+        idLibro: pedidoActualizado.id_libro
+      };
+
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar cambiar la sede del pedido ${nro_pedido}`);
     }
   }
 

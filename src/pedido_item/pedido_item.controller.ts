@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import { PedidoItemService } from './pedido_item.service';
-import { DtoCambiarEstadoItem, DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
+import { DtoCambiarEstadoItem, DtoCambiarSedeItem, DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemCambioSedeRespuesta, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 
@@ -52,7 +52,7 @@ export class PedidoItemController {
     @Query('pagina') pagina = 1,
   ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
     const id_empresa = req.user.idEmpresa;
-    if(!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
+    if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
     const offset = (Number(pagina) - 1) * Number(limite);
     const items = await this.itemService.getItemByPedido({
       limite: Number(limite),
@@ -63,10 +63,10 @@ export class PedidoItemController {
     });
 
     return {
-      total:items.total,
+      total: items.total,
       limite,
       pagina,
-      datos:items.datos
+      datos: items.datos
     };
   }
 
@@ -79,7 +79,7 @@ export class PedidoItemController {
     @Query('pagina') pagina = 1,
   ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
     const id_empresa = req.user.idEmpresa;
-    if(!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
+    if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
     const offset = (Number(pagina) - 1) * Number(limite);
     const items = await this.itemService.getItemsPedidoByLibroId({
       limite: Number(limite),
@@ -90,10 +90,10 @@ export class PedidoItemController {
     });
 
     return {
-      total:items.total,
+      total: items.total,
       limite,
       pagina,
-      datos:items.datos
+      datos: items.datos
     };
   }
 
@@ -119,7 +119,7 @@ export class PedidoItemController {
     @Body() dto: DtoPedidoItemEditar,
     @Request() req: RequestWithUser,
   ): Promise<DtoPedidoItemRespuesta> {
-    return this.itemService.updateDatoCx({idPedido, nro_pedido: Number(nroItem), dto, qR: req.queryRunner });
+    return this.itemService.updateDatoCx({ idPedido, nro_pedido: Number(nroItem), dto, qR: req.queryRunner });
   }
 
   @Patch('estado/:idPedido/:nroItem')
@@ -130,11 +130,22 @@ export class PedidoItemController {
     @Body() dto: DtoCambiarEstadoItem,
     @Request() req: RequestWithUser,
   ): Promise<DtoPedidoItemCambioEstadoRespuesta | undefined> {
-    console.log('<<<<<<------- Id pedido controlador--->>>> : ',idPedido);
     const retorno = this.itemService.cambiarEstadoCx({ idPedido, nro_pedido: Number(nroItem), estado: dto.estado, qR: req.queryRunner });
-    
-      console.log('<<<<<<------- Pedido actualizado controller cambiarEstadoCx --->>>> : ', retorno);
-      return retorno;
+
+    return retorno;
+  }
+
+  @Patch('sede/:idPedido/:nroItem')
+  @HttpCode(200)
+  async cambiarSede(
+    @Param('nroItem') nroItem: string,
+    @Param('idPedido') idPedido: string,
+    @Body() dto: DtoCambiarSedeItem,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoPedidoItemCambioSedeRespuesta> {
+    const retorno = this.itemService.cambiarSedeCx({ idPedido, nro_pedido: Number(nroItem), sedeId: dto.sedeId, qR: req.queryRunner });
+
+    return retorno;
   }
 
   @Delete('/:idPedido/pedido:nroItem')
