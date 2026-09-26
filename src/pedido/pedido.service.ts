@@ -8,23 +8,27 @@ import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.in
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
+import { DtoPedidoCambioEstadoRespuesta, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoItemCambioEstadoPedido, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
 import { DtoPedidoItemRespuesta } from '../pedido_item/dto/pedido_item.dto';
 import { GetPedidoItemBusqueda } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
 import { toRespuestaPedido } from './utils/toRespuestaPedido';
 import { toRespuestaPedidoItemCompleto } from '../pedido_item/utils/toRespuestaItem';
-import { BusquedaGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, GetGenericoByIdProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { EstadoPedido } from './interface/estadoPedido.enum';
 import { OrdenPedidoCliente } from '@src/cliente/interface/cliente_retorno.interface';
 
-interface BusquedaPedidoProp extends BusquedaGenericoProp{
-  estado:EstadoPedido | undefined
+interface BusquedaPedidoProp extends BusquedaGenericoProp {
+  estado: EstadoPedido | undefined
 }
 
 interface BuscarPedidoByIdClienteProp extends Omit<BusquedaGenericoProp, 'busqueda'> {
   orden?: OrdenPedidoCliente,
-  idCliente:string;
-  filtroEstado?:EstadoPedido
+  idCliente: string;
+  filtroEstado?: EstadoPedido
+}
+
+interface CambioEstadoPedido extends GetGenericoByIdProp {
+  estado: EstadoPedido;
 }
 
 @Injectable()
@@ -46,7 +50,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         'select * from fc_crear_pedido($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb) as resultado',
         [
           dto.clienteDatos?.telefono, dto.clienteDatos?.email, dto.clienteDatos?.nombre, dto.cliente, dto.fechaEntrega, dto.importeTotal,
-          dto.archivos, dto.anillados, dto.sena,JSON.stringify(dto.pedidoItems)
+          dto.archivos, dto.anillados, dto.sena, JSON.stringify(dto.pedidoItems)
         ]
       );
 
@@ -133,7 +137,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
 
       return {
         total,
-        datos:rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r))
+        datos: rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r))
       }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, 'Error al buscar pedidos');
@@ -141,9 +145,9 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
   }
 
 
-  async buscarPedidosByCliente({ orden=OrdenPedidoCliente.ESTADO_PEDIDO, limite = 20, offset = 0, qR, idCliente, filtroEstado }: BuscarPedidoByIdClienteProp): Promise<RetornoGenericoServiceGet<DtoPedidoRespuestaCliente>> {
+  async buscarPedidosByCliente({ orden = OrdenPedidoCliente.ESTADO_PEDIDO, limite = 20, offset = 0, qR, idCliente, filtroEstado }: BuscarPedidoByIdClienteProp): Promise<RetornoGenericoServiceGet<DtoPedidoRespuestaCliente>> {
     try {
-      const criterio:FindManyOptions = this.crearCriterio({
+      const criterio: FindManyOptions = this.crearCriterio({
         where: {
           idCliente: idCliente,
           ...(filtroEstado ? { estado: filtroEstado } : {})
@@ -153,17 +157,68 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
         offset
       });
 
-      
-      const [datos, total] = qR 
-      ? await qR.manager.findAndCount(Pedido, criterio)
-      : await this.baseRepository.findAndCount(criterio);
-      
 
-      return {total, datos}
+      const [datos, total] = qR
+        ? await qR.manager.findAndCount(Pedido, criterio)
+        : await this.baseRepository.findAndCount(criterio);
+
+
+      return { total, datos }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar los pedidos del cliente ${idCliente}`);
     }
   }
-  
+
+  async cambiarEstadoPedidoCx({ estado, qR, id }: CambioEstadoPedido): Promise<DtoPedidoCambioEstadoRespuesta> {
+    try {
+      const rows = await qR.query(
+        `SELECT * FROM fc_cambiar_estado_pedido($1, $2)`,
+        [estado, id],
+      );
+
+      if (!rows || rows.length === 0) throw new NotFoundException(`No se pudo actualizar el estado del pedido ${id}`);
+
+      const items: DtoPedidoItemCambioEstadoPedido[] = [];
+      for (const r of rows) {
+        const item: DtoPedidoItemCambioEstadoPedido = {
+          libro: {
+            id: r.id_libro,
+            stock: {
+              pendiente: r.libro_pendiente,
+              listo: r.libro_listo,
+              retirado: r.libro_retirado,
+              cancelado: r.libro_cancelado
+            }
+          },
+          fechaActualizacion: r.fecha_actualizacion,
+          estado: r.estado,
+          id: r.nro_pedido,
+          idPedido: r.id
+        }
+        items.push(item);
+      }
+
+      const pedido: DtoPedidoCambioEstadoRespuesta = {
+        id: rows[0].id,
+        estado: rows[0].estado,
+        fechaActualizacion: rows[0].fecha_actualizacion,
+        cliente: {
+          id: rows[0].id_cliente,
+          resumen: {
+            pendiente: rows[0].pendiente,
+            listo: rows[0].listo,
+            retirado: rows[0].retirado,
+            cancelado: rows[0].cancelado
+          }
+        },
+        items: items
+      }
+
+      return pedido;
+
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al cambiar estado del pedido ${id}`);
+    }
+  }
 
 }

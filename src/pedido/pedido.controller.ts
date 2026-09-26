@@ -1,12 +1,12 @@
-import { Controller, DefaultValuePipe, Get, HttpCode, Param, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Get, HttpCode, Param, Patch, Query, Request, UseGuards } from '@nestjs/common';
 import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { PedidoService } from './pedido.service';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
+import { DtoPedidoCambioEstadoRespuesta, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
-import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
+import { DtoCambiarEstadoItem, DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
 import { PEDIDO_RELATIONS, PEDIDO_SELECTED } from './default/relacion';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { EstadoPedido } from './interface/estadoPedido.enum';
@@ -50,7 +50,7 @@ export class PedidoController extends BaseController<
       estado,
       limite,
       offset,
-      qR:req.queryRunner,
+      qR: req.queryRunner,
     });
 
     return {
@@ -66,11 +66,11 @@ export class PedidoController extends BaseController<
   async buscarIdCliente(
     @Param('id') idCliente: string,
     @Query(
-          'orden',
-          new DefaultValuePipe(OrdenPedidoCliente.ESTADO_PEDIDO),
-          OrdenPedidoClientePipe,
-        )
-        orden: OrdenPedidoCliente,
+      'orden',
+      new DefaultValuePipe(OrdenPedidoCliente.ESTADO_PEDIDO),
+      OrdenPedidoClientePipe,
+    )
+    orden: OrdenPedidoCliente,
     @Query('limite') limite = 20,
     @Query('pagina') pg = 1,
     @Query('estado') estado: EstadoPedido | undefined = undefined,
@@ -83,7 +83,7 @@ export class PedidoController extends BaseController<
       orden,
       limite,
       offset,
-      qR:req.queryRunner,
+      qR: req.queryRunner,
       filtroEstado: estado
     });
 
@@ -93,5 +93,17 @@ export class PedidoController extends BaseController<
       pagina,
       datos: retorno.datos
     }
+  }
+
+  @Patch('estado/:idPedido')
+  @HttpCode(200)
+  async cambiarEstadoPedido(
+    @Param('idPedido') idPedido: string,
+    @Body() dto: DtoCambiarEstadoItem,
+    @Request() req: RequestWithUser,
+  ): Promise<DtoPedidoCambioEstadoRespuesta> {
+    const retorno = this.pedidoService.cambiarEstadoPedidoCx({ id: idPedido, estado: dto.estado, qR: req.queryRunner });
+
+    return retorno;
   }
 }

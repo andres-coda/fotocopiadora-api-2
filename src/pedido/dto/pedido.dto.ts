@@ -99,7 +99,7 @@ export class DtoPedidoRespuesta extends DtoPedidoRespuestaCliente {
   cliente?: DtoClienteRespuesta;
 }
 
-class DtoPedidoItemCambioEstadoPedido {
+export class DtoPedidoItemCambioEstadoPedido {
   libro!: {
     id: string;
     stock: ResumenLibro;
