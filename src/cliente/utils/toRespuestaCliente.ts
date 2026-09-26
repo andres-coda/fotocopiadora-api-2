@@ -8,6 +8,7 @@ import { DtoPedidoRespuestaCliente } from "@src/pedido/dto/pedido.dto";
 import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto";
 import { Pedido } from "@src/pedido/entity/pedido.entity";
 import { DtoPedidoItemRespuesta } from "@src/pedido_item/dto/pedido_item.dto";
+import { GetPedidoItemBusqueda } from "@src/pedido_item/interface/pedido_item_busqueda.interface";
 
 export const toRespuestaCliente = (dato?: Cliente): DtoClienteRespuesta | undefined => {
   if (!dato) return undefined;
@@ -45,4 +46,15 @@ export const toRespuestaClienteXbusqueda = (dato?: ClienteRetorno): DtoClienteRe
     fechaCreacion: dato.fecha_creacion,
     deleted: dato.deleted
   }
+}
+
+export const toRespuestaPedidoCliente = (dato?:GetPedidoItemBusqueda):DtoClienteRespuesta | undefined => {
+  if(!dato || !dato.id_cliente) return undefined
+  const cliente: DtoClienteRespuesta = {
+    id: dato.id_cliente,
+    deleted: false,
+    telefono: dato.telefono,
+    email: dato.email
+  }
+  return cliente;
 }

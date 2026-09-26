@@ -4,9 +4,10 @@ import { toRespuestaBase } from "../../utils/toRespuesta.function";
 import { DtoPedidoRespuesta } from "../dto/pedido.dto";
 import { Pedido } from "../entity/pedido.entity";
 import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
-import { toRespuestaCliente } from "../../cliente/utils/toRespuestaCliente";
+import { toRespuestaCliente, toRespuestaPedidoCliente } from "../../cliente/utils/toRespuestaCliente";
 import { toRespuestaPedidoItem } from "../../pedido_item/utils/toRespuestaItem";
 import { GetPedidoBusqueda } from "../interface/pedido.interface";
+import { GetPedidoItemBusqueda } from "@src/pedido_item/interface/pedido_item_busqueda.interface";
 
 export const toRespuestaPedido = (dato?: Pedido): DtoPedidoRespuesta | undefined => {
   if (!dato) return undefined;
@@ -31,4 +32,24 @@ export const toRespuestaPedido = (dato?: Pedido): DtoPedidoRespuesta | undefined
     cliente,
     items: pedidoItems,
   }
+}
+
+export const toRespuestaPedidoGetItem = (dato?: GetPedidoItemBusqueda):DtoPedidoRespuesta | undefined=> {
+  if(!dato || !dato.id_pedido) return undefined;
+  const cliente: DtoClienteRespuesta | undefined= toRespuestaPedidoCliente(dato);
+
+  const pedido: DtoPedidoRespuesta = {
+    id: dato.id_pedido,
+    fechaCreacion: dato.fecha_creacion,
+    fechaEntrega: dato.fecha_entrega,
+    importeTotal: dato.importe_total,
+    archivos: dato.archivs,
+    anillados: dato.anillados,
+    sena: dato.sena,
+    items: [],
+    cliente,
+    estado: dato.estado_pedido,
+    deleted: false
+  }
+  return pedido;
 }

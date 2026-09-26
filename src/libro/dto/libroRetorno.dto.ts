@@ -20,6 +20,20 @@ export class DtoLibroEmpresaRespuesta extends DtoBaseRetorno {
   id_empresa?:string;
 }
 
+export class DtoLibroNombreRespuesta extends DtoBaseRetorno{
+  id!:string;
+  nombre!: string;
+  editorial?: string;
+  materia?: DtoMateriaRespuesta;
+}
+
+export class DtoLibroMinimoRespuesta extends DtoLibroNombreRespuesta {
+  resumen?:ResumenLibro;
+  edicion?: number;
+  anio?: string;
+  componentes?: DtoComponenteRespuesta[];
+  nivel?: string;
+}
 export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
   nombre!: string;
   editorial?: string;
@@ -36,12 +50,7 @@ export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
   descripcion?: string;
 }
 
-export class DtoLibroNombreRespuesta {
-  id!:string;
-  nombre!: string;
-  editorial?: string;
-  materia?: DtoMateriaRespuesta;
-}
+
 
 
 
