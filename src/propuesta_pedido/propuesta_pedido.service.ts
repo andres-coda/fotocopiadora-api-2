@@ -17,6 +17,7 @@ import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { toRespuestaPropuesta } from './utils/toRespuestaPropuesta';
 import { BusquedaGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { PropuestaVistaProp } from './interface/propuesta.interface';
+import { PropuestaRetorno } from './retorno/propuesta.retorno';
 
 interface GetTotalIdsProp {
   total: number;
@@ -41,7 +42,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     super(propuestaRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async getPropuesta({ qR, limite, offset, orden }: GetGenericoProp): Promise<{ datos: DtoPropuestaRespuesta[], total: number }> {
+  async getPropuesta({ qR, limite, offset, orden }: GetGenericoProp): Promise<{ datos: PropuestaRetorno[], total: number }> {
     try {
       const ordenSql = orden === 'DESC' ? 'DESC' : 'ASC';
 
@@ -74,7 +75,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
   async getDatoCx({ qR, entidadError = 'Propuesta', limite = 50, offset = 0 }: GetProp<Propuesta>): Promise<RetornoGet<'propuesta_pedido'>> {
     try {
-      const find: { datos: DtoPropuestaRespuesta[], total: number } = await this.getPropuesta({ qR, limite, offset });
+      const find: { datos: PropuestaRetorno[], total: number } = await this.getPropuesta({ qR, limite, offset });
 
       return {
         total: find.total,
@@ -87,7 +88,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     }
   }
 
-  async getPropuestaById({ qR, id }: GetGenericoByIdProp): Promise<DtoPropuestaRespuesta> {
+  async getPropuestaById({ qR, id }: GetGenericoByIdProp): Promise<PropuestaRetorno> {
     try {
       const rows = await qR.query(
         'SELECT * FROM vw_propuesta WHERE id_propuesta = $1 ORDER BY nombre',
@@ -102,7 +103,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     }
   }
 
-  async getDatoByIdCx({ id, qR, relaciones, entidadError, selected }: GetIdProp<Propuesta>): Promise<DtoPropuestaRespuesta> {
+  async getDatoByIdCx({ id, qR, relaciones, entidadError, selected }: GetIdProp<Propuesta>): Promise<PropuestaRetorno> {
     try {
       return await this.getPropuestaById({id, qR});
     } catch (er) {
@@ -110,7 +111,7 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     }
   }
 
-  async buscarPropuesta({busqueda, qR, limite, offset}:BusquedaGenericoProp):Promise<RetornoGenericoServiceGet<DtoPropuestaRespuesta>>{
+  async buscarPropuesta({busqueda, qR, limite, offset}:BusquedaGenericoProp):Promise<RetornoGenericoServiceGet<PropuestaRetorno>>{
     try{
        const total: GetTotalIdsProp[] = await qR.query(
         `SELECT id, count(*) over() as total 
@@ -233,15 +234,9 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     }
   }
 
-  remplaceToReturn(entidad: Propuesta): DtoPropuestaRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-
-    return {
-      ...base,
-      nombre: entidad.nombre,
-
-      libros: []
-    }
+  remplaceToReturn(entidad: Propuesta): PropuestaRetorno {
+    const propuesta = new PropuestaRetorno({...entidad});
+    return propuesta;
   }
   /* 
     private transformarNombreLibroPropuesta(texto: string): NombreProp {

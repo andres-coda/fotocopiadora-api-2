@@ -6,32 +6,20 @@ import { Pedido } from "../entity/pedido.entity";
 import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
 import { toRespuestaCliente, toRespuestaPedidoCliente } from "../../cliente/utils/toRespuestaCliente";
 import { toRespuestaPedidoItem } from "../../pedido_item/utils/toRespuestaItem";
-import { GetPedidoBusqueda } from "../interface/pedido.interface";
+import { fc_crear_pedido_prop, GetPedidoBusqueda } from "../interface/pedido.interface";
 import { GetPedidoItemBusqueda } from "@src/pedido_item/interface/pedido_item_busqueda.interface";
+import { PedidoRetorno } from "../retorno/pedido.retorno";
 
-export const toRespuestaPedido = (dato?: Pedido): DtoPedidoRespuesta | undefined => {
+export const toRespuestaPedido = (dato?: fc_crear_pedido_prop): PedidoRetorno | undefined => {
   if (!dato) return undefined;
-  const base: DtoBaseRetorno | undefined = toRespuestaBase<Pedido | undefined>(dato);
-  if (!base) return undefined;
-  const pedidoItems: DtoPedidoItemRespuesta[] = (dato.pedidoItems ?? [])
-    .flatMap(e => {
-      const esp = toRespuestaPedidoItem(e);
-      return esp ? [esp] : [];
-    });
-
-  const cliente: DtoClienteRespuesta | undefined = toRespuestaCliente(dato.cliente);
-
-  return {
-    ...base,
-    fechaEntrega: dato.fechaEntrega,
-    importeTotal: dato.importeTotal,
-    archivos: dato.archivos,
-    anillados: dato.anillados,
-    sena: dato.sena,
-    estado: dato.estado,
-    cliente,
-    items: pedidoItems,
+  const pedido = new PedidoRetorno({...dato});
+  if(dato.cliente){
+    pedido.agregarClienteRetorno({...dato.cliente})
   }
+  if(dato.items.length > 0) {
+    dato.items.map(i=> pedido.agregarItemPedido({...i}))
+  }
+  return pedido;
 }
 
 export const toRespuestaPedidoGetItem = (dato?: GetPedidoItemBusqueda):DtoPedidoRespuesta | undefined=> {

@@ -4,11 +4,11 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, GetIdProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCambioEstadoRespuesta, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoItemCambioEstadoPedido, DtoPedidoRespuesta, DtoPedidoRespuestaCliente } from './dto/pedido.dto';
+import { DtoPedidoCambioEstadoRespuesta, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoItemCambioEstadoPedido } from './dto/pedido.dto';
 import { DtoPedidoItemRespuesta } from '../pedido_item/dto/pedido_item.dto';
 import { GetPedidoItemBusqueda } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
 import { toRespuestaPedido } from './utils/toRespuestaPedido';
@@ -16,6 +16,8 @@ import { toRespuestaPedidoItemCompleto } from '../pedido_item/utils/toRespuestaI
 import { BusquedaGenericoProp, GetGenericoByIdProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { EstadoPedido } from './interface/estadoPedido.enum';
 import { OrdenPedidoCliente } from '@src/cliente/interface/cliente_retorno.interface';
+import { fc_crear_pedido_prop } from './interface/pedido.interface';
+import { PedidoRetorno } from './retorno/pedido.retorno';
 
 interface BusquedaPedidoProp extends BusquedaGenericoProp {
   estado: EstadoPedido | undefined
@@ -42,7 +44,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     super(pedidoRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async createDatoAuxiliar({ dto, qR, entidad }: CreateProp<DtoPedidoCrear, typeof Entidad.PEDIDO>): Promise<DtoPedidoRespuesta> {
+  async createDatoAuxiliar({ dto, qR, entidad }: CreateProp<DtoPedidoCrear, typeof Entidad.PEDIDO>): Promise<fc_crear_pedido_prop> {
     try {
       if (!qR) throw new NotFoundException('No se pudo crear transacción para la operación');
       if (!dto.cliente && !dto.clienteDatos) throw new NotFoundException('Requiere datos del cliente');
@@ -97,29 +99,40 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoPedidoCrear, "pedido">): Promise<DtoPedidoRespuesta> {
+  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoPedidoCrear, "pedido">): Promise<PedidoRetorno> {
     try {
       if (!dto.pedidoItems || dto.pedidoItems.length === 0) throw new NotFoundException('No se puede crear un pedido sin sus items');
 
-      const retorno: DtoPedidoRespuesta | undefined = await this.createDatoAuxiliar({ dto, entidad, qR });
+      const retorno: fc_crear_pedido_prop | undefined = await this.createDatoAuxiliar({ dto, entidad, qR });
 
-      if (!retorno) throw new NotFoundException(`No se pudo preparar el pedido para su retorno`);
+      const pedido: PedidoRetorno | undefined = toRespuestaPedido(retorno);
+
+      if (!pedido) throw new NotFoundException(`No se pudo preparar el pedido para su retorno`);
 
       const payload: Mensaje = {
         mensaje: Mens.CREAR,
         entidad: Entidad.PEDIDO,
-        dato: retorno
+        dato: pedido
       }
       this.gateway.actualizacionDato(payload);
 
-      return retorno;
+      return pedido;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar crear el elemento en la entidad`)
     }
   }
 
-  remplaceToReturn(entidad: Pedido): DtoPedidoRespuesta | undefined {
-    return toRespuestaPedido(entidad);
+  remplaceToReturn(entidad: Pedido): PedidoRetorno | undefined {
+    if (!entidad) return undefined;
+    const pedido = new PedidoRetorno({ ...entidad });
+    pedido.agregarDatosPedido({ ...entidad });
+    if (entidad.cliente) {
+      pedido.agregarClienteRetorno({ ...entidad.cliente })
+    }
+    if (entidad.pedidoItems && entidad.pedidoItems.length > 0) {
+      entidad.pedidoItems.map(i => pedido.agregarItemPedido({ ...i }))
+      return pedido;
+    }
   }
 
   async buscarPedidos({ busqueda, limite = 20, offset = 0, qR, estado }: BusquedaPedidoProp): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
@@ -145,9 +158,9 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
   }
 
 
-  async buscarPedidosByCliente({ orden = OrdenPedidoCliente.ESTADO_PEDIDO, limite = 20, offset = 0, qR, idCliente, filtroEstado }: BuscarPedidoByIdClienteProp): Promise<RetornoGenericoServiceGet<DtoPedidoRespuestaCliente>> {
+  async buscarPedidosByCliente({ orden = OrdenPedidoCliente.ESTADO_PEDIDO, limite = 20, offset = 0, qR, idCliente, filtroEstado }: BuscarPedidoByIdClienteProp): Promise<RetornoGenericoServiceGet<PedidoRetorno>> {
     try {
-      const criterio: FindManyOptions = this.crearCriterio({
+      const criterio: FindManyOptions<Pedido> = this.crearCriterio({
         where: {
           idCliente: idCliente,
           ...(filtroEstado ? { estado: filtroEstado } : {})
@@ -158,12 +171,25 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       });
 
 
-      const [datos, total] = qR
+      const [pedidos, total] = qR
         ? await qR.manager.findAndCount(Pedido, criterio)
         : await this.baseRepository.findAndCount(criterio);
 
+      if (pedidos.length > 0) {
+        return {
+          total,
+          datos: pedidos.flatMap(p => {
+            const pedidoAux = this.remplaceToReturn(p);
+            if (pedidoAux) return [pedidoAux];
+            return [];
+          })
+        }
+      }
 
-      return { total, datos }
+      return{
+        total, datos:[]
+      }
+
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar los pedidos del cliente ${idCliente}`);
     }
@@ -220,5 +246,4 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       throw this.erroresService.handleExceptions(er, `Error al cambiar estado del pedido ${id}`);
     }
   }
-
 }

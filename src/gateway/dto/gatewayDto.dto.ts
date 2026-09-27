@@ -1,34 +1,32 @@
 import { Mens } from "../enum/Mens.enum";
-import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
-import { DtoComponenteRespuesta } from "../../componente/dto/componenteRetorno.dto";
-import { DtoEspecificaionRetorno } from "../../especificacion/dto/DtoEspecificacionRetorno.dto";
-import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from "../../libro/dto/libroRetorno.dto";
-import { DtoPedidoItemRespuesta } from "../../pedido_item/dto/pedido_item.dto";
-import { DtoMateriaRespuesta } from "../../materia/dto/materiaRetorno.dto";
-import { DtoPedidoRespuesta } from "../../pedido/dto/pedido.dto";
-import { DtoPrecioRespuesta } from "../../precio/dto/precio.dto";
-import { DtoPropuestaRespuesta } from "../../propuesta_pedido/dto/propuestaRetorno.dto";
-import { DtoSedeRespuesta } from "../../sede/dto/sedeRetorno.dto";
-import { DtoResumenRespuesta } from "../../libro/dto/resumen.dto";
-import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
-import { DtoEmpresaRespuesta } from "@src/empresa/dto/empresa.dto";
-import { DtoNivelRespuesta } from "@src/nivel/dto/nivel.dto";
-import { DtoEditorialRespuesta } from "@src/editorial/dto/editorial.dto";
+import { ClienteRetorno } from "@src/cliente/retorno/cliente.retorno";
+import { ComponenteRetorno } from "@src/componente/retorno/componente.retorno";
+import { EspecificacionRetorno } from "@src/especificacion/retorno/especificacion.retorno";
+import { LibroRetorno } from "@src/libro/retorno/libro.retorno";
+import { MateriaRetorno } from "@src/materia/retorno/materia.retorno";
+import { PedidoRetorno } from "@src/pedido/retorno/pedido.retorno";
+import { PrecioRetorno } from "@src/precio/retorno/precio.retorno";
+import { PropuestaRetorno } from "@src/propuesta_pedido/retorno/propuesta.retorno";
+import { SedeRetorno } from "@src/sede/retorno/sede.retorno";
+import { EmpresaRetorno } from "@src/empresa/retorno/empresa.retorno";
+import { NivelRetorno } from "@src/nivel/retorno/nivel.retorno";
+import { EditorialRetorno } from "@src/editorial/retorno/editorial.retorno";
+import { BaseRetorno } from "@src/base/retorno/base.retorno";
 
 export const EntidadDatoMap = {
-  cliente: {} as DtoClienteRespuesta,
-  componente: {} as DtoComponenteRespuesta,
-  esp: {} as DtoEspecificaionRetorno,
-  libro: {} as DtoLibroRespuesta,
-  materia: {} as DtoMateriaRespuesta,
-  pedido: {} as DtoPedidoRespuesta,
-  precio: {} as DtoPrecioRespuesta,
-  propuesta_pedido: {} as DtoPropuestaRespuesta,
-  sede: {} as DtoSedeRespuesta,
-  empresa: {} as DtoEmpresaRespuesta,
-  nivel: {} as DtoNivelRespuesta,
-  editorial: {} as DtoEditorialRespuesta,
-} satisfies Record<string, DtoBaseRetorno>;
+  cliente: {} as ClienteRetorno,
+  componente: {} as ComponenteRetorno,
+  esp: {} as EspecificacionRetorno,
+  libro: {} as LibroRetorno,
+  materia: {} as MateriaRetorno,
+  pedido: {} as PedidoRetorno,
+  precio: {} as PrecioRetorno,
+  propuesta_pedido: {} as PropuestaRetorno,
+  sede: {} as SedeRetorno,
+  empresa: {} as EmpresaRetorno,
+  nivel: {} as NivelRetorno,
+  editorial: {} as EditorialRetorno,
+} satisfies Record<string, BaseRetorno>;
 
 
 export type EntidadDatoMapType = typeof EntidadDatoMap;

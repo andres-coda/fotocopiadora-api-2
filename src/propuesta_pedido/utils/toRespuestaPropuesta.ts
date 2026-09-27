@@ -2,6 +2,7 @@ import { DtoLibroRespuesta } from "@src/libro/dto/libroRetorno.dto";
 import { DtoPropuestaRespuesta } from "../dto/propuestaRetorno.dto";
 import { toRespuestaLibro } from "@src/libro/utils/toRespuestaLibro";
 import { PropuestaVistaProp } from "../interface/propuesta.interface";
+import { PropuestaRetorno } from "../retorno/propuesta.retorno";
 
 export const toRespuestaLibroPropuesta = (dato: PropuestaVistaProp): DtoLibroRespuesta => {
   return {
@@ -29,26 +30,18 @@ export const toRespuestaLibroPropuesta = (dato: PropuestaVistaProp): DtoLibroRes
 
 export const toRespuestaPropuesta = (
   datos: PropuestaVistaProp[],
-): DtoPropuestaRespuesta[] => {
-  const propuestas = new Map<string, DtoPropuestaRespuesta>();
+): PropuestaRetorno[] => {
+  const propuestas = new Map<string, PropuestaRetorno>();
 
   for (const dato of datos) {
     let propuesta = propuestas.get(dato.id_propuesta);
 
     if (!propuesta) {
-      propuesta = {
-        id: dato.id_propuesta,
-        nombre: dato.nombre_propuesta,
-        fechaActualizacion: dato.fecha_actualizacion,
-        fechaCreacion: dato.fecha_creacion,
-        deleted: dato.deleted_propuesta,
-        libros: [],
-      };
-
+      propuesta = new PropuestaRetorno({ ...dato, id: dato.id_propuesta, deleted: dato.deleted_propuesta });
       propuestas.set(dato.id_propuesta, propuesta);
     }
+    propuesta.agregarLibroApropuestaRetorno({ ...dato, id: dato.id_libro });
 
-    propuesta.libros.push(toRespuestaLibroPropuesta(dato));
   }
 
   return [...propuestas.values()];

@@ -11,9 +11,9 @@ import { Sede } from './entity/sede.entity';
 import { DtoSedeCrear } from './dto/sedeCrear.dto';
 import { DtoSedeEditar } from './dto/sedeEditar.dto';
 import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
-import { DtoSedeRespuesta } from './dto/sedeRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { SedeRetorno } from './retorno/sede.retorno';
 
 @Injectable()
 export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar> {
@@ -26,7 +26,7 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
     super(sedeRepository, dataSource, erroresService, gatewayGateway)
   }
 
-  async getSedesTodas({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoSedeRespuesta>> {
+  async getSedesTodas({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<SedeRetorno>> {
     try {
       const newOffset: number = Number(offset) > 0 ? Number(offset) : 0;
       const criterio: FindManyOptions = {
@@ -35,7 +35,7 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
       }
       const [datos, total] = await qR.manager.findAndCount(Sede, criterio);
 
-      const retorno: DtoSedeRespuesta[] = (datos ?? []).flatMap(e => {
+      const retorno: SedeRetorno[] = (datos ?? []).flatMap(e => {
         const esp = this.remplaceToReturn(e);
         return esp ? [esp] : [];
       });
@@ -99,12 +99,8 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
     }
   }
 
-  remplaceToReturn(entidad: Sede): DtoSedeRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-
-    return {
-      ...base,
-      nombre: entidad.nombre
-    }
+  remplaceToReturn(entidad: Sede): SedeRetorno {
+    const sede = new SedeRetorno({...entidad});
+    return sede;
   }
 }

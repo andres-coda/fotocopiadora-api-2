@@ -1,14 +1,9 @@
-import { GetPedidoBusqueda } from "@src/pedido/interface/pedido.interface";
 import { toRespuestaBase, toRespuestaResumen } from "../../utils/toRespuesta.function";
 import { DtoClienteRespuesta } from "../dto/cliente.dto";
-import { DtoResumenClienteRespuesta } from "../dto/cliente_resumen.dto";
 import { Cliente } from "../entity/cliente.entity";
-import { ClienteRetorno } from "../interface/cliente_retorno.interface";
-import { DtoPedidoRespuestaCliente } from "@src/pedido/dto/pedido.dto";
-import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto";
-import { Pedido } from "@src/pedido/entity/pedido.entity";
-import { DtoPedidoItemRespuesta } from "@src/pedido_item/dto/pedido_item.dto";
+import { ClienteRetornoQueryProp } from "../interface/cliente_retorno.interface";
 import { GetPedidoItemBusqueda } from "@src/pedido_item/interface/pedido_item_busqueda.interface";
+import { ClienteRetorno } from "../retorno/cliente.retorno";
 
 export const toRespuestaCliente = (dato?: Cliente): DtoClienteRespuesta | undefined => {
   if (!dato) return undefined;
@@ -24,32 +19,23 @@ export const toRespuestaCliente = (dato?: Cliente): DtoClienteRespuesta | undefi
   }
 }
 
-export const toRespuestaClienteXbusqueda = (dato?: ClienteRetorno): DtoClienteRespuesta | undefined => {
+export const toRespuestaClienteXbusqueda = (dato?: ClienteRetornoQueryProp): ClienteRetorno | undefined => {
   if (!dato) return undefined;
-  let resumen: DtoResumenClienteRespuesta | undefined;
+  const cliente = new ClienteRetorno({ ...dato })
   if (dato.pendiente != undefined && dato.listo != undefined && dato.cancelado != undefined && dato.retirado != undefined) {
-    resumen = {
+    const resumen = {
       pendiente: dato.pendiente,
       listo: dato.listo,
       retirado: dato.retirado,
       cancelado: dato.cancelado
     }
+    cliente.agregarResumenCliente({ ...resumen });
   }
-
-  return {
-    id: dato.id,
-    nombre: dato.nombre,
-    telefono: dato.telefono,
-    email: dato.email,
-    resumen,
-    fechaActualizacion: dato.fecha_actualizacion,
-    fechaCreacion: dato.fecha_creacion,
-    deleted: dato.deleted
-  }
+  return cliente;
 }
 
-export const toRespuestaPedidoCliente = (dato?:GetPedidoItemBusqueda):DtoClienteRespuesta | undefined => {
-  if(!dato || !dato.id_cliente) return undefined
+export const toRespuestaPedidoCliente = (dato?: GetPedidoItemBusqueda): DtoClienteRespuesta | undefined => {
+  if (!dato || !dato.id_cliente) return undefined
   const cliente: DtoClienteRespuesta = {
     id: dato.id_cliente,
     deleted: false,

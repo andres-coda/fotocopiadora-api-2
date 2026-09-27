@@ -2,10 +2,10 @@ import { Controller, Get, HttpCode, Query, Request, UseGuards, Post, Param, Body
 import { EspecificacionService } from './especificacion.service';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
-import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
 import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { DtoEspecificacionEditar } from './dto/DtoEditarEspecificacion.dto';
+import { EspecificacionRetorno } from './retorno/especificacion.retorno';
 
 @Controller('especificacion')
 @UseGuards(UsuarioGuard)
@@ -19,9 +19,9 @@ export class EspecificacionController {
   async getEspecificaciones(
     @Request() req: RequestWithUser,
     @Query('deleted') deleted = false,
-  ): Promise<DtoEspecificaionRetorno[]> {
+  ): Promise<EspecificacionRetorno[]> {
     if(!deleted){
-      const retorno: DtoEspecificaionRetorno[] = await this.especificacionService.getEspecificacionesCx(req.queryRunner);
+      const retorno: EspecificacionRetorno[] = await this.especificacionService.getEspecificacionesCx(req.queryRunner);
       return retorno
     }
 
@@ -33,7 +33,7 @@ export class EspecificacionController {
   async getEspecificacionById(
     @Param('id') id:string, 
     @Request() req: RequestWithUser,
-  ): Promise<DtoEspecificaionRetorno> {
+  ): Promise<EspecificacionRetorno> {
     
     return await this.especificacionService.getEspecificacionByIdCx({id, qR: req.queryRunner});
   }
@@ -44,7 +44,7 @@ export class EspecificacionController {
   async createEspecificacion(
     @Body() dto: DtoEspecificacionCrear,
     @Request() req: RequestWithUser,
-  ): Promise<DtoEspecificaionRetorno> {
+  ): Promise<EspecificacionRetorno> {
     const item = await this.especificacionService.createEspecificacionCx({
       dto,
       qR: req.queryRunner,
@@ -59,7 +59,7 @@ export class EspecificacionController {
     @Param('idEsp') idEspecificacion: string,
     @Body() dto: DtoEspecificacionEditar,
     @Request() req: RequestWithUser,
-  ): Promise<DtoEspecificaionRetorno> {
+  ): Promise<EspecificacionRetorno> {
     const esp = await this.especificacionService.updateEspecificacionCx({
       id: idEspecificacion,
       dto,

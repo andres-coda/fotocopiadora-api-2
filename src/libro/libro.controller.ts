@@ -4,9 +4,9 @@ import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { DtoLibroCrear } from './dto/libroCrear.dto';
-import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { Role } from '@src/auth/rol/rol.enum';
+import { LibroRetorno } from './retorno/libro.retorno';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -22,7 +22,7 @@ export class LibroController {
     @Query('q') busqueda: string,
     @Query('limite') limite = 20,
     @Query('pagina') pg = 1,
-  ): Promise<RetornoGenericoControllerGet<DtoLibroRespuesta> | undefined> {
+  ): Promise<RetornoGenericoControllerGet<LibroRetorno> | undefined> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
 
@@ -50,7 +50,7 @@ export class LibroController {
     @Query('q') busqueda: string,
     @Query('limite') limite = 20,
     @Query('pagina') pg = 1,
-  ): Promise<RetornoGenericoControllerGet<DtoLibroRespuesta> | undefined> {
+  ): Promise<RetornoGenericoControllerGet<LibroRetorno> | undefined> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
 
@@ -77,8 +77,8 @@ export class LibroController {
   async getLibroById(
     @Param('idLibro') idLibro: string,
     @Request() req: RequestWithUser,
-  ): Promise<DtoLibroRespuesta> {
-    const libro: DtoLibroRespuesta = await this.libroService.getLibroCompletoByIdOrdFail({
+  ): Promise<LibroRetorno> {
+    const libro: LibroRetorno = await this.libroService.getLibroCompletoByIdOrdFail({
       id: idLibro,
       qR: req.queryRunner
     });
@@ -92,7 +92,7 @@ export class LibroController {
     @Query('q') busqueda: string,
     @Query('limite') limite = 20,
     @Query('pagina') pg = 1,
-  ): Promise<RetornoGenericoControllerGet<DtoLibroRespuesta>> {
+  ): Promise<RetornoGenericoControllerGet<LibroRetorno>> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
     if (busqueda) {
@@ -130,7 +130,7 @@ export class LibroController {
   async createLibro(
     @Body() dto: DtoLibroCrear,
     @Request() req: RequestWithUser,
-  ): Promise<DtoLibroRespuesta> {
+  ): Promise<LibroRetorno> {
     const libro = await this.libroService.createLibroCompleto({
       dto,
       qR: req.queryRunner
@@ -144,7 +144,7 @@ export class LibroController {
     @Param('idLibro') idLibro: string,
     @Body() dto: DtoLibroCrear,
     @Request() req: RequestWithUser,
-  ): Promise<DtoLibroEmpresaRespuesta> {
+  ): Promise<LibroRetorno> {
     if(req.user.role === Role.SuperAdmin) {
       const libro = await this.libroService.updateLibroCompleto({
         id: idLibro,

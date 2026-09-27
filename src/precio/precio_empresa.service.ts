@@ -4,13 +4,14 @@ import { DataSource, FindManyOptions, FindOneOptions, ILike, QueryRunner, Reposi
 import { PrecioEmpresa } from './entity/precio_empresa.entity';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { DtoPrecioEmpresaCrear, DtoPrecioEmpresaEditar, DtoPrecioEmpresaRespuesta } from './dto/precio_empresa.dto';
+import { DtoPrecioEmpresaCrear, DtoPrecioEmpresaEditar } from './dto/precio_empresa.dto';
 import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { PrecioService } from './precio.service';
 import { Precio } from './entity/precio.entity';
 import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 import { PrecioDefaultProp } from './interface/precio.interface';
+import { PrecioRetorno } from './retorno/precio.retorno';
 
 
 @Injectable()
@@ -29,7 +30,7 @@ export class PrecioEmpresaService {
    * El RLS filtra automáticamente por id_empresa.
    * Hace join con precio para traer nombre y descripcion.
    */
-  async getPreciosEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoPrecioEmpresaRespuesta>> {
+  async getPreciosEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
     try {
       const criterio: FindManyOptions = {
         relations: ['precio'],
@@ -49,7 +50,7 @@ export class PrecioEmpresaService {
     }
   }
 
-  async getPreciosEmpresaBusqueda({ qR, limite, offset, busqueda }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoPrecioEmpresaRespuesta>> {
+  async getPreciosEmpresaBusqueda({ qR, limite, offset, busqueda }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
     try {
       const criterio: FindManyOptions = {
         relations: ['precio'],
@@ -94,7 +95,7 @@ export class PrecioEmpresaService {
     }
   }
 
-  async getPrecioEmpresaByIdOrFailCx({ id, qR }: GetGenericoByIdProp): Promise<DtoPrecioEmpresaRespuesta> {
+  async getPrecioEmpresaByIdOrFailCx({ id, qR }: GetGenericoByIdProp): Promise<PrecioRetorno> {
     try {
       const precio: PrecioEmpresa = await this.getPrecioEmpresaByIdOrFail({ qR, id });
 
@@ -110,7 +111,7 @@ export class PrecioEmpresaService {
    * Si la BD no tiene DEFAULT, obtenemos el id_empresa del GUC:
    *   SELECT current_setting('app.empresa_id')
    */
-  async createPrecioEmpresa({ dto, qR }: CreateGenericoProp<DtoPrecioEmpresaCrear>): Promise<DtoPrecioEmpresaRespuesta> {
+  async createPrecioEmpresa({ dto, qR }: CreateGenericoProp<DtoPrecioEmpresaCrear>): Promise<PrecioRetorno> {
     try {
 
       let precio: Precio | null = await this.precioService.getDatoByName({
@@ -142,7 +143,7 @@ export class PrecioEmpresaService {
     }
   }
 
-  async updatePrecioEmpresa({ id, dto, qR }: UpdateGenericoProp<DtoPrecioEmpresaEditar>): Promise<DtoPrecioEmpresaRespuesta> {
+  async updatePrecioEmpresa({ id, dto, qR }: UpdateGenericoProp<DtoPrecioEmpresaEditar>): Promise<PrecioRetorno> {
     try {
       let precio: Precio | undefined;
       if (dto.nombre) {
@@ -191,17 +192,17 @@ export class PrecioEmpresaService {
     }
   }
 
-  async CreatePrecioDefault(preciosDefault: PrecioDefaultProp[], qR:QueryRunner, idEmpresa:string):Promise<DtoPrecioEmpresaRespuesta[]>{
+  async CreatePrecioDefault(preciosDefault: PrecioDefaultProp[], qR:QueryRunner, idEmpresa:string):Promise<PrecioRetorno[]>{
     try{
-      const preciosCreados:DtoPrecioEmpresaRespuesta[] = [];
+      const preciosCreados:PrecioRetorno[] = [];
       for(const p of preciosDefault) {
         let aux:Precio | null= null;
         if(p.abreviatura) aux = await this.precioService.getDatoByAbrev({id:p.abreviatura, qR});
-        console.log('precio existente :',aux)
+        
         if(!aux) {
           aux = await this.precioService.createDato({dto: {nombre:p.nombre, abreviatura:p.abreviatura}, qR});
         }
-        const precioCompleto:DtoPrecioEmpresaRespuesta = await this.createPrecioEmpresa({dto:{nombre:p.nombre, importe:p.importe, idEmpresa}, qR});
+        const precioCompleto:PrecioRetorno = await this.createPrecioEmpresa({dto:{nombre:p.nombre, importe:p.importe, idEmpresa}, qR});
         preciosCreados.push(precioCompleto);
       }
       return preciosCreados;
@@ -210,18 +211,14 @@ export class PrecioEmpresaService {
     }
   }
 
-  private toRespuesta(pe: PrecioEmpresa): DtoPrecioEmpresaRespuesta {
-    return {
-      idPrecio: pe.id_precio,
-      idEmpresa: pe.id_empresa,
-      nombre: pe.precio?.nombre ?? '',
+  private toRespuesta(pe: PrecioEmpresa): PrecioRetorno {
+    const precio = new PrecioRetorno({
+      ...pe, 
       abreviatura: pe.precio?.abreviatura,
       descripcion: pe.precio?.descripcion,
-      fecha_actualizacion: pe.fecha_actualizacion,
-      fecha_creacion: pe.fecha_creacion,
-      delete: pe.deleted ?? false,
-      importe: Number(pe.importe),
-      detalles: pe.detalles,
-    };
+      nombre: pe.precio?.nombre ?? '',
+      idPrecio: pe.id_precio,
+    })
+    return precio;
   }
 }

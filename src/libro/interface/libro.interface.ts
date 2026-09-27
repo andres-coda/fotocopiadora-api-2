@@ -3,7 +3,6 @@ import { NAMES_COMPONENTE } from "../../componente/default/componente.default";
 import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { NAMES_MATERIAS } from "../../materia/default/materia.default";
 import { NAMES_LIBRO } from "../default/libro_const_default";
-import { GetLibroResumen } from "@src/pedido_item/interface/pedido_item_busqueda.interface";
 import { GetMateriaAdapter } from "@src/materia/interface/materia.interface";
 
 export interface LibroDefaultProp {
@@ -20,6 +19,14 @@ export interface LibroDefaultProp {
   materia: typeof NAMES_MATERIAS[keyof typeof NAMES_MATERIAS];
   componentes?:  typeof NAMES_COMPONENTE[keyof typeof NAMES_COMPONENTE][];
   especificacionesDefecto?: Especificaciones[];
+}
+
+export interface GetLibroResumen {
+  pendiente:number;
+  listo: number;
+  retirado:number;
+  cancelado: number;
+  stock:number;
 }
 
 export interface RetornoLibroNombreProp extends GetMateriaAdapter{

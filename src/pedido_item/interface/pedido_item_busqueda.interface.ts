@@ -3,15 +3,30 @@ import { Especificaciones } from "./especificaciones.interface";
 import { GetMateriaAdapter } from "@src/materia/interface/materia.interface";
 import { GetLibroMinimo } from "@src/libro/interface/libro.interface";
 
-export interface GetPedidoItemBusqueda extends GetLibroMinimo{
+export interface GetPedidoItemBusqueda{
   id_pedido: string;
   nro_pedido: number;
   cantidad: number;
   detalles?: string;
   estado: EstadoPedido,
   especificaciones?: Especificaciones[],
+  
   cantidad_pg: number,
   cantidad_adhesivos?: number;
+  nombre: string;
+  descripcion?: string;
+  edicion?: number;
+  anio?: string;
+  nivel?: string;
+  componentes?: string;
+  materia: string;
+  editorial?: string;
+
+  pendiente: number;
+  listo: number;
+  retirado: number;
+  cancelado: number;
+  
   fecha_creacion: Date;
   fecha_entrega: string;
   importe_total:number;
@@ -25,6 +40,7 @@ export interface GetPedidoItemBusqueda extends GetLibroMinimo{
   sede: string;
   id_sede: string;
   id_libro: string;
+  id_materia: string;
   total:number;
 }
 

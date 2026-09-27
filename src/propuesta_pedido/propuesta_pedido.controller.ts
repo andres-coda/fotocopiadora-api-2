@@ -11,6 +11,7 @@ import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { DeletProp } from '@src/base/interface/base.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { DtoPropuestaRespuesta } from './dto/propuestaRetorno.dto';
+import { PropuestaRetorno } from './retorno/propuesta.retorno';
 
 interface IdLibrosProp {
   id_libros: string[]
@@ -41,7 +42,7 @@ export class PropuestaPedidoController extends BaseController<typeof Entidad.PRO
     @Query('limite') limite = 20,
     @Query('pagina') pagDto = 1,
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGenericoControllerGet<DtoPropuestaRespuesta>> {
+  ): Promise<RetornoGenericoControllerGet<PropuestaRetorno>> {
     const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
     const offset = (pagina - 1) * limite;
     if (!busqueda || busqueda.length < 3) return {

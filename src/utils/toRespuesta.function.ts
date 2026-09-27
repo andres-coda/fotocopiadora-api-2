@@ -1,15 +1,7 @@
 import { DtoBaseRetorno } from "@src/base/dto/baseRetorno.dto"
 import { Base } from "@src/base/entity/base.entity"
-import { DtoClienteRespuesta } from "@src/cliente/dto/cliente.dto"
-import { Cliente } from "@src/cliente/entity/cliente.entity"
 import { ClienteResumen } from "@src/cliente/entity/clienteResumen.entity"
-import { Especificacion } from "@src/especificacion/entity/especificacion.entity"
 import { DtoResumenRespuesta } from "@src/libro/dto/resumen.dto"
-import { DtoPedidoItemRespuesta } from "@src/pedido_item/dto/pedido_item.dto"
-import { Especificaciones } from "@src/pedido_item/interface/especificaciones.interface"
-import { DtoPedidoRespuesta } from "@src/pedido/dto/pedido.dto"
-import { Pedido } from "@src/pedido/entity/pedido.entity"
-import { Stock } from "@src/libro/entity/stock.entity"
 
 type tipoResumen = ClienteResumen;
 

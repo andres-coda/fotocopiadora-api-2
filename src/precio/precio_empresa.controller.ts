@@ -2,8 +2,9 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Reque
 import { UsuarioGuard } from '../auth/guard/user.guard';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { PrecioEmpresaService } from './precio_empresa.service';
-import { DtoPrecioEmpresaCrear, DtoPrecioEmpresaEditar, DtoPrecioEmpresaRespuesta } from './dto/precio_empresa.dto';
+import { DtoPrecioEmpresaCrear, DtoPrecioEmpresaEditar } from './dto/precio_empresa.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
+import { PrecioRetorno } from './retorno/precio.retorno';
 
 /**
  * Endpoints de precios por empresa.
@@ -22,7 +23,7 @@ export class PrecioEmpresaController {
     @Query('limite') limite = 20,
     @Query('pagina') pagDto = 1,
     @Request() req: RequestWithUser
-  ): Promise<RetornoGenericoControllerGet<DtoPrecioEmpresaRespuesta>> {
+  ): Promise<RetornoGenericoControllerGet<PrecioRetorno>> {
 
 
     const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
@@ -52,7 +53,7 @@ export class PrecioEmpresaController {
   async getOne(
     @Param('idPrecio') id: string,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPrecioEmpresaRespuesta> {
+  ): Promise<PrecioRetorno> {
     return this.precioEmpresaService.getPrecioEmpresaByIdOrFailCx({ id, qR: req.queryRunner });
   }
 
@@ -60,7 +61,7 @@ export class PrecioEmpresaController {
   async create(
     @Body() dto: DtoPrecioEmpresaCrear,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPrecioEmpresaRespuesta> {
+  ): Promise<PrecioRetorno> {
     return this.precioEmpresaService.createPrecioEmpresa({ dto, qR: req.queryRunner });
   }
 
@@ -69,7 +70,7 @@ export class PrecioEmpresaController {
     @Param('idPrecio') id: string,
     @Body() dto: DtoPrecioEmpresaEditar,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPrecioEmpresaRespuesta> {
+  ): Promise<PrecioRetorno> {
     return this.precioEmpresaService.updatePrecioEmpresa({ id, dto, qR: req.queryRunner });
   }
 

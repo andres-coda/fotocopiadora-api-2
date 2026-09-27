@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BaseService } from '@src/base/base.service';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { Nivel } from './entity/nivel.entity';
-import { DtoNivelCrear, DtoNivelEditar, DtoNivelRespuesta } from './dto/nivel.dto';
+import { DtoNivelCrear, DtoNivelEditar } from './dto/nivel.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, ILike, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
@@ -10,7 +10,7 @@ import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { NIVEL_RELATIONS, SELECTED_NIVEL } from './default/nivel.relacion';
 import { BusquedaGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
-import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
+import { NivelRetorno } from './retorno/nivel.retorno';
 
 @Injectable()
 export class NivelService extends BaseService<typeof Entidad.NIVEL, Nivel, DtoNivelCrear, DtoNivelEditar> {
@@ -73,9 +73,9 @@ export class NivelService extends BaseService<typeof Entidad.NIVEL, Nivel, DtoNi
     }
   }
 
-  async buscarNivelNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoNivelRespuesta>> {
+  async buscarNivelNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<NivelRetorno>> {
     try {
-      const criterio: FindManyOptions = {
+      const criterio: FindManyOptions<Nivel> = {
         relations: [],
         where: {
           nombre: ILike(`%${busqueda}%`)
@@ -95,12 +95,8 @@ export class NivelService extends BaseService<typeof Entidad.NIVEL, Nivel, DtoNi
     }
   }
 
-  public remplaceToReturn(entidad: Nivel): DtoNivelRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    return {
-      ...base,
-
-      nombre: entidad.nombre
-    }
+  public remplaceToReturn(entidad: Nivel): NivelRetorno {
+    const nivel = new NivelRetorno({...entidad});
+    return nivel;
   }
 }

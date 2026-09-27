@@ -7,8 +7,6 @@ import { DtoComponenteEditar } from './dto/componenteEditar.dto';
 import { ComponenteService } from './componente.service';
 import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE, SELECTED_COMPONENTE_BY_ID } from './default/relacion.default';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
-import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
-import { DtoComponenteRespuesta } from './dto/componenteRetorno.dto';
 import { RetornoGet } from '@src/base/interface/base.interface';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 

@@ -8,11 +8,10 @@ import { MateriaService } from './materia.service';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
-import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { DeletProp, EditarElementoControllerProp, RetornoGet } from '@src/base/interface/base.interface';
-import { DtoMateriaRespuesta } from './dto/materiaRetorno.dto';
+import { MateriaRetorno } from './retorno/materia.retorno';
 
 @Controller('materia')
 @UseGuards(UsuarioGuard)
@@ -31,7 +30,7 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
     @Query('pagina') pg = 1,
     @Query('limite') limite = 20,
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGet<typeof Entidad.MATERIA>> {
+  ): Promise<RetornoGet<'materia'>> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
     if (busqueda) {
@@ -70,7 +69,7 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
     @Query('pagina') pg = 1,
     @Query('limite') limite = 20,
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGenericoControllerGet<DtoBaseRetorno>> {
+  ): Promise<RetornoGenericoControllerGet<MateriaRetorno>> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
 
@@ -139,7 +138,7 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
     @Param('id') id: string,
     @Body() datos: DtoMateriaEditar,
     @Request() req: RequestWithUser,
-  ): Promise<DtoMateriaRespuesta> {
+  ): Promise<MateriaRetorno> {
     const dto: EditarElementoControllerProp<Materia, DtoMateriaEditar, typeof Entidad.MATERIA> = {
       dto: datos,
       id,

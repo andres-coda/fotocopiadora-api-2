@@ -1,9 +1,10 @@
 import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import { PedidoItemService } from './pedido_item.service';
-import { DtoCambiarEstadoItem, DtoCambiarSedeItem, DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemCambioSedeRespuesta, DtoPedidoItemEditar, DtoPedidoItemRespuesta } from './dto/pedido_item.dto';
+import { DtoCambiarEstadoItem, DtoCambiarSedeItem, DtoLibroPedidoCrear, DtoPedidoItemCambioEstadoRespuesta, DtoPedidoItemCambioSedeRespuesta, DtoPedidoItemEditar } from './dto/pedido_item.dto';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
+import { ItemRetorno } from './retorno/item.retorno';
 
 export enum OrdenPedidoItem {
   ESTADO = 'estado',
@@ -23,7 +24,7 @@ export class PedidoItemController {
     @Query('limite') limite = 20,
     @Query('pagina') pagina = 1,
     @Query('orden') orden: OrdenPedidoItem = OrdenPedidoItem.ESTADO
-  ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
+  ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
 
     const offset = (Number(pagina) - 1) * Number(limite);
     const items = await this.itemService.getItems({
@@ -50,7 +51,7 @@ export class PedidoItemController {
     @Request() req: RequestWithUser,
     @Query('limite') limite = 1000,
     @Query('pagina') pagina = 1,
-  ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
+  ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
     const id_empresa = req.user.idEmpresa;
     if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
     const offset = (Number(pagina) - 1) * Number(limite);
@@ -77,7 +78,7 @@ export class PedidoItemController {
     @Request() req: RequestWithUser,
     @Query('limite') limite = 20,
     @Query('pagina') pagina = 1,
-  ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta>> {
+  ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
     const id_empresa = req.user.idEmpresa;
     if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
     const offset = (Number(pagina) - 1) * Number(limite);
@@ -103,7 +104,7 @@ export class PedidoItemController {
     @Param('idPedido') idPedido: string,
     @Body() dto: DtoLibroPedidoCrear,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoItemRespuesta> {
+  ): Promise<ItemRetorno> {
     const item = await this.itemService.createItemCx(
       { ...dto, pedido_id: idPedido },
       req.queryRunner,
@@ -118,7 +119,7 @@ export class PedidoItemController {
     @Param('nroItem') nroItem: number,
     @Body() dto: DtoPedidoItemEditar,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoItemRespuesta> {
+  ): Promise<ItemRetorno> {
     return this.itemService.updateDatoCx({ idPedido, nro_pedido: Number(nroItem), dto, qR: req.queryRunner });
   }
 

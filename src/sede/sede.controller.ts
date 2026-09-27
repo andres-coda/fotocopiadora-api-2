@@ -9,8 +9,8 @@ import { SEDE_RELATIONS, SEDE_SELECTED } from './default/relacion';
 import { AdminGuard } from '@src/auth/guard/admin.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { CreateProp, DeletProp, EditarElementoControllerProp, RetornoGet } from '@src/base/interface/base.interface';
-import { DtoSedeRespuesta } from './dto/sedeRetorno.dto';
 import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { SedeRetorno } from './retorno/sede.retorno';
 
 @Controller('sede')
 export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, DtoSedeCrear, DtoSedeEditar, SedeService> {
@@ -29,7 +29,7 @@ export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, Dt
     @Request() req: RequestWithUser,
   ): Promise<RetornoGet<typeof Entidad.SEDE>> {
     const offset = (pagina - 1) * limite;
-    const datoRetorno: RetornoGenericoServiceGet<DtoSedeRespuesta> = await this.baseService.getSedesTodas({
+    const datoRetorno: RetornoGenericoServiceGet<SedeRetorno> = await this.baseService.getSedesTodas({
       orden: this.orden,
       limite,
       offset,
@@ -110,7 +110,7 @@ export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, Dt
   async createDato(
     @Body() datos: DtoSedeCrear,
     @Request() req: RequestWithUser,
-  ): Promise<DtoSedeRespuesta> {
+  ): Promise<SedeRetorno> {
     const dto: CreateProp<DtoSedeCrear, typeof Entidad.SEDE> & { qR: any } = {
       dto: datos,
       entidad: this.entidad,
@@ -132,7 +132,7 @@ export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, Dt
     @Param('id') id: string,
     @Body() datos: DtoSedeEditar,
     @Request() req: RequestWithUser,
-  ): Promise<DtoSedeRespuesta> {
+  ): Promise<SedeRetorno> {
     const dto: EditarElementoControllerProp<Sede, DtoSedeEditar, typeof Entidad.SEDE> = {
       dto: datos,
       id,

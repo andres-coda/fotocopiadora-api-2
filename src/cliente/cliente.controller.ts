@@ -2,15 +2,13 @@ import { Body, Controller, Get, HttpCode, Param, ParseEnumPipe, Query, Request, 
 import { BaseController } from '../base/base.controller';
 import { Entidad } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
-import { DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta } from './dto/cliente.dto';
+import { DtoClienteCrear, DtoClienteEditar } from './dto/cliente.dto';
 import { ClienteService } from './cliente.service';
 import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
-import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
-import { OrdenPedidoCliente } from './interface/cliente_retorno.interface';
-import { OrdenPedidoClientePipe } from '@src/pipe/OrdenPedidoClientePipe';
+import { ClienteRetorno } from './retorno/cliente.retorno';
 
 
 @Controller('cliente')
@@ -37,7 +35,7 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
     @Query('limite') limite = 20,
     @Query('pagina') pagDto = 1,
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGenericoControllerGet<DtoClienteRespuesta>> {
+  ): Promise<RetornoGenericoControllerGet<ClienteRetorno>> {
     const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
     const offset = (pagina - 1) * limite;
     if (!busqueda || busqueda.length < 4) {

@@ -1,4 +1,4 @@
-export interface ClienteRetorno {
+export interface ClienteRetornoQueryProp {
   id:string,
   nombre?:string;
   telefono?: string;

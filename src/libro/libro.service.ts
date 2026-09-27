@@ -3,17 +3,16 @@ import { DtoLibroCrear } from './dto/libroCrear.dto';
 import { DtoLibroEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, ILike, In, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, In, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
-import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
 import { RetornoLibroNombreProp, RetornoVistaLibroProp } from './interface/libro.interface';
 import { toRespuestaLibro, toRespuestaLibroEmptresXlibro, toRespuestaLibroNombre } from './utils/toRespuestaLibro';
 import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
+import { LibroRetorno } from './retorno/libro.retorno';
 
 interface GetLibroProp {
   limite?: number,
@@ -52,7 +51,7 @@ export class LibroService {
 
   ) { }
 
-  async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
     try {
       const rows = await qR.query(
         "SELECT *, count(*) over() AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%' LIMIT $2 OFFSET $3",
@@ -65,7 +64,7 @@ export class LibroService {
       };
       const newDatos = rows
         .map((r:RetornoLibroNombreProp) => toRespuestaLibroNombre(r))
-        .filter((d:DtoLibroRespuesta) => d !== undefined);
+        .filter((d:LibroRetorno) => d !== undefined);
 
       return {
         total: rows[0].total,
@@ -77,7 +76,7 @@ export class LibroService {
   }
 
 
-  async buscarLibroCompleto({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async buscarLibroCompleto({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
     try {
       const rows = await qR.query(
         `SELECT * FROM fc_busqueda_libro_completo($1, $2, $3)`,
@@ -92,7 +91,7 @@ export class LibroService {
     }
   }
 
-  async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async buscarLibro({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
     try {
       const rows = await qR.query(
         `SELECT * FROM fc_busqueda_libro($1, $2, $3)`,
@@ -107,7 +106,7 @@ export class LibroService {
     }
   }
 
-  async getLibroCompletoByIdOrdFail({ id, qR }: GetGenericoByIdProp): Promise<DtoLibroRespuesta> {
+  async getLibroCompletoByIdOrdFail({ id, qR }: GetGenericoByIdProp): Promise<LibroRetorno> {
     try {
       const [row]: RetornoVistaLibroProp[] = await qR.query(
         'SELECT * FROM vw_libro_busqueda WHERE id = $1', [id]
@@ -158,7 +157,7 @@ export class LibroService {
     }
   }
 
-  async getLibroEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoLibroRespuesta>> {
+  async getLibroEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
     try {
 
       const [totalR] = await qR.query(
@@ -180,7 +179,7 @@ export class LibroService {
     }
   }
 
-  async createLibroCompleto({ dto, qR }: CreateGenericoProp<DtoLibroCrear>): Promise<DtoLibroRespuesta> {
+  async createLibroCompleto({ dto, qR }: CreateGenericoProp<DtoLibroCrear>): Promise<LibroRetorno> {
     try {
 
       const [rows]: RetornoVistaLibroProp[] = await qR.query(
@@ -188,7 +187,7 @@ export class LibroService {
         [dto.nombre, dto.editorial, dto.materia, dto.cantidadPg, dto.adhesivos ?? 0, JSON.stringify(dto.especificacionesDefecto ?? []), null, dto.nivel, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, JSON.stringify(dto.componentes ?? [])]
       )
 
-      const libro: DtoLibroRespuesta | undefined = toRespuestaLibro(rows);
+      const libro: LibroRetorno | undefined = toRespuestaLibro(rows);
 
       if (!libro) throw new NotFoundException('Error al intentar crear el libro');
 
@@ -207,7 +206,7 @@ export class LibroService {
     }
   }
 
-  async updateLibroEmpresa({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<DtoLibroEmpresaRespuesta> {
+  async updateLibroEmpresa({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<LibroRetorno> {
     try {
       const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
       
@@ -224,7 +223,7 @@ export class LibroService {
     }
   }
 
-  async updateLibroCompleto({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<DtoLibroRespuesta> {
+  async updateLibroCompleto({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<LibroRetorno> {
     await qR.query(
       `UPDATE libro_completo SET
        anio        = COALESCE($2, anio),

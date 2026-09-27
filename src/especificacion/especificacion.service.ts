@@ -6,9 +6,9 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { Especificacion } from './entity/especificacion.entity';
 import { DtoEspecificacionCrear } from './dto/DtoCrearEspecificacion.dto';
 import { Especificaciones } from '../pedido_item/interface/especificaciones.interface';
-import { DtoEspecificaionRetorno } from './dto/DtoEspecificacionRetorno.dto';
 import { CreateGenericoProp, GetGenericoByIdProp, UpdateGenericoProp } from '@src/interface/general.interface';
 import { toRespuestaBase } from '@src/utils/toRespuesta.function';
+import { EspecificacionRetorno } from './retorno/especificacion.retorno';
 
 export interface GetEspNombresProp extends Pick<GetGenericoByIdProp, 'qR'> {
   nombres: Especificaciones[];
@@ -54,9 +54,9 @@ export class EspecificacionService {
     }
   }
 
-    async getEspecificacionesEliminadas(qR: QueryRunner): Promise<DtoEspecificaionRetorno[]> {
+    async getEspecificacionesEliminadas(qR: QueryRunner): Promise<EspecificacionRetorno[]> {
     try {
-      const criterio: FindManyOptions = {
+      const criterio: FindManyOptions<Especificacion> = {
         where: { deleted: true }
       }
 
@@ -131,7 +131,7 @@ export class EspecificacionService {
     }
   }
 
-  async createEspecificacionCx({ dto, qR }: CreateGenericoProp<DtoEspecificacionCrear>): Promise<DtoEspecificaionRetorno> {
+  async createEspecificacionCx({ dto, qR }: CreateGenericoProp<DtoEspecificacionCrear>): Promise<EspecificacionRetorno> {
     try {
       const esp: Especificacion = await this.createEspecificacion({
         dto,
@@ -165,11 +165,11 @@ export class EspecificacionService {
     }
   }
 
-  async updateEspecificacionCx({ id, dto, qR }: UpdateGenericoProp<DtoEspecificacionCrear>): Promise<DtoEspecificaionRetorno> {
+  async updateEspecificacionCx({ id, dto, qR }: UpdateGenericoProp<DtoEspecificacionCrear>): Promise<EspecificacionRetorno> {
     try {
       const especificacion: Especificacion = await this.updateEspecificacion({ id, qR, dto });
 
-      const newEspecificacion: DtoEspecificaionRetorno = this.remplaceToReturn(especificacion);
+      const newEspecificacion: EspecificacionRetorno = this.remplaceToReturn(especificacion);
 
       return newEspecificacion;
     } catch (er) {
@@ -177,7 +177,7 @@ export class EspecificacionService {
     }
   }
 
-  async getEspecificacionesCx(qR: QueryRunner): Promise<DtoEspecificaionRetorno[]> {
+  async getEspecificacionesCx(qR: QueryRunner): Promise<EspecificacionRetorno[]> {
     try {
       const esp: Especificacion[] = await this.getEspecificaciones(qR);
       return esp.map(e => this.remplaceToReturn(e));
@@ -186,7 +186,7 @@ export class EspecificacionService {
     }
   }
 
-  async getEspecificacionByIdCx({id, qR}:GetGenericoByIdProp): Promise<DtoEspecificaionRetorno> {
+  async getEspecificacionByIdCx({id, qR}:GetGenericoByIdProp): Promise<EspecificacionRetorno> {
     try {
       const esp: Especificacion = await this.getEspecificacionByIdOrFaild({id,qR});
       return this.remplaceToReturn(esp);
@@ -209,11 +209,8 @@ export class EspecificacionService {
     }
   }
 
-  remplaceToReturn(entidad: Especificacion): DtoEspecificaionRetorno {
-    return {
-      id: entidad.id,
-      nombre: entidad.nombre,
-      deleted: entidad.deleted ?? false
-    }
+  remplaceToReturn(entidad: Especificacion): EspecificacionRetorno {
+    const esp = new EspecificacionRetorno({...entidad});
+    return esp;
   }
 }

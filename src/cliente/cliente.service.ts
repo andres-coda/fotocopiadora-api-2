@@ -4,31 +4,16 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetDatoProp, GetIdProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, GetDatoProp, GetProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Cliente } from './entity/cliente.entity';
-import { DtoClienteCrear, DtoClienteEditar, DtoClienteRespuesta } from './dto/cliente.dto';
+import { DtoClienteCrear, DtoClienteEditar } from './dto/cliente.dto';
 import { CLIENTE_RELATIONS, CLIENTE_X_RESUMEN_SELECTED } from './default/relacion';
-import { clienteResumenRespuesta } from './dto/cliente_resumen.dto';
 import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { toRespuestaClienteXbusqueda } from './utils/toRespuestaCliente';
-import { ClienteRetorno, OrdenPedidoCliente } from './interface/cliente_retorno.interface';
-import { ClienteResumen } from './entity/clienteResumen.entity';
+import { ClienteRetornoQueryProp } from './interface/cliente_retorno.interface';
 import { Mens } from '@src/gateway/enum/Mens.enum';
-import { RetornoVistaItemsPedidoLibroById } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
-import { toRespuestaItemsPedidoByLibro } from '@src/pedido_item/utils/toRespuestaItem';
-import { DtoPedidoItemRespuesta } from '@src/pedido_item/dto/pedido_item.dto';
-import { toRespuestaPedido } from '@src/pedido/utils/toRespuestaPedido';
-import { GetPedidoBusqueda } from '@src/pedido/interface/pedido.interface';
-import { DtoPedidoRespuestaCliente } from '@src/pedido/dto/pedido.dto';
-
-interface getClienteById {
-  id: string;
-  qR:QueryRunner;
-  ofset?: number;
-  limite?: number;
-  orden: OrdenPedidoCliente;
-}
+import { ClienteRetorno } from './retorno/cliente.retorno';
 
 interface DeshacerEliminarProp{
   qR:QueryRunner;
@@ -141,7 +126,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     limite = 20,
     offset = 0,
     qR: QueryRunner,
-  ): Promise<RetornoGenericoServiceGet<DtoClienteRespuesta>> {
+  ): Promise<RetornoGenericoServiceGet<ClienteRetorno>> {
     try {
 
 
@@ -152,7 +137,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
 
       return {
         total: Number(rows[0]?.total ?? 0),
-        datos: rows.map((r: ClienteRetorno) => toRespuestaClienteXbusqueda(r)),
+        datos: rows.map((r: ClienteRetornoQueryProp) => toRespuestaClienteXbusqueda(r)),
       }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar clientes`);
@@ -231,7 +216,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     }
   }
 
-  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<DtoClienteRespuesta> {
+  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoClienteCrear, typeof Entidad.CLIENTE>): Promise<ClienteRetorno> {
     try {
       const newElemento: Cliente = await this.createDato({ dto, qR, entidad });
       const newCliente:Cliente = await this.getDatoByIdOrFail({
@@ -243,7 +228,7 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
 
       if (!newCliente) throw new NotFoundException('No se encontro el resumen para el nuevo cliente');
       
-      const retorno: DtoClienteRespuesta | undefined = this.remplaceToReturn(newCliente);
+      const retorno: ClienteRetorno | undefined = this.remplaceToReturn(newCliente);
 
       if (!retorno) throw new NotFoundException(`No se pudo crear el cliente ${dto.telefono ?? dto.email}`);
 
@@ -290,14 +275,14 @@ export class ClienteService extends BaseService<typeof Entidad.CLIENTE, Cliente,
     }
   }
 
-  remplaceToReturn(entidad: Cliente): DtoClienteRespuesta {
-    const base = this.remplaceToBase(entidad);
-    return {
-      ...base,
-      nombre: entidad.nombre,
-      telefono: entidad.telefono,
-      email: entidad.email,
-      resumen: clienteResumenRespuesta(entidad.resumen)
-    };
+  remplaceToReturn(entidad: Cliente): ClienteRetorno {
+    const cliente = new ClienteRetorno({
+      ...entidad,
+      fecha_creacion: entidad.fechaCreacion,
+      fecha_actualizacion: entidad.fechaActualizacion,
+    })
+
+    cliente.agregarResumenCliente({...entidad.resumen})
+    return cliente;
   };
 }

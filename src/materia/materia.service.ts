@@ -10,9 +10,8 @@ import { Materia } from './entity/materia.entity';
 import { DtoMateriaCrear } from './dto/materiaCrear.dto';
 import { DtoMateriaEditar } from './dto/materiaEditar.dto';
 import { MATERIA_RELATIONS, MATERIA_SELECTED } from './default/relacion';
-import { DtoMateriaRespuesta } from './dto/materiaRetorno.dto';
-import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { BusquedaGenericoProp, GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { MateriaRetorno } from './retorno/materia.retorno';
 
 @Injectable()
 export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia, DtoMateriaCrear, DtoMateriaEditar> {
@@ -76,7 +75,7 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
     }
   }
 
-  async getDatoTodosCx({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<DtoMateriaRespuesta>> {
+  async getDatoTodosCx({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<MateriaRetorno>> {
     try {
       const datos = await this.getDatoTodos({qR, limite, offset, entidadError: 'materia'});
       return {
@@ -87,16 +86,13 @@ export class MateriaService extends BaseService<typeof Entidad.MATERIA, Materia,
       throw this.erroresService.handleExceptions(er, `Error al intentar leer todas las materias`)
     }
   }
-  remplaceToReturn(entidad: Materia): DtoMateriaRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    return {
-      ...base,
 
-      nombre: entidad.nombre
-    }
+  remplaceToReturn(entidad: Materia): MateriaRetorno {
+    const materia = new MateriaRetorno({...entidad});
+    return materia;
   }
 
-  async buscarMateriaNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoMateriaRespuesta>> {
+  async buscarMateriaNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<MateriaRetorno>> {
       try {
         const criterio: FindManyOptions = {
           relations: [],

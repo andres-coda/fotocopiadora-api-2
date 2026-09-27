@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { BaseService } from '@src/base/base.service';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { Editorial } from './entity/editorial.entity';
-import { DtoEditorialCrear, DtoEditorialEditar, DtoEditorialRespuesta } from './dto/editorial.dto';
+import { DtoEditorialCrear, DtoEditorialEditar } from './dto/editorial.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, ILike, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { BusquedaGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
-import { DtoBaseRetorno } from '@src/base/dto/baseRetorno.dto';
 import { EDITORIAL_RELATIONS, SELECTED_EDITORIAL } from './default/editorial.default';
+import { EditorialRetorno } from './retorno/editorial.retorno';
 
 @Injectable()
 export class EditorialService extends BaseService<typeof Entidad.EDITORIAL, Editorial, DtoEditorialCrear, DtoEditorialEditar> {
@@ -73,9 +73,9 @@ export class EditorialService extends BaseService<typeof Entidad.EDITORIAL, Edit
     }
   }
 
-  async buscarEditorialNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoEditorialRespuesta>> {
+  async buscarEditorialNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<EditorialRetorno>> {
     try {
-      const criterio: FindManyOptions = {
+      const criterio: FindManyOptions<Editorial> = {
         relations: [],
         where: {
           nombre: ILike(`%${busqueda}%`)
@@ -95,12 +95,8 @@ export class EditorialService extends BaseService<typeof Entidad.EDITORIAL, Edit
     }
   }
 
-  public remplaceToReturn(entidad: Editorial): DtoEditorialRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    return {
-      ...base,
-
-      nombre: entidad.nombre
-    }
+  public remplaceToReturn(entidad: Editorial): EditorialRetorno {
+    const editorial = new EditorialRetorno({...entidad});
+    return editorial;
   }
 }

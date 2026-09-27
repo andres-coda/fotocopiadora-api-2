@@ -13,6 +13,7 @@ import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE } from './default/relacion.de
 import { DtoComponenteRespuesta } from './dto/componenteRetorno.dto';
 import { DtoBaseRetorno } from '../base/dto/baseRetorno.dto';
 import { BusquedaGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { ComponenteRetorno } from './retorno/componente.retorno';
 
 @Injectable()
 export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Componente, DtoComponenteCrear, DtoComponenteEditar> {
@@ -75,7 +76,7 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
     }
   }
 
-  async buscarComponenteNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DtoComponenteRespuesta>> {
+  async buscarComponenteNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<ComponenteRetorno>> {
     try {
       const criterio: FindManyOptions = {
         relations: [],
@@ -97,12 +98,8 @@ export class ComponenteService extends BaseService<typeof Entidad.COMPONENTE, Co
     }
   }
 
-  public remplaceToReturn(entidad: Componente): DtoComponenteRespuesta {
-    const base: DtoBaseRetorno = this.remplaceToBase(entidad);
-    return {
-      ...base,
-
-      nombre: entidad.nombre
-    }
+  public remplaceToReturn(entidad: Componente): ComponenteRetorno {
+    const componente = new ComponenteRetorno({...entidad});
+    return componente;
   }
 }

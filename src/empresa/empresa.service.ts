@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '@src/base/base.service';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
 import { Empresa } from './entity/empresa.entity';
-import { DtoEmpresaCrear, DtoEmpresaEditar, DtoEmpresaRespuesta } from './dto/empresa.dto';
+import { DtoEmpresaCrear, DtoEmpresaEditar } from './dto/empresa.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, ILike, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
@@ -12,6 +12,7 @@ import { EMPRESA_RELATIONS, EMPRESA_SELECTED } from './default/empresa.relacion'
 import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { PrecioEmpresaService } from '@src/precio/precio_empresa.service';
 import { PRECIO_DEFAULT } from '@src/precio/default/precio.default';
+import { EmpresaRetorno } from './retorno/empresa.retorno';
 
 @Injectable()
 export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa, DtoEmpresaCrear, DtoEmpresaEditar> {
@@ -35,10 +36,10 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
     limite = 20,
     offset = 0,
     qR: QueryRunner,
-  ): Promise<RetornoGenericoServiceGet<DtoEmpresaRespuesta>> {
+  ): Promise<RetornoGenericoServiceGet<EmpresaRetorno>> {
     try {
 
-      const criterio: FindManyOptions = this.crearCriterio<FindManyOptions>({
+      const criterio: FindManyOptions<Empresa> = this.crearCriterio<FindManyOptions>({
         relaciones: [EMPRESA_RELATIONS],
         selected: EMPRESA_SELECTED,
         where: { nombre: ILike(busqueda) },
@@ -49,7 +50,7 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
       const [datos, total] = await qR.manager.findAndCount(Empresa, criterio);
       return {
         total,
-        datos: datos.map((r: Empresa) => this.remplaceToReturn(r)).filter(r=> r!= undefined),
+        datos: datos.map((r) => this.remplaceToReturn(r)).filter(r=> r!= undefined),
       }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar empresas`);
@@ -72,7 +73,7 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
     }
   }
 
-  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoEmpresaCrear, typeof Entidad.EMPRESA>): Promise<DtoEmpresaRespuesta> {
+  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoEmpresaCrear, typeof Entidad.EMPRESA>): Promise<EmpresaRetorno> {
     try {
       const newElemento: Empresa = await this.createDato({ dto, qR, entidad });
       
@@ -115,14 +116,8 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
     }
   }
 
-  remplaceToReturn(entidad: Empresa): DtoEmpresaRespuesta | undefined{
-    const base = this.remplaceToBase(entidad);
-    if(!base) return undefined;
-    return {
-      ...base,
-      nombre: entidad.nombre,
-      telefono: entidad.telefono,
-      email: entidad.email,
-    };
+  remplaceToReturn(entidad: Empresa): EmpresaRetorno | undefined{
+    const empresa = new EmpresaRetorno({...entidad})
+    return empresa;
   };
 }
