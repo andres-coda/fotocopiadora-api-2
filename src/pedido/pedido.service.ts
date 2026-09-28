@@ -1,23 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, GetIdProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
 import { DtoPedidoCambioEstadoRespuesta, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoItemCambioEstadoPedido } from './dto/pedido.dto';
 import { DtoPedidoItemRespuesta } from '../pedido_item/dto/pedido_item.dto';
 import { GetPedidoItemBusqueda } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
-import { toRespuestaPedido } from './utils/toRespuestaPedido';
+import { toRespuestaPedido, toRespuestaPedidoCambioEstado } from './utils/toRespuestaPedido';
 import { toRespuestaPedidoItemCompleto } from '../pedido_item/utils/toRespuestaItem';
 import { BusquedaGenericoProp, GetGenericoByIdProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { EstadoPedido } from './interface/estadoPedido.enum';
 import { OrdenPedidoCliente } from '@src/cliente/interface/cliente_retorno.interface';
-import { fc_crear_pedido_prop } from './interface/pedido.interface';
+import { fc_cambiar_estado_pedido_prop, fc_crear_pedido_prop } from './interface/pedido.interface';
 import { PedidoRetorno } from './retorno/pedido.retorno';
+import { ItemRetorno } from '@src/pedido_item/retorno/item.retorno';
 
 interface BusquedaPedidoProp extends BusquedaGenericoProp {
   estado: EstadoPedido | undefined
@@ -131,11 +132,11 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
     if (entidad.pedidoItems && entidad.pedidoItems.length > 0) {
       entidad.pedidoItems.map(i => pedido.agregarItemPedido({ ...i }))
-      return pedido;
     }
+    return pedido;
   }
 
-  async buscarPedidos({ busqueda, limite = 20, offset = 0, qR, estado }: BusquedaPedidoProp): Promise<RetornoGenericoServiceGet<DtoPedidoItemRespuesta>> {
+  async buscarPedidos({ busqueda, limite = 20, offset = 0, qR, estado }: BusquedaPedidoProp): Promise<RetornoGenericoServiceGet<ItemRetorno>> {
     try {
 
       const total = await qR.query(
@@ -195,51 +196,17 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     }
   }
 
-  async cambiarEstadoPedidoCx({ estado, qR, id }: CambioEstadoPedido): Promise<DtoPedidoCambioEstadoRespuesta> {
+  async cambiarEstadoPedidoCx({ estado, qR, id }: CambioEstadoPedido): Promise<PedidoRetorno> {
     try {
-      const rows = await qR.query(
+      const rows:fc_cambiar_estado_pedido_prop[] | undefined = await qR.query(
         `SELECT * FROM fc_cambiar_estado_pedido($1, $2)`,
         [estado, id],
       );
 
-      if (!rows || rows.length === 0) throw new NotFoundException(`No se pudo actualizar el estado del pedido ${id}`);
-
-      const items: DtoPedidoItemCambioEstadoPedido[] = [];
-      for (const r of rows) {
-        const item: DtoPedidoItemCambioEstadoPedido = {
-          libro: {
-            id: r.id_libro,
-            stock: {
-              pendiente: r.libro_pendiente,
-              listo: r.libro_listo,
-              retirado: r.libro_retirado,
-              cancelado: r.libro_cancelado
-            }
-          },
-          fechaActualizacion: r.fecha_actualizacion,
-          estado: r.estado,
-          id: r.nro_pedido,
-          idPedido: r.id
-        }
-        items.push(item);
-      }
-
-      const pedido: DtoPedidoCambioEstadoRespuesta = {
-        id: rows[0].id,
-        estado: rows[0].estado,
-        fechaActualizacion: rows[0].fecha_actualizacion,
-        cliente: {
-          id: rows[0].id_cliente,
-          resumen: {
-            pendiente: rows[0].pendiente,
-            listo: rows[0].listo,
-            retirado: rows[0].retirado,
-            cancelado: rows[0].cancelado
-          }
-        },
-        items: items
-      }
-
+      const pedido:PedidoRetorno | undefined= toRespuestaPedidoCambioEstado(rows)
+      
+      if (!pedido) throw new NotFoundException(`No se pudo actualizar el estado del pedido ${id}`);
+      
       return pedido;
 
     } catch (er) {

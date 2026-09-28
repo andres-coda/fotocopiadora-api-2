@@ -54,3 +54,23 @@ export interface fc_crear_pedido_prop {
     email?: string
   }
 }
+
+export interface fc_cambiar_estado_pedido_prop {
+  id: string;
+  estado:EstadoPedido;
+  fecha_actualizacion: Date;
+  
+  id_cliente:string;
+  retirado:number;
+  listo:number;
+  pendiente:number;
+  cancelado:number;
+
+  id_libro:string;
+  id_empresa:string;
+  nro_pedido:number;
+  libro_retirado:number;
+  libro_listo:number;
+  libro_pendiente:number;
+  libro_cancelado:number;
+}

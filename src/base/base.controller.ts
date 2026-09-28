@@ -3,7 +3,6 @@ import { Base } from './entity/base.entity';
 import { BaseService } from './base.service';
 import { Get, Param, HttpCode, UseGuards } from '@nestjs/common';
 import { UsuarioGuard } from '../auth/guard/user.guard';
-import { AdminGuard } from '../auth/guard/admin.guard';
 import { BaseDto } from './dto/baseDto';
 import { EntidadDatoMapType } from '../gateway/dto/gatewayDto.dto';
 import type { CreateProp, RetornoGet, SelectedDeep } from './interface/base.interface';
@@ -44,8 +43,6 @@ export abstract class BaseController<
     protected readonly relacionesGenerales?: RelationsKey<T>[],
     protected readonly selectedGeneral?: SelectedDeep<T>,
   ) { }
-
-  abstract remplaceTuReturnEntity(entity: T):K
 
   /**
    * Obtiene todos los elementos activos asociados al usuario autenticado.
