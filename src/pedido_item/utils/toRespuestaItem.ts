@@ -3,26 +3,18 @@ import { DtoPedidoRespuesta } from "../../pedido/dto/pedido.dto";
 import { toRespuestaSede } from "../../sede/utils/toRespuestaSede";
 import { DtoPedidoItemRespuesta } from "../dto/pedido_item.dto";
 import { PedidoItem } from "../entity/pedido_item.entity";
-import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById } from "../interface/pedido_item_busqueda.interface";
+import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById, wv_cambio_sede_prop } from "../interface/pedido_item_busqueda.interface";
 import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
 import { DtoLibroRespuesta } from "../../libro/dto/libroRetorno.dto";
 import { toRespuestaPedidoCliente } from "@src/cliente/utils/toRespuestaCliente";
 import { ItemRetorno } from "../retorno/item.retorno";
 
-export const toRespuestaPedidoItem = (dato?: PedidoItem): DtoPedidoItemRespuesta | undefined => {
+export const toRespuestaPedidoItem = (dato?: PedidoItem): ItemRetorno | undefined => {
   if (!dato) return undefined;
-  const sede = toRespuestaSede(dato.sede);
-  
-  return {
-    idPedido: dato?.idPedido,
-    id: dato.id,
-    cantidad: dato.cantidad,
-    detalles: dato.detalles,
-    estado: dato.estado,
-    idLibro: dato.libro_id,
-    idSede: dato.sede_id,
-    sede
-  }
+  const item = new ItemRetorno({...dato});
+  if(dato.sede) item.agregarSedeItemRetorno({...dato.sede});
+  if(dato.pedido) item.agregarPedidoAlItem({...dato.pedido, ...dato.pedido.cliente, id_cliente:dato.pedido.cliente.id})
+  return item;
 }
 
 export const toRespuestaItemsPedidoByLibro = (dato?:RetornoVistaItemsPedidoLibroById):ItemRetorno | undefined =>{
@@ -60,4 +52,9 @@ export const toRespuestaPedidoItemCompleto = (dato: GetPedidoItemBusqueda): Item
   return item;
 }
 
-
+export const toRespuestaCambioSedeItem = (dato?: wv_cambio_sede_prop): ItemRetorno | undefined => {
+  if (!dato) return undefined;
+  const item = new ItemRetorno({...dato, idPedido:dato.id_pedido});
+  item.cambioSedeItem({...dato})
+  return item;
+}

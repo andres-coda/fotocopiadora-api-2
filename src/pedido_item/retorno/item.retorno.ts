@@ -7,11 +7,18 @@ import { Especificaciones } from "../interface/especificaciones.interface";
 import { PedidoParaClienteRetornoProp, PedidoRetorno, PedidoRetornoProp } from "@src/pedido/retorno/pedido.retorno";
 
 export interface ItemRetornoProp extends Omit<BaseRetornoProp, 'id'> {
-  estado: EstadoPedido;
+  estado?: EstadoPedido;
   idPedido: string;
   id: number;
   cantidad?: number;
   detalles?: string;
+}
+
+interface cambioSedeProp{
+  id_libro: string;
+  id_sede:string;
+  id_cliente:string;
+  sede:string;
 }
 
 export interface ItemCambioEstadoRetornoProp extends Omit<ResumenRetornoProp, 'id'> {
@@ -29,8 +36,8 @@ interface EspecificacionesItemProp {
 }
 
 interface AgregarPedidoItemProp extends PedidoParaClienteRetornoProp, PedidoRetornoProp{
-  telefono: string;
-  email:string;
+  telefono?: string;
+  email?:string;
   id_cliente:string;
 }
 
@@ -55,7 +62,7 @@ interface LibroXitemRetornoProp {
 }
 
 export class ItemRetorno extends BaseRetorno {
-  estado!: EstadoPedido;
+  estado?: EstadoPedido;
   idPedido!: string;
   cantidad?: number;
   detalles?: string;
@@ -64,6 +71,8 @@ export class ItemRetorno extends BaseRetorno {
   libro!: LibroRetorno;
   sede?: SedeRetorno;
   pedido?: PedidoRetorno;
+
+  idCliente?:string;
 
   constructor({ id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido, cantidad, detalles }: ItemRetornoProp) {
     super({ id: id.toString(), fecha_actualizacion, fecha_creacion, deleted })
@@ -142,5 +151,11 @@ export class ItemRetorno extends BaseRetorno {
     pedido.agregarClienteRetorno({id});
     pedido.agregarClienteRetorno({id:id_cliente, email, telefono});
     this.pedido = pedido;
+  }
+
+  public cambioSedeItem({id_cliente, id_libro, id_sede, sede}:cambioSedeProp) {
+    this.idCliente = id_cliente;
+    this.agregarIdLibroItem(id_libro);
+    this.agregarSedeItemRetorno({id:id_sede, nombre:sede});
   }
 }

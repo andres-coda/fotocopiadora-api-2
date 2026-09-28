@@ -66,3 +66,14 @@ export interface RetornoVistaItemsPedidoLibroById{
   email:string;
   total:number;
 }
+
+export interface wv_cambio_sede_prop {
+  fecha_actualizacion:Date;
+  id_pedido:string;
+  id:number;
+  id_libro: string;
+  id_empresa: string;
+  id_sede:string;
+  id_cliente:string;
+  sede:string;
+}

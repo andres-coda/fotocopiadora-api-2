@@ -16,10 +16,12 @@ import { Especificacion } from '../especificacion/entity/especificacion.entity';
 import { Especificaciones } from './interface/especificaciones.interface';
 import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
 import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById } from './interface/pedido_item_busqueda.interface';
-import { toRespuestaItemsPedidoByLibro, toRespuestaPedidoItemCompleto } from './utils/toRespuestaItem';
+import { toRespuestaCambioSedeItem, toRespuestaItemsPedidoByLibro, toRespuestaPedidoItemCompleto } from './utils/toRespuestaItem';
 import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { PEDIDO_ITEM_RELACION, PEDIDO_ITEM_SELECT } from './default/pedido_item.relacion';
 import { ItemRetorno } from './retorno/item.retorno';
+import { PedidoRetorno } from '@src/pedido/retorno/pedido.retorno';
+import { toRespuestaPedidoCambioEstado } from '@src/pedido/utils/toRespuestaPedido';
 
 interface CreateDatoXEntidadProp extends Omit<CreateProp<DtoLibroPedidoCrear, typeof Entidad.PEDIDO>, "entidad"> {
   pedido: Pedido
@@ -135,7 +137,7 @@ export class PedidoItemService {
   async getPedidoItemById({ idPedido, nro_pedido, qR }: PedidoItemGeneralProp): Promise<GetPedidoItemBusqueda[]> {
     try {
 
-      const rows:GetPedidoItemBusqueda[] = await qR.query(
+      const rows: GetPedidoItemBusqueda[] = await qR.query(
         `SELECT * FROM vw_pedidos_item WHERE id_pedido = $1 and nro_pedido = $2`,
         [idPedido, nro_pedido || null]
       );
@@ -151,10 +153,11 @@ export class PedidoItemService {
 
       const rows = await this.getPedidoItemById({ idPedido, nro_pedido, qR });
 
-      return rows.flatMap((r: GetPedidoItemBusqueda) => 
-        {const itemAux = toRespuestaPedidoItemCompleto(r);
-          if (itemAux) return [itemAux];
-          return []});
+      return rows.flatMap((r: GetPedidoItemBusqueda) => {
+        const itemAux = toRespuestaPedidoItemCompleto(r);
+        if (itemAux) return [itemAux];
+        return []
+      });
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar el pedido item del pedido nro ${nro_pedido}`);
     }
@@ -267,7 +270,7 @@ export class PedidoItemService {
           [dato.id_pedido, dato.nro_pedido, aInsertar],
         );
       }
-      
+
       return toRespuestaPedidoItemCompleto(dato);
 
     } catch (er) {
@@ -371,7 +374,7 @@ export class PedidoItemService {
     }
   }
 
-  async cambiarEstadoCx({ estado, nro_pedido, qR, idPedido }: CambioEstado): Promise<DtoPedidoItemCambioEstadoRespuesta | undefined> {
+  async cambiarEstadoCx({ estado, nro_pedido, qR, idPedido }: CambioEstado): Promise<PedidoRetorno | undefined> {
     try {
 
       await qR.query(
@@ -388,44 +391,18 @@ export class PedidoItemService {
         [nro_pedido, idPedido],
       )
 
-      if (!pedidoActualizado) return undefined;
+      const pedido: PedidoRetorno | undefined = toRespuestaPedidoCambioEstado(pedidoActualizado)
 
+      if (!pedido) throw new NotFoundException(`No se pudo actualizar el estado del pedido ${idPedido}`);
 
-      const retorno: DtoPedidoItemCambioEstadoRespuesta = {
-        idPedido: idPedido,
-        id: nro_pedido,
-        estado: pedidoActualizado.estado,
-        fechaActualizacion: pedidoActualizado.fecha_actualizacion,
-        pedido: {
-          id: idPedido,
-          estado: pedidoActualizado.estado_pedido,
-          cliente: {
-            id: pedidoActualizado.id_cliente,
-            resumen: {
-              retirado: pedidoActualizado.retirado,
-              cancelado: pedidoActualizado.cancelado,
-              listo: pedidoActualizado.listo,
-              pendiente: pedidoActualizado.pendiente
-            }
-          }
-        },
-        libro: {
-          id: pedidoActualizado.id_libro,
-          stock: {
-            retirado: pedidoActualizado.libro_retirado,
-            cancelado: pedidoActualizado.libro_cancelado,
-            listo: pedidoActualizado.libro_listo,
-            pendiente: pedidoActualizado.libro_pendiente
-          }
-        }
-      }
-      return retorno;
+      return pedido;
+
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar el estado del libro`)
     }
   }
 
-  async cambiarSedeCx({ sedeId, nro_pedido, idPedido, qR }: CambioSedeProp): Promise<DtoPedidoItemCambioSedeRespuesta> {
+  async cambiarSedeCx({ sedeId, nro_pedido, idPedido, qR }: CambioSedeProp): Promise<ItemRetorno> {
     try {
       await qR.query(
         `UPDATE pedido_item  SET
@@ -441,20 +418,12 @@ export class PedidoItemService {
         [nro_pedido, idPedido],
       )
 
-      if (!pedidoActualizado) throw new NotFoundException('Error al intentar actualizar la sede del pedido');
+      const item = toRespuestaCambioSedeItem(pedidoActualizado)
 
-      return {
-        idPedido: pedidoActualizado.id_pedido,
-        id: pedidoActualizado.id,
-        sede: {
-          id: pedidoActualizado.id_sede,
-          nombre: pedidoActualizado.sede,
-          idEmpresa: pedidoActualizado.id_empresa
-        },
-        fechaActualizacion: pedidoActualizado.fecha_actualizacion,
-        idCliente: pedidoActualizado.id_cliente,
-        idLibro: pedidoActualizado.id_libro
-      };
+      if (!item) throw new NotFoundException('Error al intentar actualizar la sede del pedido');
+
+      
+      return item;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar cambiar la sede del pedido ${nro_pedido}`);
@@ -462,7 +431,7 @@ export class PedidoItemService {
   }
 
   remplaceToReturn(entidad: PedidoItem): ItemRetorno {
-    const item = new ItemRetorno({...entidad});
+    const item = new ItemRetorno({ ...entidad });
     item.agregarIdLibroItem(entidad.libro_id);
     return item;
   }

@@ -5,6 +5,7 @@ import { DtoCambiarEstadoItem, DtoCambiarSedeItem, DtoLibroPedidoCrear, DtoPedid
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { ItemRetorno } from './retorno/item.retorno';
+import { PedidoRetorno } from '@src/pedido/retorno/pedido.retorno';
 
 export enum OrdenPedidoItem {
   ESTADO = 'estado',
@@ -130,7 +131,7 @@ export class PedidoItemController {
     @Param('idPedido') idPedido: string,
     @Body() dto: DtoCambiarEstadoItem,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoItemCambioEstadoRespuesta | undefined> {
+  ): Promise<PedidoRetorno | undefined> {
     const retorno = this.itemService.cambiarEstadoCx({ idPedido, nro_pedido: Number(nroItem), estado: dto.estado, qR: req.queryRunner });
 
     return retorno;
@@ -143,7 +144,7 @@ export class PedidoItemController {
     @Param('idPedido') idPedido: string,
     @Body() dto: DtoCambiarSedeItem,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoItemCambioSedeRespuesta> {
+  ): Promise<ItemRetorno> {
     const retorno = this.itemService.cambiarSedeCx({ idPedido, nro_pedido: Number(nroItem), sedeId: dto.sedeId, qR: req.queryRunner });
 
     return retorno;
