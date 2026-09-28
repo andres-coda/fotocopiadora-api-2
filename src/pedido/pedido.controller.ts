@@ -12,6 +12,7 @@ import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { EstadoPedido } from './interface/estadoPedido.enum';
 import { OrdenPedidoCliente } from '@src/cliente/interface/cliente_retorno.interface';
 import { OrdenPedidoClientePipe } from '@src/pipe/OrdenPedidoClientePipe';
+import { PedidoRetorno } from './retorno/pedido.retorno';
 
 @Controller('pedido')
 @UseGuards(UsuarioGuard)
@@ -75,7 +76,7 @@ export class PedidoController extends BaseController<
     @Query('pagina') pg = 1,
     @Query('estado') estado: EstadoPedido | undefined = undefined,
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGenericoControllerGet<DtoPedidoRespuestaCliente> | undefined> {
+  ): Promise<RetornoGenericoControllerGet<PedidoRetorno> | undefined> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
     const retorno = await this.pedidoService.buscarPedidosByCliente({

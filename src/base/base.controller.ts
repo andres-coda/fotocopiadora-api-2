@@ -45,6 +45,8 @@ export abstract class BaseController<
     protected readonly selectedGeneral?: SelectedDeep<T>,
   ) { }
 
+  abstract remplaceTuReturnEntity(entity: T):K
+
   /**
    * Obtiene todos los elementos activos asociados al usuario autenticado.
    * Aplica filtros por usuario, relaciones y selección de campos configurados.
