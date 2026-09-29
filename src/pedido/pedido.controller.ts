@@ -13,6 +13,7 @@ import { EstadoPedido } from './interface/estadoPedido.enum';
 import { OrdenPedidoCliente } from '@src/cliente/interface/cliente_retorno.interface';
 import { OrdenPedidoClientePipe } from '@src/pipe/OrdenPedidoClientePipe';
 import { PedidoRetorno } from './retorno/pedido.retorno';
+import { ItemRetorno } from '@src/pedido_item/retorno/item.retorno';
 
 @Controller('pedido')
 @UseGuards(UsuarioGuard)
@@ -40,7 +41,7 @@ export class PedidoController extends BaseController<
     @Query('limite') limite = 20,
     @Query('pagina') pg = 1,
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGenericoControllerGet<DtoPedidoItemRespuesta> | undefined> {
+  ): Promise<RetornoGenericoControllerGet<ItemRetorno> | undefined> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
 
@@ -102,7 +103,7 @@ export class PedidoController extends BaseController<
     @Param('idPedido') idPedido: string,
     @Body() dto: DtoCambiarEstadoItem,
     @Request() req: RequestWithUser,
-  ): Promise<DtoPedidoCambioEstadoRespuesta> {
+  ): Promise<PedidoRetorno> {
     const retorno = this.pedidoService.cambiarEstadoPedidoCx({ id: idPedido, estado: dto.estado, qR: req.queryRunner });
 
     return retorno;

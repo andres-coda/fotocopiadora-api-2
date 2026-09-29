@@ -391,7 +391,7 @@ export class PedidoItemService {
         [nro_pedido, idPedido],
       )
 
-      const pedido: PedidoRetorno | undefined = toRespuestaPedidoCambioEstado(pedidoActualizado)
+      const pedido: PedidoRetorno | undefined = toRespuestaPedidoCambioEstado([pedidoActualizado])
 
       if (!pedido) throw new NotFoundException(`No se pudo actualizar el estado del pedido ${idPedido}`);
 
