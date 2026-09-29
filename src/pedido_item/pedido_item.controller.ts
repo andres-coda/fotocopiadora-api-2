@@ -83,7 +83,6 @@ export class PedidoItemController {
     const id_empresa = req.user.idEmpresa;
     if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
     const offset = (Number(pagina) - 1) * Number(limite);
-  console.log('<<<<----- Entre al controller de items by libro ---->>>>>');
     const items = await this.itemService.getItemsPedidoByLibroId({
       limite: Number(limite),
       id_libro: idLibro,

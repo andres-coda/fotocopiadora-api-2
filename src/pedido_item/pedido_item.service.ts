@@ -172,9 +172,10 @@ export class PedidoItemService {
       ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3`,
         [id_libro, limite, offset]
       )
-      if (!rows) return { datos: [], total: 0 };
+      if (!rows || rows.length === 0) return { datos: [], total: 0 };
 
-      console.log('<<<<---- Realice la peticion ----->>>>', rows)
+      console.log('<<<<---- Realice la peticion getItemsPedidoByLibroId ----->>>>', rows)
+      console.log(`Datos del rows: rows.length ${rows.length}`)
 
       const itemsPedido: ItemRetorno[] = rows
         .flatMap((r) => {
