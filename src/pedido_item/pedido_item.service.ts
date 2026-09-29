@@ -166,10 +166,15 @@ export class PedidoItemService {
   async getItemsPedidoByLibroId({ id_libro, qR, limite = 20, offset = 0, id_empresa }: PedidoItemByLibroProp): Promise<RetornoGenericoServiceGet<ItemRetorno>> {
     try {
       const rows: RetornoVistaItemsPedidoLibroById[] = await qR.query(
-        'SELECT * FROM vw_pedido_libro pi where pi.id_libro = $1 ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3',
+      `SELECT * 
+      FROM vw_pedido_libro pi 
+      where pi.id_libro = $1 
+      ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3`,
         [id_libro, limite, offset]
       )
       if (!rows) return { datos: [], total: 0 };
+
+      console.log('<<<<---- Realice la peticion ----->>>>', rows)
 
       const itemsPedido: ItemRetorno[] = rows
         .flatMap((r) => {
