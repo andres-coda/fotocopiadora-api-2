@@ -73,4 +73,6 @@ export interface fc_cambiar_estado_pedido_prop {
   libro_listo:number;
   libro_pendiente:number;
   libro_cancelado:number;
+  stock_libro:number;
+  estado_pedido: EstadoPedido;
 }

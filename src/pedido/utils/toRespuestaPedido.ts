@@ -24,7 +24,9 @@ export const toRespuestaPedido = (dato?: fc_crear_pedido_prop): PedidoRetorno | 
 
 export const toRespuestaPedidoCambioEstado = (datos?:fc_cambiar_estado_pedido_prop[]):PedidoRetorno | undefined => {
   if(!datos || datos.length === 0) return undefined;
-  const pedido = new PedidoRetorno({...datos[0]});
+
+  console.log( '<<<< ---------  Cambio estado items  ----------->>>>>', datos)
+  const pedido = new PedidoRetorno({...datos[0], estado:datos[0].estado_pedido});
 
   pedido.agregarClienteRetorno({id: datos[0].id_cliente});
   pedido.cliente?.agregarResumenCliente({...datos[0]});
@@ -35,7 +37,8 @@ export const toRespuestaPedidoCambioEstado = (datos?:fc_cambiar_estado_pedido_pr
       pendiente:dato.libro_pendiente,
       listo: dato.libro_listo,
       retirado: dato.libro_retirado,
-      cancelado: dato.libro_cancelado
+      cancelado: dato.libro_cancelado,
+      stock: dato.stock_libro
     },{ id: dato.nro_pedido, estado:dato.estado, idPedido: dato.id, fecha_actualizacion: dato.fecha_actualizacion });
   }
   return pedido;

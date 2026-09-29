@@ -384,14 +384,14 @@ export class PedidoItemService {
         [estado, nro_pedido, idPedido],
       );
 
-      const [pedidoActualizado] = await qR.query(
+      const pedidoActualizado = await qR.query(
         `SELECT * 
         FROM vw_cambio_estado
-         WHERE id = $1 AND id_pedido = $2`,
+         WHERE nro_pedido = $1 AND id = $2`,
         [nro_pedido, idPedido],
       )
 
-      const pedido: PedidoRetorno | undefined = toRespuestaPedidoCambioEstado([pedidoActualizado])
+      const pedido: PedidoRetorno | undefined = toRespuestaPedidoCambioEstado(pedidoActualizado)
 
       if (!pedido) throw new NotFoundException(`No se pudo actualizar el estado del pedido ${idPedido}`);
 
