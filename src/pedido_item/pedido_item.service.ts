@@ -17,7 +17,7 @@ import { Especificaciones } from './interface/especificaciones.interface';
 import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
 import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById } from './interface/pedido_item_busqueda.interface';
 import { toRespuestaCambioSedeItem, toRespuestaItemsPedidoByLibro, toRespuestaPedidoItemCompleto } from './utils/toRespuestaItem';
-import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { PEDIDO_ITEM_RELACION, PEDIDO_ITEM_SELECT } from './default/pedido_item.relacion';
 import { ItemRetorno } from './retorno/item.retorno';
 import { PedidoRetorno } from '@src/pedido/retorno/pedido.retorno';
@@ -33,6 +33,7 @@ interface PedidoItemByLibroProp {
   limite?: number;
   offset?: number;
   id_empresa: string;
+  filtroEstado?: EstadoPedido;
 }
 
 interface ItemsByPedidoId extends Omit<PedidoItemByLibroProp, 'id_libro'> {
@@ -62,9 +63,8 @@ interface UpdateDatoEntidadProp {
   dto: DtoPedidoItemEditar;
 }
 
-interface estadoPedidoProp {
-  id: string;
-  qR: QueryRunner;
+interface busquedaItem extends BusquedaGenericoProp {
+  orden: string
 }
 
 @Injectable()
@@ -163,19 +163,27 @@ export class PedidoItemService {
     }
   }
 
-  async getItemsPedidoByLibroId({ id_libro, qR, limite = 20, offset = 0, id_empresa }: PedidoItemByLibroProp): Promise<RetornoGenericoServiceGet<ItemRetorno>> {
+  async getItemsPedidoByLibroId({ id_libro, qR, limite = 20, offset = 0, filtroEstado }: PedidoItemByLibroProp): Promise<RetornoGenericoServiceGet<ItemRetorno>> {
     try {
-      const rows: RetornoVistaItemsPedidoLibroById[] = await qR.query(
-      `SELECT * 
-      FROM vw_pedido_libro pi 
-      where pi.id_libro = $1 
-      ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3`,
-        [id_libro, limite, offset]
-      )
+      let rows: RetornoVistaItemsPedidoLibroById[] = [];
+      if(!filtroEstado){
+        rows = await qR.query(
+          `SELECT * 
+            FROM vw_pedido_libro pi 
+            where pi.id_libro = $1 
+            ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3`,
+            [id_libro, limite, offset]
+        )
+      } else {
+        rows = await qR.query(
+          `SELECT * 
+            FROM vw_pedido_libro pi 
+            where pi.id_libro = $1 AND pi.estado = $4
+            ORDER BY pi.estado ASC, pi.fecha_entrega ASC LIMIT $2 OFFSET $3`,
+            [id_libro, limite, offset, filtroEstado]
+        )
+      }
       if (!rows || rows.length === 0) return { datos: [], total: 0 };
-
-      console.log('<<<<---- Realice la peticion getItemsPedidoByLibroId ----->>>>', rows)
-      console.log(`Datos del rows: rows.length ${rows.length}`)
 
       const itemsPedido: ItemRetorno[] = rows
         .flatMap((r) => {
@@ -428,7 +436,7 @@ export class PedidoItemService {
 
       if (!item) throw new NotFoundException('Error al intentar actualizar la sede del pedido');
 
-      
+
       return item;
 
     } catch (er) {

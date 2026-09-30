@@ -56,10 +56,9 @@ export class PedidoController extends BaseController<
     });
 
     return {
-      total: retorno.total,
+      ...retorno,
       limite,
       pagina,
-      datos: retorno.datos
     }
   }
 

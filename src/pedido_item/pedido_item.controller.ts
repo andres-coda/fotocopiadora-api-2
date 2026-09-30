@@ -6,6 +6,7 @@ import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { ItemRetorno } from './retorno/item.retorno';
 import { PedidoRetorno } from '@src/pedido/retorno/pedido.retorno';
+import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
 
 export enum OrdenPedidoItem {
   ESTADO = 'estado',
@@ -79,6 +80,7 @@ export class PedidoItemController {
     @Request() req: RequestWithUser,
     @Query('limite') limite = 20,
     @Query('pagina') pagina = 1,
+        @Query('estado') estado: EstadoPedido | undefined = undefined,
   ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
     const id_empresa = req.user.idEmpresa;
     if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
@@ -88,7 +90,8 @@ export class PedidoItemController {
       id_libro: idLibro,
       offset,
       qR: req.queryRunner,
-      id_empresa
+      id_empresa,
+      filtroEstado: estado
     });
 
     return {

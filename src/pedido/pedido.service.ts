@@ -139,7 +139,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
   async buscarPedidos({ busqueda, limite = 20, offset = 0, qR, estado }: BusquedaPedidoProp): Promise<RetornoGenericoServiceGet<ItemRetorno>> {
     try {
 
-      const total = await qR.query(
+      const [total] = await qR.query(
         `SELECT count(DISTINCT nro_pedido) as total  FROM fc_buscar_pedido($1, $2, 0,0)`,
         [busqueda, estado],
       );
@@ -150,7 +150,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       );
 
       return {
-        total,
+        total: total.total,
         datos: rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r))
       }
     } catch (er) {

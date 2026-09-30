@@ -114,10 +114,11 @@ export class LibroRetorno extends BaseRetorno {
 
   public armarLibroCompletoRetorno({
     autor, img, cantidad_pg, cantidad_adhesivo, especificaciones_defecto, detalle_impresion,
-    edicion, anio, componentes, nivel, pendiente, listo, retirado, cancelado, stock, componentes_texto
+    edicion, anio, componentes, nivel, pendiente, listo, retirado, cancelado, stock, componentes_texto,
+    materia, id_materia
   }: LibroCompletoRetornoProp) {
     this.armarLibroSimple({ autor, img, cantidad_pg, cantidad_adhesivo, especificaciones_defecto, detalle_impresion });
-    this.armarLibroMinimo({ edicion, anio, componentes, nivel, pendiente, listo, retirado, cancelado, stock });
+    this.armarLibroMinimo({ edicion, anio, componentes, nivel, pendiente, listo, retirado, cancelado, stock, materia, id_materia });
     this.componentes_texto = componentes_texto;
   }
 

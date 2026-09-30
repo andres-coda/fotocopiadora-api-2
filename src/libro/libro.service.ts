@@ -216,7 +216,7 @@ export class LibroService {
      
       const newLibro: Libro = await qR.manager.save(Libro, libro)
 
-      return toRespuestaLibroEmptresXlibro(newLibro);
+      return await this.getLibroCompletoByIdOrdFail({id: newLibro.id_libro, qR})
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de libros`)
