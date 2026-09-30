@@ -1,7 +1,5 @@
 import { EstadoPedido } from "@src/pedido/interface/estadoPedido.enum";
 import { Especificaciones } from "./especificaciones.interface";
-import { GetMateriaAdapter } from "@src/materia/interface/materia.interface";
-import { GetLibroMinimo } from "@src/libro/interface/libro.interface";
 
 export interface GetPedidoItemBusqueda{
   id_pedido: string;
@@ -32,7 +30,7 @@ export interface GetPedidoItemBusqueda{
   importe_total:number;
   sena: number;
   anillados:number;
-  archivs:number;
+  archivos:number;
   estado_pedido: EstadoPedido;
   telefono: string;
   email:string;

@@ -53,7 +53,7 @@ export const toRespuestaPedidoGetItem = (dato?: GetPedidoItemBusqueda):DtoPedido
     fechaCreacion: dato.fecha_creacion,
     fechaEntrega: dato.fecha_entrega,
     importeTotal: dato.importe_total,
-    archivos: dato.archivs,
+    archivos: dato.archivos,
     anillados: dato.anillados,
     sena: dato.sena,
     items: [],

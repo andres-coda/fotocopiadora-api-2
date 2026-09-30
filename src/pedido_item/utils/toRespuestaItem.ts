@@ -1,12 +1,5 @@
-import { DtoSedeRespuesta } from "../../sede/dto/sedeRetorno.dto";
-import { DtoPedidoRespuesta } from "../../pedido/dto/pedido.dto";
-import { toRespuestaSede } from "../../sede/utils/toRespuestaSede";
-import { DtoPedidoItemRespuesta } from "../dto/pedido_item.dto";
 import { PedidoItem } from "../entity/pedido_item.entity";
 import { GetPedidoItemBusqueda, RetornoVistaItemsPedidoLibroById, wv_cambio_sede_prop } from "../interface/pedido_item_busqueda.interface";
-import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
-import { DtoLibroRespuesta } from "../../libro/dto/libroRetorno.dto";
-import { toRespuestaPedidoCliente } from "@src/cliente/utils/toRespuestaCliente";
 import { ItemRetorno } from "../retorno/item.retorno";
 
 export const toRespuestaPedidoItem = (dato?: PedidoItem): ItemRetorno | undefined => {
@@ -44,7 +37,7 @@ export const toRespuestaPedidoItemCompleto = (dato: GetPedidoItemBusqueda): Item
     ...dato, 
     fechaEntrega:dato.fecha_entrega,
     importeTotal: dato.importe_total,
-    archivos: dato.archivs,
+    archivos: dato.archivos,
     id: dato.id_pedido,
     estado: dato.estado_pedido
   });
