@@ -3,10 +3,12 @@ import { LibroService } from './libro.service';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.dto';
-import { DtoLibroCrear } from './dto/libroCrear.dto';
+import { DtoLibroCrear, DtoLibroEmpresaEditar } from './dto/libroCrear.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { Role } from '@src/auth/rol/rol.enum';
 import { LibroRetorno } from './retorno/libro.retorno';
+import { AdminGuard } from '@src/auth/guard/admin.guard';
+import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -138,28 +140,35 @@ export class LibroController {
     return libro;
   }
 
+  @Patch(':idLibro')
+  @HttpCode(201)
+  async updateLibroEmpresa(
+    @Param('idLibro') idLibro: string,
+    @Body() dto: DtoLibroEmpresaEditar,
+    @Request() req: RequestWithUser,
+  ): Promise<LibroRetorno> {
+    const libro = await this.libroService.updateLibroEmpresa({
+      id: idLibro,
+      dto,
+      qR: req.queryRunner
+    });
+    return libro;
+  }
+
+  @UseGuards(SuperAdminGuard)
   @Put(':idLibro')
   @HttpCode(201)
   async updateLibro(
     @Param('idLibro') idLibro: string,
-    @Body() dto: DtoLibroCrear,
+    @Body() dto: DtoLibroEmpresaEditar,
     @Request() req: RequestWithUser,
-  ): Promise<LibroRetorno> {
-    if(req.user.role === Role.SuperAdmin) {
-      const libro = await this.libroService.updateLibroCompleto({
-        id: idLibro,
-        dto,
-        qR: req.queryRunner
-      });
-      return libro;
-    } else {
-      const libro = await this.libroService.updateLibroEmpresa({
-        id: idLibro,
-        dto,
-        qR: req.queryRunner
-      });
-      return libro;
-    }
+  ): Promise<LibroRetorno | undefined> {
+    const libro = await this.libroService.updateLibroCompleto({
+      id: idLibro,
+      dto,
+      qR: req.queryRunner
+    });
+    return libro;
   }
 
   @Delete(':idLibro')

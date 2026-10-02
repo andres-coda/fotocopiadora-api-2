@@ -62,3 +62,24 @@ export class DtoLibroCrear extends BaseDto {
   @IsEnum(Especificaciones, { each: true, message: 'Especificación inválida' })
   especificacionesDefecto?: Especificaciones[];
 }
+
+export class DtoLibroEmpresaEditar extends BaseDto {
+  @IsOptional()
+  @IsArray({ message: 'Las especificaciones deben ser un array' })
+  @IsEnum(Especificaciones, { each: true, message: 'Especificación inválida' })
+  especificacionesDefecto?: Especificaciones[];
+
+  @IsNotEmpty({ message: 'La cantidad de páginas es obligatoria' })
+  @Type(() => Number)
+  @IsInt({ message: 'La cantidad de páginas debe ser un número entero' })
+  cantidadPg!: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'La cantidad de adhesivos debe ser un número entero' })
+  adhesivos?: number;
+
+  @IsOptional()
+  @IsString({ message: 'El detalle de impresión debe ser un texto' })
+  detalle_impresion?: string;
+}
