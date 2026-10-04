@@ -2,13 +2,11 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query
 import { LibroService } from './libro.service';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
-import { DtoLibroEmpresaRespuesta, DtoLibroRespuesta } from './dto/libroRetorno.dto';
 import { DtoLibroCrear, DtoLibroEmpresaEditar } from './dto/libroCrear.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
-import { Role } from '@src/auth/rol/rol.enum';
 import { LibroRetorno } from './retorno/libro.retorno';
-import { AdminGuard } from '@src/auth/guard/admin.guard';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
+import { DtoLibroExtraEditar } from './dto/libroEditar.dto';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -148,6 +146,21 @@ export class LibroController {
     @Request() req: RequestWithUser,
   ): Promise<LibroRetorno> {
     const libro = await this.libroService.updateLibroEmpresa({
+      id: idLibro,
+      dto,
+      qR: req.queryRunner
+    });
+    return libro;
+  }
+
+  @Patch('extra/:idLibro')
+  @HttpCode(201)
+  async updateLibroExtra(
+    @Param('idLibro') idLibro: string,
+    @Body() dto: DtoLibroExtraEditar,
+    @Request() req: RequestWithUser,
+  ): Promise<LibroRetorno> {
+    const libro = await this.libroService.updateLibroExtra({
       id: idLibro,
       dto,
       qR: req.queryRunner

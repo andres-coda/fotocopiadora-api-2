@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DtoLibroCrear } from './dto/libroCrear.dto';
-import { DtoLibroEditar } from './dto/libroEditar.dto';
+import { DtoLibroEditar, DtoLibroExtraEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, In, QueryRunner, Repository } from 'typeorm';
@@ -39,6 +39,14 @@ interface EditarLibroProp extends GetLibroByIdProp {
   entidad: typeof Entidad.LIBRO
 }
 
+interface LibroExtraProp {
+  autor?: string;
+  edicion?: number;
+  anio?: string;
+  img?: string;
+  descripcion?: string;
+}
+
 @Injectable()
 export class LibroService {
   constructor(
@@ -57,14 +65,14 @@ export class LibroService {
         "SELECT *, count(*) over() AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%' LIMIT $2 OFFSET $3",
         [busqueda, limite, offset]
       )
-      
-      if(!rows || rows.length === 0) return {
+
+      if (!rows || rows.length === 0) return {
         total: 0,
         datos: []
       };
       const newDatos = rows
-        .map((r:RetornoLibroNombreProp) => toRespuestaLibroNombre(r))
-        .filter((d:LibroRetorno) => d !== undefined);
+        .map((r: RetornoLibroNombreProp) => toRespuestaLibroNombre(r))
+        .filter((d: LibroRetorno) => d !== undefined);
 
       return {
         total: rows[0].total,
@@ -209,14 +217,14 @@ export class LibroService {
   async updateLibroEmpresa({ dto, qR, id }: UpdateGenericoProp<DtoLibroEditar>): Promise<LibroRetorno> {
     try {
       const libro: Libro = await this.getLibroEmpresaByIdOrdFail({ id, qR });
-      
+
       libro.cantidad_pg = dto.cantidadPg ?? libro.cantidad_pg;
       libro.cantidad_adhesivo = dto.adhesivos ?? libro.cantidad_adhesivo;
       libro.especificaciones_defecto = dto.especificacionesDefecto ?? libro.especificaciones_defecto;
-     
+
       const newLibro: Libro = await qR.manager.save(Libro, libro)
 
-      return await this.getLibroCompletoByIdOrdFail({id: newLibro.id_libro, qR})
+      return await this.getLibroCompletoByIdOrdFail({ id: newLibro.id_libro, qR })
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de libros`)
@@ -239,6 +247,45 @@ export class LibroService {
     );
 
     return this.getLibroCompletoByIdOrdFail({ id, qR });
+  }
+
+  async updateLibroExtra({ dto, qR, id }: UpdateGenericoProp<DtoLibroExtraEditar>): Promise<LibroRetorno> {
+    const [libroExistente]:LibroExtraProp[] = await qR.query(
+      `SELECT autor, edicion, anio, img, descripcion 
+      FROM libro_completo
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    const newDto: DtoLibroExtraEditar = {
+      autor: libroExistente.autor || dto.autor,
+      edicion: libroExistente.edicion || dto.edicion,
+      anio: libroExistente.anio || dto.anio,
+      img: libroExistente.img || dto.img,
+      descripcion: libroExistente.descripcion || dto.descripcion
+    }
+
+    const dtoAutorizacion: DtoLibroExtraEditar = {
+      autor: newDto.autor != dto.autor ? dto.autor : undefined,
+      edicion: newDto.edicion != dto.edicion ? dto.edicion : undefined,
+      anio: newDto.anio != dto.anio ? dto.anio : undefined,
+      img: newDto.img != dto.img ? dto.img : undefined,
+      descripcion: newDto.descripcion != dto.descripcion ? dto.descripcion : undefined,
+    }
+
+    await qR.query(
+      `UPDATE libro_completo SET
+       anio        = $2,
+       autor       = $3,
+       img         =$4,
+       edicion     = $5,
+       descripcion = $6
+     WHERE id = $1`,
+      [id, newDto.anio, newDto.autor, newDto.img, newDto.edicion, newDto.descripcion]
+    );
+
+    return await this.getLibroCompletoByIdOrdFail({id, qR}); 
   }
 
   async deleteLibroEmpresa({ id, qR }: GetGenericoByIdProp): Promise<boolean> {

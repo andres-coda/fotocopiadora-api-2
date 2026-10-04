@@ -62,3 +62,28 @@ export class DtoLibroEditar extends BaseDto {
   @IsEnum(Especificaciones, { each: true, message: 'Especificación inválida' })
   especificacionesDefecto?: Especificaciones[];
 }
+
+
+export class DtoLibroExtraEditar extends BaseDto {
+  @IsOptional()
+  @IsString({ message: 'La descripción debe ser un texto' })
+  descripcion?: string;
+
+  @IsOptional()
+  @IsString({ message: 'El autor debe ser un texto' })
+  autor?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'La edición debe ser un número' })
+  edicion?: number;
+
+  @IsOptional()
+  @IsString({ message: 'El año debe ser un texto' })
+  @Matches(/^\d{4}$/, { message: 'El año debe tener formato YYYY (ej: 2024)' })
+  anio?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La imagen debe ser una URL válida' })
+  img?: string;
+}

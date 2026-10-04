@@ -6,8 +6,3 @@ export class DtoStockActualizar{
   stock!: number;
 }
 
-export class DtoStockRespuesta{
-  idLibro!: string;
-  stock!: number;
-  fechaActualizacion?: Date;
-}

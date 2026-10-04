@@ -1,10 +1,11 @@
-import { Body, Controller, HttpCode, Param, Put, UseGuards, Request } from "@nestjs/common";
+import { Body, Controller, HttpCode, Param, Put, UseGuards, Request, NotFoundException } from "@nestjs/common";
 import { UsuarioGuard } from "@src/auth/guard/user.guard";
 import { StockService } from "./stock.service";
-import { DtoStockActualizar, DtoStockRespuesta } from "./dto/stock.dto";
+import { DtoStockActualizar } from "./dto/stock.dto";
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
+import { StockRetorno } from "./retorno/stock.retorno";
 
-@Controller('libro/:idLibro/stock')
+@Controller('libro/stock/:idLibro')
 @UseGuards(UsuarioGuard)
 export class StockController {
   constructor(
@@ -17,11 +18,15 @@ export class StockController {
     @Param('idLibro') id: string,
     @Body() dto: DtoStockActualizar,
     @Request() req: RequestWithUser,
-  ): Promise<DtoStockRespuesta> {
+  ): Promise<StockRetorno> {
+
+    if(!req.user.idEmpresa) throw new NotFoundException(`No se puede editar el stock del libro ${id}, el usuario requiere estar adherido a una empresa`);
+    
     const stock = await this.stockService.actualizarStok({
       id,
       dto,
-      qR: req.queryRunner
+      qR: req.queryRunner,
+      idEmpresa: req.user.idEmpresa,
     });
     return stock;
   }

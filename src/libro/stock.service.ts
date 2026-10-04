@@ -5,10 +5,12 @@ import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { ErroresService } from "@src/error/error.service";
 import { GatewayGateway } from "@src/gateway/gateway.gateway";
 import { DtoStockActualizar } from "./dto/stock.dto";
+import { StockRetorno } from "./retorno/stock.retorno";
 
 interface GetStockByIdProp{
   qR:QueryRunner;
   id:string;
+  idEmpresa: string;
 }
 
 interface ActualizarStockProp extends GetStockByIdProp{
@@ -23,9 +25,14 @@ export class StockService {
     protected readonly gatewayGateway: GatewayGateway,
   ) { }
 
-  async getStockByIdOrdFail({id, qR}:GetStockByIdProp):Promise<Stock>{
+  async getStockByIdOrdFail({id, qR, idEmpresa}:GetStockByIdProp):Promise<Stock>{
     try{
-      const criterio: FindOneOptions = { where:{ id: id}}
+      const criterio: FindOneOptions<Stock> = { 
+        where:{ 
+          idLibro: id,
+          idEmpresa: idEmpresa
+        }
+      }
       const stock = await qR.manager.findOne(Stock,criterio);
 
       if (!stock) throw new NotFoundException(`El stock de libro id ${id} no fue encontrado`);
@@ -36,18 +43,25 @@ export class StockService {
     }
   }
 
-  async actualizarStok({id, qR, dto}:ActualizarStockProp):Promise<Stock>{
+  async actualizarStok({id, qR, dto, idEmpresa}:ActualizarStockProp):Promise<StockRetorno>{
     try{
-      const stock:Stock = await this.getStockByIdOrdFail({id, qR});
+      const stock:Stock = await this.getStockByIdOrdFail({id, qR, idEmpresa});
       stock.stock = dto.stock;
 
       const newStock = await qR.manager.save(Stock, stock);
 
       if(!newStock) throw new NotFoundException(`No se pudo actualizar el stock del libro id ${id}`);
 
-      return newStock;
+      const stockRetorno: StockRetorno = new StockRetorno({
+        ...newStock,
+        stock:newStock.stock,
+        id:newStock.idLibro
+      })
+      return stockRetorno;
     } catch(er) {
       this.erroresService.handleExceptions(er, `Error al intentar actualizar el stock del libro id ${id}`);
     }
   }
+
+
 }
