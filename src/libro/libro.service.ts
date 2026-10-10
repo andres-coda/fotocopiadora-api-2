@@ -34,9 +34,9 @@ interface GetLibrosByIdsProp {
   qR: QueryRunner,
 }
 
-interface EditarLibroProp extends GetLibroByIdProp {
-  dto: DtoLibroEditar;
-  entidad: typeof Entidad.LIBRO
+interface EditarLibroExtraProp extends UpdateGenericoProp<DtoLibroExtraEditar> {
+  id_usuario: string;
+  id_empresa: string;
 }
 
 interface LibroExtraProp {
@@ -249,43 +249,22 @@ export class LibroService {
     return this.getLibroCompletoByIdOrdFail({ id, qR });
   }
 
-  async updateLibroExtra({ dto, qR, id }: UpdateGenericoProp<DtoLibroExtraEditar>): Promise<LibroRetorno> {
-    const [libroExistente]:LibroExtraProp[] = await qR.query(
-      `SELECT autor, edicion, anio, img, descripcion 
-      FROM libro_completo
-      WHERE id = $1
-      `,
-      [id]
-    );
+  async updateLibroExtra({ dto, qR, id, id_empresa, id_usuario }: EditarLibroExtraProp): Promise<LibroRetorno> {
+    try {
 
-    const newDto: DtoLibroExtraEditar = {
-      autor: libroExistente.autor || dto.autor,
-      edicion: libroExistente.edicion || dto.edicion,
-      anio: libroExistente.anio || dto.anio,
-      img: libroExistente.img || dto.img,
-      descripcion: libroExistente.descripcion || dto.descripcion
+      const [row]: LibroExtraProp[] = await qR.query(
+        `fc_procesar_actualizacion_libro_completo(
+          $1, $2, $3, $4)
+          `,
+        [id, id_usuario, id_empresa, dto]
+      );
+      return this.getLibroCompletoByIdOrdFail({ id, qR })
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar el libro ${id} en el registro de libros`)
     }
 
-    const dtoAutorizacion: DtoLibroExtraEditar = {
-      autor: newDto.autor != dto.autor ? dto.autor : undefined,
-      edicion: newDto.edicion != dto.edicion ? dto.edicion : undefined,
-      anio: newDto.anio != dto.anio ? dto.anio : undefined,
-      img: newDto.img != dto.img ? dto.img : undefined,
-      descripcion: newDto.descripcion != dto.descripcion ? dto.descripcion : undefined,
-    }
 
-    await qR.query(
-      `UPDATE libro_completo SET
-       anio        = $2,
-       autor       = $3,
-       img         =$4,
-       edicion     = $5,
-       descripcion = $6
-     WHERE id = $1`,
-      [id, newDto.anio, newDto.autor, newDto.img, newDto.edicion, newDto.descripcion]
-    );
 
-    return await this.getLibroCompletoByIdOrdFail({id, qR}); 
   }
 
   async deleteLibroEmpresa({ id, qR }: GetGenericoByIdProp): Promise<boolean> {

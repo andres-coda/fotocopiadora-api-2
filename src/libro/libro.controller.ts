@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { LibroService } from './libro.service';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
@@ -160,10 +160,13 @@ export class LibroController {
     @Body() dto: DtoLibroExtraEditar,
     @Request() req: RequestWithUser,
   ): Promise<LibroRetorno> {
+    if(!req.user.idEmpresa) throw new NotFoundException('No puede editar el libro porque no tiene acceso a la empresa');
     const libro = await this.libroService.updateLibroExtra({
       id: idLibro,
       dto,
-      qR: req.queryRunner
+      qR: req.queryRunner,
+      id_empresa: req.user.idEmpresa,
+      id_usuario: req.user.sub,
     });
     return libro;
   }
