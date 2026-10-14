@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DtoLibroCrear } from './dto/libroCrear.dto';
-import { DtoLibroEditar, DtoLibroExtraEditar } from './dto/libroEditar.dto';
+import { DtoLibroEditar, DtoLibroExtraEditar, DtoLibroPrincipalEditar } from './dto/libroEditar.dto';
 import { Libro } from './entity/libro.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, In, QueryRunner, Repository } from 'typeorm';
@@ -253,18 +253,30 @@ export class LibroService {
     try {
 
       const [row]: LibroExtraProp[] = await qR.query(
-        `fc_procesar_actualizacion_libro_completo(
-          $1, $2, $3, $4)
+        `select * from fc_procesar_actualizacion_libro_completo(
+          $1, $2, $3, $4, $5, $6)
           `,
-        [id, id_usuario, id_empresa, dto]
+        [id, dto.autor, dto.edicion, dto.anio, dto.img, dto.descripcion]
       );
       return this.getLibroCompletoByIdOrdFail({ id, qR })
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el libro ${id} en el registro de libros`)
     }
+  }
 
+  async updateLibroPrincipal({ dto, qR, id }: UpdateGenericoProp<DtoLibroPrincipalEditar>): Promise<boolean> {
+    try {
+      const [row]: boolean[] = await qR.query(
+        `select * from fc_procesar_actualizacion_libro(
+          $1, $2, $3, $4, $5, $6)
+          `,
+        [id, dto.nombre, dto.materia, dto.editorial, dto.nivel, dto.componentes]
+      );
 
-
+      return row;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar editar el libro ${id} en el registro de libros`)
+    }
   }
 
   async deleteLibroEmpresa({ id, qR }: GetGenericoByIdProp): Promise<boolean> {

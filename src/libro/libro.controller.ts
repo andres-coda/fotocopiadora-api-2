@@ -6,7 +6,7 @@ import { DtoLibroCrear, DtoLibroEmpresaEditar } from './dto/libroCrear.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { LibroRetorno } from './retorno/libro.retorno';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
-import { DtoLibroExtraEditar } from './dto/libroEditar.dto';
+import { DtoLibroExtraEditar, DtoLibroPrincipalEditar } from './dto/libroEditar.dto';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -167,6 +167,21 @@ export class LibroController {
       qR: req.queryRunner,
       id_empresa: req.user.idEmpresa,
       id_usuario: req.user.sub,
+    });
+    return libro;
+  }
+
+  @Patch('principal/:idLibro')
+  @HttpCode(201)
+  async updateLibroPrincipal(
+    @Param('idLibro') idLibro: string,
+    @Body() dto: DtoLibroPrincipalEditar,
+    @Request() req: RequestWithUser,
+  ): Promise<boolean> {
+    const libro = await this.libroService.updateLibroPrincipal({
+      id: idLibro,
+      dto,
+      qR: req.queryRunner,
     });
     return libro;
   }

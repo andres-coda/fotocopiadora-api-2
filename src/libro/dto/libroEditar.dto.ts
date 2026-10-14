@@ -87,3 +87,26 @@ export class DtoLibroExtraEditar extends BaseDto {
   @IsString({ message: 'La imagen debe ser una URL válida' })
   img?: string;
 }
+
+export class DtoLibroPrincipalEditar extends BaseDto {
+  @IsOptional()
+  @IsString({ message: 'El nombre debe ser un texto' })
+  nombre?: string;
+
+  @IsOptional()
+  @IsString({ message: 'El nivel debe ser un texto' })
+  nivel?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La editorial debe ser un texto' })
+  editorial?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La materia debe ser un texto' })
+  materia?: string;
+
+  @IsOptional()
+  @IsArray({ message: 'El componente debe ser un array' })
+  @IsString({ each: true, message: 'Cada componente debe ser un texto' })
+  componentes?: string[];
+}
