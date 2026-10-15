@@ -1,7 +1,7 @@
 export enum Especificaciones {
   BLANCO_Y_NEGRO = "b_n",
   COLOR = "color",
-  ADHESIVO = "adhes",
+  ADHESIVO = "adhesivo",
   SUELTO = "suelto",
   ANILLADO = "anillado",
   ABROCHADO = "abrochado",

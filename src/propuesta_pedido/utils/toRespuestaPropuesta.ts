@@ -37,7 +37,7 @@ export const toRespuestaPropuesta = (
     let propuesta = propuestas.get(dato.id_propuesta);
 
     if (!propuesta) {
-      propuesta = new PropuestaRetorno({ ...dato, id: dato.id_propuesta, deleted: dato.deleted_propuesta });
+      propuesta = new PropuestaRetorno({ ...dato, nombre:dato.nombre_propuesta, id: dato.id_propuesta, deleted: dato.deleted_propuesta });
       propuestas.set(dato.id_propuesta, propuesta);
     }
     propuesta.agregarLibroApropuestaRetorno({ ...dato, id: dato.id_libro });

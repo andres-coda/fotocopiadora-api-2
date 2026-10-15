@@ -27,7 +27,7 @@ export const toRespuestaLibroEmpresa = (dato?: RetornoVistaLibroProp): DtoLibroE
 export const toRespuestaLibroNombre = (dato?: RetornoLibroNombreProp): LibroRetorno | undefined => {
   if (!dato) return undefined;
   const libro = new LibroRetorno({...dato});
-  libro.agregarMateriaLibroRetorno({...dato});
+  libro.agregarMateriaLibroRetorno({...dato, nombre:dato.materia, id:dato.id_materia});
   return libro;
 }
 
