@@ -8,8 +8,7 @@ import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.in
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Pedido } from './entity/pedido.entity';
-import { DtoPedidoCambioEstadoRespuesta, DtoPedidoCrear, DtoPedidoEditar, DtoPedidoItemCambioEstadoPedido } from './dto/pedido.dto';
-import { DtoPedidoItemRespuesta } from '../pedido_item/dto/pedido_item.dto';
+import {  DtoPedidoCrear, DtoPedidoEditar } from './dto/pedido.dto';
 import { GetPedidoItemBusqueda } from '@src/pedido_item/interface/pedido_item_busqueda.interface';
 import { toRespuestaPedido, toRespuestaPedidoCambioEstado } from './utils/toRespuestaPedido';
 import { toRespuestaPedidoItemCompleto } from '../pedido_item/utils/toRespuestaItem';
@@ -132,7 +131,7 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       pedido.agregarClienteRetorno({ ...entidad.cliente })
     }
     if (entidad.pedidoItems && entidad.pedidoItems.length > 0) {
-      entidad.pedidoItems.map(i => pedido.agregarItemPedido({ ...i }))
+      entidad.pedidoItems.map(i => pedido.agregarItemPedido({ ...i, libro:undefined }))
     }
     return pedido;
   }

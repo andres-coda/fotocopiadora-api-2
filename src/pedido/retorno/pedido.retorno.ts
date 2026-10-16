@@ -71,7 +71,11 @@ export class PedidoRetorno extends BaseRetorno {
     this.items.push(item);
   }
 
-  private agregarItemPedido({ id, fecha_actualizacion, fecha_creacion, deleted, estado, detalles, cantidad, especificaciones, sede, libro }: ItemParaPedidoRetornoProp) {
+  public agregarItem(item:ItemRetorno){
+    this.items.push(item);
+  }
+
+  public agregarItemPedido({ id, fecha_actualizacion, fecha_creacion, deleted, estado, detalles, cantidad, especificaciones, sede, libro }: ItemParaPedidoRetornoProp) {
     const item = new ItemRetorno({ id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido: this.id, detalles, cantidad });
     item.agregarEspecificacionesItem({ especificaciones: especificaciones ?? [] });
     if (sede)
@@ -85,7 +89,7 @@ export class PedidoRetorno extends BaseRetorno {
     if(!items || items.length === 0) return;
     for(const dto of items ){
       const item = this.agregarItemPedido({...dto});
-      if (item) this.items.push(item);
+      if (item) this.agregarItem(item);
     }
   }
 
