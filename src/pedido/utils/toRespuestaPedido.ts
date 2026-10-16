@@ -12,12 +12,13 @@ import { PedidoRetorno } from "../retorno/pedido.retorno";
 
 export const toRespuestaPedido = (dato?: fc_crear_pedido_prop): PedidoRetorno | undefined => {
   if (!dato) return undefined;
-  const pedido = new PedidoRetorno({...dato});
+  const pedido = new PedidoRetorno({...dato, fecha_actualizacion: dato.fechaActualizacion, fecha_creacion: dato.fechaCreacion});
+  pedido.agregarDatosPedido({...dato});
   if(dato.cliente){
     pedido.agregarClienteRetorno({...dato.cliente})
   }
   if(dato.items.length > 0) {
-    dato.items.map(i=> pedido.agregarItemPedido({...i}))
+    dato.items.map(i=> pedido.agregarItemPedido({...i, fecha_actualizacion:dato.fechaActualizacion, fecha_creacion: dato.fechaCreacion}))
   }
   return pedido;
 }

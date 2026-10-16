@@ -9,6 +9,15 @@ export interface LibroRetornoProp extends BaseRetornoProp {
   editorial?: string;
 }
 
+interface LibroBasicoProp {
+  descripcion?: string;
+  edicion: string;
+  anio?: string;
+  nivel?: string;
+  componentes?: string;
+  materia?: string;
+}
+
 interface LibroMinimoSinMateriaRetornoProp extends Pick<ResumenRetornoProp, 'pendiente' | 'listo' | 'retirado' | 'cancelado' | 'stock'> {
   edicion?: number;
   anio?: string;
@@ -60,6 +69,7 @@ export class LibroRetorno extends BaseRetorno {
   anio?: string;
   componentes!: ComponenteRetornoProp[];
   nivel?: string;
+  descripcion?: string;
 
   autor?: string;
   img?: string;
@@ -112,6 +122,16 @@ export class LibroRetorno extends BaseRetorno {
     this.componentes = newComponentes;
   }
 
+  public armarLibroBasicoRetorno({
+    componentes, edicion, anio, nivel, descripcion
+  }:LibroBasicoProp) {
+    this.edicion = Number(edicion) ?? undefined;
+    this.anio = anio;
+    this.nivel = nivel;
+    this.componentes_texto = componentes;
+    this.descripcion = descripcion
+  }
+
   public armarLibroCompletoRetorno({
     autor, img, cantidad_pg, cantidad_adhesivo, especificaciones_defecto, detalle_impresion,
     edicion, anio, componentes, nivel, pendiente, listo, retirado, cancelado, stock, componentes_texto,
@@ -150,9 +170,9 @@ export class LibroRetorno extends BaseRetorno {
   }: LibroVistaPropuestaRetornoProp) {
     this.agregarMateriaLibroRetorno({ id: id_materia, nombre: materia });
     this.armarLibroSimple({ autor, img, cantidad_pg, cantidad_adhesivo, especificaciones_defecto, detalle_impresion: detalle_impresion || descripcion });
-    if(nivel) this.nivel = nivel;
-    if(componentes) this.componentes_texto = componentes;
-    if(edicion) this.edicion = edicion;
-    if(anio) this.anio = anio;
+    if (nivel) this.nivel = nivel;
+    if (componentes) this.componentes_texto = componentes;
+    if (edicion) this.edicion = edicion;
+    if (anio) this.anio = anio;
   }
 }

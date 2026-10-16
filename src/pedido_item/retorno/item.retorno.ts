@@ -14,11 +14,11 @@ export interface ItemRetornoProp extends Omit<BaseRetornoProp, 'id'> {
   detalles?: string;
 }
 
-interface cambioSedeProp{
+interface cambioSedeProp {
   id_libro: string;
-  id_sede:string;
-  id_cliente:string;
-  sede:string;
+  id_sede: string;
+  id_cliente: string;
+  sede: string;
 }
 
 export interface ItemCambioEstadoRetornoProp extends Omit<ResumenRetornoProp, 'id'> {
@@ -35,10 +35,10 @@ interface EspecificacionesItemProp {
   especificaciones?: Especificaciones[],
 }
 
-interface AgregarPedidoItemProp extends PedidoParaClienteRetornoProp, PedidoRetornoProp{
+interface AgregarPedidoItemProp extends PedidoParaClienteRetornoProp, PedidoRetornoProp {
   telefono?: string;
-  email?:string;
-  id_cliente:string;
+  email?: string;
+  id_cliente: string;
 }
 
 interface LibroXitemRetornoProp {
@@ -55,10 +55,10 @@ interface LibroXitemRetornoProp {
   id_materia: string;
   editorial?: string;
 
-  pendiente: number;
-  listo: number;
-  retirado: number;
-  cancelado: number;
+  pendiente?: number;
+  listo?: number;
+  retirado?: number;
+  cancelado?: number;
 }
 
 export class ItemRetorno extends BaseRetorno {
@@ -72,7 +72,7 @@ export class ItemRetorno extends BaseRetorno {
   sede?: SedeRetorno;
   pedido?: PedidoRetorno;
 
-  idCliente?:string;
+  idCliente?: string;
 
   constructor({ id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido, cantidad, detalles }: ItemRetornoProp) {
     super({ id: id.toString(), fecha_actualizacion, fecha_creacion, deleted })
@@ -106,16 +106,22 @@ export class ItemRetorno extends BaseRetorno {
     materia, editorial, pendiente, listo, retirado, cancelado, id_materia
   }: LibroXitemRetornoProp) {
     const libro = new LibroRetorno({ id: id_libro, nombre, editorial });
-    libro.armarLibroCompletoRetorno({
-      cantidad_pg, cantidad_adhesivo: cantidad_adhesivos, edicion, anio, componentes_texto: componentes ?? '',
-      nivel, pendiente, listo, retirado, cancelado, detalle_impresion: descripcion
-    });
+    if (pendiente && listo && retirado && cancelado) {
+      libro.armarLibroCompletoRetorno({
+        cantidad_pg, cantidad_adhesivo: cantidad_adhesivos, edicion, anio, componentes_texto: componentes ?? '',
+        nivel, pendiente, listo, retirado, cancelado, detalle_impresion: descripcion
+      });
+    } else {
+      libro.armarLibroBasicoRetorno({
+        componentes, edicion:edicion ? edicion.toString(): '', anio, nivel, descripcion
+      })
+    }
     libro.agregarMateriaLibroRetorno({ id: id_materia, nombre: materia });
     this.libro = libro;
   }
 
-  public agregarIdLibroItem(id:string){
-    const libro = new LibroRetorno({id});
+  public agregarIdLibroItem(id: string) {
+    const libro = new LibroRetorno({ id });
     this.libro = libro;
   }
 
@@ -148,14 +154,14 @@ export class ItemRetorno extends BaseRetorno {
     pedido.agregarDatosPedido({
       fechaEntrega, importeTotal, archivos, anillados, sena
     });
-    pedido.agregarClienteRetorno({id});
-    pedido.agregarClienteRetorno({id:id_cliente, email, telefono});
+    pedido.agregarClienteRetorno({ id });
+    pedido.agregarClienteRetorno({ id: id_cliente, email, telefono });
     this.pedido = pedido;
   }
 
-  public cambioSedeItem({id_cliente, id_libro, id_sede, sede}:cambioSedeProp) {
+  public cambioSedeItem({ id_cliente, id_libro, id_sede, sede }: cambioSedeProp) {
     this.idCliente = id_cliente;
     this.agregarIdLibroItem(id_libro);
-    this.agregarSedeItemRetorno({id:id_sede, nombre:sede});
+    this.agregarSedeItemRetorno({ id: id_sede, nombre: sede });
   }
 }

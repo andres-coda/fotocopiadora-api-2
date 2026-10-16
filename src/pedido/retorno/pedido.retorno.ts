@@ -2,6 +2,8 @@ import { BaseRetorno, BaseRetornoProp } from "@src/base/retorno/base.retorno";
 import { EstadoPedido } from "../interface/estadoPedido.enum";
 import { ClienteRetorno, ClienteRetornoProp } from "@src/cliente/retorno/cliente.retorno";
 import { ItemCambioEstadoRetornoProp, ItemRetorno, ItemRetornoProp } from "@src/pedido_item/retorno/item.retorno";
+import { Especificacion } from "@src/especificacion/entity/especificacion.entity";
+import { Especificaciones } from "@src/pedido_item/interface/especificaciones.interface";
 
 export interface PedidoRetornoProp extends BaseRetornoProp {
   estado: EstadoPedido;
@@ -16,7 +18,7 @@ export interface PedidoParaClienteRetornoProp {
 }
 
 interface ItemParaPedidoRetornoProp extends Omit<ItemRetornoProp, 'idPedido'>{
-
+  especificaciones?:Especificaciones[]
 }
 
 export class PedidoRetorno extends BaseRetorno {
@@ -53,9 +55,9 @@ export class PedidoRetorno extends BaseRetorno {
     this.items.push(item);
   }
 
-  public agregarItemPedido({id, fecha_actualizacion, fecha_creacion, deleted, estado, detalles, cantidad}:ItemParaPedidoRetornoProp){
+  public agregarItemPedido({id, fecha_actualizacion, fecha_creacion, deleted, estado, detalles, cantidad, especificaciones}:ItemParaPedidoRetornoProp){
     const item = new ItemRetorno({id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido: this.id, detalles, cantidad});
-    
+    item.agregarEspecificacionesItem({especificaciones:especificaciones ?? []})
   }
 
   public agregarClienteRetorno({id, nombre, email, telefono}:ClienteRetornoProp){

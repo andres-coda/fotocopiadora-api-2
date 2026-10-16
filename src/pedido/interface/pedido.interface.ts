@@ -42,8 +42,21 @@ export interface fc_crear_pedido_prop {
     cantidad: number;
     detalles?: string;
     estado: EstadoPedido;
-    idLibro: string;
-    idSede?: string;
+    sede: {
+      id: string;
+      nombre: string;
+    },
+    libro: {
+      id: string,
+      nombre: string;
+      descripcion?: string;
+      edicion: string;
+      anio?: string;
+      nivel?: string;
+      componentes?: string;
+      materia?: string;
+      editorial?: string;
+    },
     especificaciones?: Especificaciones[];
   }[]
 
@@ -57,22 +70,22 @@ export interface fc_crear_pedido_prop {
 
 export interface fc_cambiar_estado_pedido_prop {
   id: string;
-  estado:EstadoPedido;
+  estado: EstadoPedido;
   fecha_actualizacion: Date;
-  
-  id_cliente:string;
-  retirado:number;
-  listo:number;
-  pendiente:number;
-  cancelado:number;
 
-  id_libro:string;
-  id_empresa:string;
-  nro_pedido:number;
-  libro_retirado:number;
-  libro_listo:number;
-  libro_pendiente:number;
-  libro_cancelado:number;
-  stock_libro:number;
+  id_cliente: string;
+  retirado: number;
+  listo: number;
+  pendiente: number;
+  cancelado: number;
+
+  id_libro: string;
+  id_empresa: string;
+  nro_pedido: number;
+  libro_retirado: number;
+  libro_listo: number;
+  libro_pendiente: number;
+  libro_cancelado: number;
+  stock_libro: number;
   estado_pedido: EstadoPedido;
 }
