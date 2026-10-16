@@ -17,8 +17,24 @@ export interface PedidoParaClienteRetornoProp {
   sena: number;
 }
 
-interface ItemParaPedidoRetornoProp extends Omit<ItemRetornoProp, 'idPedido'>{
-  especificaciones?:Especificaciones[]
+interface ItemParaPedidoRetornoProp extends Omit<ItemRetornoProp, 'idPedido'> {
+  especificaciones?: Especificaciones[];
+  sede?: {
+    id: string;
+    nombre: string;
+  }
+  libro?: {
+    id: string,
+    nombre: string;
+    descripcion?: string;
+    edicion: string;
+    anio?: string;
+    nivel?: string;
+    componentes?: string;
+    materia: string;
+    id_materia: string;
+    editorial?: string;
+  }
 }
 
 export class PedidoRetorno extends BaseRetorno {
@@ -49,18 +65,31 @@ export class PedidoRetorno extends BaseRetorno {
     this.sena = sena;
   };
 
-  public agregarItemsCambioEstadoPedido({id_libro, pendiente, listo, cancelado, retirado, stock}:ItemCambioEstadoRetornoProp, {id, fecha_actualizacion, fecha_creacion, deleted, estado}:ItemRetornoProp){
-    const item = new ItemRetorno({id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido: this.id});
-    item.cambioEstadoItemRetorno({id_libro, pendiente, listo, cancelado, retirado, stock})
+  public agregarItemsCambioEstadoPedido({ id_libro, pendiente, listo, cancelado, retirado, stock }: ItemCambioEstadoRetornoProp, { id, fecha_actualizacion, fecha_creacion, deleted, estado }: ItemRetornoProp) {
+    const item = new ItemRetorno({ id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido: this.id });
+    item.cambioEstadoItemRetorno({ id_libro, pendiente, listo, cancelado, retirado, stock })
     this.items.push(item);
   }
 
-  public agregarItemPedido({id, fecha_actualizacion, fecha_creacion, deleted, estado, detalles, cantidad, especificaciones}:ItemParaPedidoRetornoProp){
-    const item = new ItemRetorno({id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido: this.id, detalles, cantidad});
-    item.agregarEspecificacionesItem({especificaciones:especificaciones ?? []})
+  private agregarItemPedido({ id, fecha_actualizacion, fecha_creacion, deleted, estado, detalles, cantidad, especificaciones, sede, libro }: ItemParaPedidoRetornoProp) {
+    const item = new ItemRetorno({ id, fecha_actualizacion, fecha_creacion, deleted, estado, idPedido: this.id, detalles, cantidad });
+    item.agregarEspecificacionesItem({ especificaciones: especificaciones ?? [] });
+    if (sede)
+      item.agregarSedeItemRetorno({ ...sede });
+    if (libro)
+      item.agregarLibroBasicoItem({ ...libro });
+    return item;
   }
 
-  public agregarClienteRetorno({id, nombre, email, telefono}:ClienteRetornoProp){
+  public agregarItemsPedido(items?:ItemParaPedidoRetornoProp[]){
+    if(!items || items.length === 0) return;
+    for(const dto of items ){
+      const item = this.agregarItemPedido({...dto});
+      if (item) this.items.push(item);
+    }
+  }
+
+  public agregarClienteRetorno({ id, nombre, email, telefono }: ClienteRetornoProp) {
     const cliente = new ClienteRetorno({
       id, nombre, email, telefono
     });

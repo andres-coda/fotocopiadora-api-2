@@ -14,6 +14,18 @@ export interface ItemRetornoProp extends Omit<BaseRetornoProp, 'id'> {
   detalles?: string;
 }
 
+interface AgregarLibroBasicoProp extends BaseRetornoProp {
+  descripcion?: string;
+  edicion: string;
+  anio?: string;
+  nivel?: string;
+  componentes?: string;
+  materia: string;
+  nombre?: string;
+  editorial?: string;
+  id_materia:string;
+}
+
 interface cambioSedeProp {
   id_libro: string;
   id_sede: string;
@@ -154,9 +166,18 @@ export class ItemRetorno extends BaseRetorno {
     pedido.agregarDatosPedido({
       fechaEntrega, importeTotal, archivos, anillados, sena
     });
-    pedido.agregarClienteRetorno({ id });
     pedido.agregarClienteRetorno({ id: id_cliente, email, telefono });
     this.pedido = pedido;
+  }
+
+  public agregarLibroBasicoItem({
+    id, fecha_creacion, fecha_actualizacion, deleted, 
+    nombre, editorial, descripcion, edicion, anio, nivel, componentes, materia, id_materia
+  }:AgregarLibroBasicoProp) {
+    const libro:LibroRetorno = new LibroRetorno({id, fecha_actualizacion, fecha_creacion, deleted, nombre, editorial});
+    libro.agregarMateriaLibroRetorno({id: id_materia, nombre:materia});
+    libro.armarLibroBasicoRetorno({componentes, edicion, anio, nivel, descripcion});
+    this.libro = libro;
   }
 
   public cambioSedeItem({ id_cliente, id_libro, id_sede, sede }: cambioSedeProp) {

@@ -1,12 +1,7 @@
-import { DtoPedidoItemRespuesta } from "../../pedido_item/dto/pedido_item.dto";
-import { DtoBaseRetorno } from "../../base/dto/baseRetorno.dto";
-import { toRespuestaBase } from "../../utils/toRespuesta.function";
 import { DtoPedidoRespuesta } from "../dto/pedido.dto";
-import { Pedido } from "../entity/pedido.entity";
 import { DtoClienteRespuesta } from "../../cliente/dto/cliente.dto";
-import { toRespuestaCliente, toRespuestaPedidoCliente } from "../../cliente/utils/toRespuestaCliente";
-import { toRespuestaPedidoItem } from "../../pedido_item/utils/toRespuestaItem";
-import { fc_cambiar_estado_pedido_prop, fc_crear_pedido_prop, GetPedidoBusqueda } from "../interface/pedido.interface";
+import { toRespuestaPedidoCliente } from "../../cliente/utils/toRespuestaCliente";
+import { fc_cambiar_estado_pedido_prop, fc_crear_pedido_prop } from "../interface/pedido.interface";
 import { GetPedidoItemBusqueda } from "@src/pedido_item/interface/pedido_item_busqueda.interface";
 import { PedidoRetorno } from "../retorno/pedido.retorno";
 
@@ -17,9 +12,7 @@ export const toRespuestaPedido = (dato?: fc_crear_pedido_prop): PedidoRetorno | 
   if(dato.cliente){
     pedido.agregarClienteRetorno({...dato.cliente})
   }
-  if(dato.items.length > 0) {
-    dato.items.map(i=> pedido.agregarItemPedido({...i, fecha_actualizacion:dato.fechaActualizacion, fecha_creacion: dato.fechaCreacion}))
-  }
+  pedido.agregarItemsPedido(dato.items);
   return pedido;
 }
 

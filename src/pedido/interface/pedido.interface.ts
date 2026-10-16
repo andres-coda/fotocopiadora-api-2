@@ -54,7 +54,8 @@ export interface fc_crear_pedido_prop {
       anio?: string;
       nivel?: string;
       componentes?: string;
-      materia?: string;
+      materia: string;
+      id_materia:string;
       editorial?: string;
     },
     especificaciones?: Especificaciones[];

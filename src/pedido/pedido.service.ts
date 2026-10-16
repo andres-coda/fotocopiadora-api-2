@@ -52,11 +52,12 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
       const [row] = await qR.query(
         'select * from fc_crear_pedido($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb) as resultado',
         [
-          dto.clienteDatos?.telefono, dto.clienteDatos?.email, dto.clienteDatos?.nombre, dto.cliente, dto.fechaEntrega, dto.importeTotal,
+         dto.clienteDatos?.telefono?.trim() || null, dto.clienteDatos?.email?.trim() || null, dto.clienteDatos?.nombre ?? null, dto.cliente, dto.fechaEntrega, dto.importeTotal,
           dto.archivos, dto.anillados, dto.sena, JSON.stringify(dto.pedidoItems)
         ]
       );
 
+      console.log('resultado: ', row.resultado)
       return row.resultado;
 
     } catch (er) {
