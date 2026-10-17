@@ -39,6 +39,12 @@ import { NivelModule } from './nivel/nivel.module';
 import { Nivel } from './nivel/entity/nivel.entity';
 import { EditorialModule } from './editorial/editorial.module';
 import { Editorial } from './editorial/entity/editorial.entity';
+import { MensajeModule } from './mensaje/mensaje.module';
+import { Mensaje } from './mensaje/entity/mensaje.entity';
+import { DatoCobroModule } from './dato_cobro/datoCobro.module';
+import { DatoCobro } from './dato_cobro/entity/datoCobro.entity';
+import { ConfiguracionModule } from './configuracion/configuracion.module';
+import { Configuracion } from './configuracion/entity/configuracion.entity';
 
 @Module({
    imports: [
@@ -58,12 +64,15 @@ import { Editorial } from './editorial/entity/editorial.entity';
         Cliente,
         ClienteResumen,
         Componente,
+        Configuracion,
+        DatoCobro,
         Editorial,
         Empresa,
         Especificacion,
         Materia,
         Libro,
         LibroResumen,
+        Mensaje,
         Nivel,
         PedidoItem,
         Pedido,
@@ -93,6 +102,9 @@ import { Editorial } from './editorial/entity/editorial.entity';
     EmpresaModule,
     NivelModule,
     EditorialModule,
+    MensajeModule,
+    DatoCobroModule,
+    ConfiguracionModule,
   ],
   controllers: [],
   providers: [
