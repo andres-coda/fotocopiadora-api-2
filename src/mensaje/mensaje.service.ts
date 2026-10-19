@@ -34,6 +34,7 @@ export class MensajeService {
       const criterio: FindManyOptions = {
         take: limite ?? 20,
         skip: offset ?? 0,
+        order: {favorito: 'ASC'}
       };
 
       const [datos, total] = await qR.manager.findAndCount(Mensaje, criterio);
@@ -104,6 +105,7 @@ export class MensajeService {
 
       if (dto.nombre !== undefined) mensaje.nombre = dto.nombre;
       if (dto.mensaje !== undefined) mensaje.mensaje = dto.mensaje;
+      if (dto.favorito !== undefined) mensaje.favorito = dto.favorito;
 
       const newMensaje: Mensaje = await qR.manager.save(Mensaje, mensaje);
 
@@ -144,6 +146,7 @@ export class MensajeService {
       id: mensaje.id,
       nombre: mensaje.nombre,
       mensaje: mensaje.mensaje,
+      favorito: mensaje.favorito
     });
   }
 }

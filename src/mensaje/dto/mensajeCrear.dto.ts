@@ -1,5 +1,5 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
 
 export class DtoMensajeCrear extends BaseDto {
   @IsNotEmpty({ message: 'El nombre es obligatorio para crear el mensaje' })

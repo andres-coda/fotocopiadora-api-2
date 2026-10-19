@@ -8,16 +8,19 @@ export interface MensajeRetornoProp {
   id: string;
   nombre: string;
   mensaje?: string | null;
+  favorito?: boolean;
 }
 
 export class MensajeRetorno {
   id!: string;
   nombre!: string;
-  mensaje?: string | null;
+  mensaje?: string;
+  favorito!: boolean;
 
-  constructor({ id, nombre, mensaje }: MensajeRetornoProp) {
+  constructor({ id, nombre, mensaje, favorito }: MensajeRetornoProp) {
     this.id = id;
     this.nombre = nombre;
-    this.mensaje = mensaje;
+    this.mensaje = mensaje ?? undefined;
+    this.favorito = favorito ?? false;
   }
 }
