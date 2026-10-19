@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, ILike, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
-import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { Mensaje } from './entity/mensaje.entity';
 import { DtoMensajeCrear } from './dto/mensajeCrear.dto';
 import { DtoMensajeEditar } from './dto/mensajeEditar.dto';
@@ -34,7 +34,7 @@ export class MensajeService {
       const criterio: FindManyOptions = {
         take: limite ?? 20,
         skip: offset ?? 0,
-        order: {favorito: 'ASC'}
+        order: { favorito: 'DESC', nombre: 'ASC' },
       };
 
       const [datos, total] = await qR.manager.findAndCount(Mensaje, criterio);
@@ -49,13 +49,17 @@ export class MensajeService {
   }
 
   /**
-   * Devuelve todos los mensajes de la empresa, sin paginar.
-   * Se usa para alimentar desplegables del front.
+   * Busqueda paginada de mensajes por nombre (ILIKE).
+   * Reemplaza al listado sin paginar que alimentaba los desplegables del front.
+   * Los favoritos van primero. El RLS filtra automaticamente por id_empresa.
    */
-  async getMensajesTodas(qR: QueryRunner): Promise<RetornoGenericoServiceGet<MensajeRetorno>> {
+  async buscarMensajeNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<MensajeRetorno>> {
     try {
       const criterio: FindManyOptions = {
-        order: { nombre: 'ASC' },
+        where: { nombre: ILike(`%${busqueda}%`) },
+        take: limite ?? 20,
+        skip: offset ?? 0,
+        order: { favorito: 'DESC', nombre: 'ASC' },
       };
 
       const [datos, total] = await qR.manager.findAndCount(Mensaje, criterio);
@@ -65,7 +69,7 @@ export class MensajeService {
         datos: datos.map((d) => this.toRetorno(d)),
       };
     } catch (error) {
-      throw this.erroresService.handleExceptions(error, 'Error al intentar leer todos los mensajes');
+      throw this.erroresService.handleExceptions(error, `Error al intentar la busqueda de ${busqueda}`);
     }
   }
 

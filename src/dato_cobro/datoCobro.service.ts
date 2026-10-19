@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, ILike, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
-import { GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { BusquedaGenericoProp, GetGenericoProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { DatoCobro } from './entity/datoCobro.entity';
 import { DtoDatoCobroCrear } from './dto/datoCobroCrear.dto';
 import { DtoDatoCobroEditar } from './dto/datoCobroEditar.dto';
@@ -48,12 +48,16 @@ export class DatoCobroService {
   }
 
   /**
-   * Devuelve todos los datos de cobro de la empresa, sin paginar.
-   * Se usa para alimentar desplegables del front.
+   * Busqueda paginada de datos de cobro por nombre (ILIKE).
+   * Reemplaza al listado sin paginar que alimentaba los desplegables del front.
+   * El RLS filtra automaticamente por id_empresa.
    */
-  async getDatosCobroTodas(qR: QueryRunner): Promise<RetornoGenericoServiceGet<DatoCobroRetorno>> {
+  async buscarDatoCobroNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<DatoCobroRetorno>> {
     try {
       const criterio: FindManyOptions = {
+        where: { nombre: ILike(`%${busqueda}%`) },
+        take: limite ?? 20,
+        skip: offset ?? 0,
         order: { nombre: 'ASC' },
       };
 
@@ -64,7 +68,7 @@ export class DatoCobroService {
         datos: datos.map((d) => this.toRetorno(d)),
       };
     } catch (error) {
-      throw this.erroresService.handleExceptions(error, 'Error al intentar leer todos los datos de cobro');
+      throw this.erroresService.handleExceptions(error, `Error al intentar la busqueda de ${busqueda}`);
     }
   }
 

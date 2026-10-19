@@ -42,15 +42,40 @@ export class DatoCobroController {
   }
 
   /**
-   * Listado completo sin paginar, para alimentar desplegables.
+   * Busqueda paginada por nombre (ILIKE) para alimentar desplegables del front.
    * Se declara antes de ':id' para que la ruta fija no sea capturada por el parametro.
+   * Sin 'q' devuelve el listado paginado completo.
    */
-  @Get('todas')
+  @Get('nombre')
   @HttpCode(200)
-  async getDatosCobroTodas(
+  async buscarDatoCobro(
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGenericoServiceGet<DatoCobroRetorno>> {
-    return this.datoCobroService.getDatosCobroTodas(req.queryRunner);
+    @Query('q') busqueda: string,
+    @Query('pagina') pg = 1,
+    @Query('limite') limite = 20,
+  ): Promise<RetornoGenericoControllerGet<DatoCobroRetorno>> {
+    const pagina: number = pg > 0 ? Number(pg) : 1;
+    const offset = (Number(pagina) - 1) * Number(limite);
+
+    const retorno: RetornoGenericoServiceGet<DatoCobroRetorno> = busqueda
+      ? await this.datoCobroService.buscarDatoCobroNombre({
+        qR: req.queryRunner,
+        limite: Number(limite),
+        offset,
+        busqueda,
+      })
+      : await this.datoCobroService.getDatosCobro({
+        qR: req.queryRunner,
+        limite: Number(limite),
+        offset,
+      });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos,
+    };
   }
 
   @Get(':id')
