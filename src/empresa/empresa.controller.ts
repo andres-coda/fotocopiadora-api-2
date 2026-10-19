@@ -10,7 +10,6 @@ import { DtoEmpresaCrear, DtoEmpresaEditar } from './dto/empresa.dto';
 import { EmpresaService } from './empresa.service';
 import { EMPRESA_RELATIONS, EMPRESA_SELECTED } from './default/empresa.relacion';
 import { EmpresaRetorno } from './retorno/empresa.retorno';
-import { EmpresaMiaRetorno, UsuarioEmpresaMia } from './retorno/empresaMia.retorno';
 import { Configuracion } from '@src/configuracion/entity/configuracion.entity';
 import { User } from '@src/user/entity/user.entity';
 
@@ -23,6 +22,21 @@ export class EmpresaController extends BaseController<typeof Entidad.EMPRESA, Em
     super(empresaService, Entidad.EMPRESA, 'empresa', [EMPRESA_RELATIONS], 'nombre', EMPRESA_SELECTED, undefined, EMPRESA_SELECTED)
   }
 
+  /**
+   * Vista de la empresa del usuario autenticado.
+   * Se declara antes del GET ':id' heredado del BaseController para que la
+   * ruta fija no sea capturada por el parametro.
+   * La empresa se resuelve desde el token: el cliente nunca elige el id.
+   * Devuelve el mismo shape que GET /empresa/:id (vw_empresa_completa).
+   */
+  @Get('mia')
+  @HttpCode(200)
+  async getEmpresaMia(@Request() req: RequestWithUser): Promise<EmpresaRetorno> {
+    const idEmpresa: string | null | undefined = req.user?.idEmpresa;
+    if (!idEmpresa) throw new NotFoundException('El usuario no tiene una empresa asociada');
+
+    return this.empresaService.getDatoByIdCx({ id: idEmpresa, qR: req.queryRunner });
+  }
 
   /**
    * Crear empresa exige rol super_admin.
