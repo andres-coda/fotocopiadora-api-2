@@ -14,6 +14,8 @@ import { PrecioEmpresaService } from '@src/precio/precio_empresa.service';
 import { PRECIO_DEFAULT } from '@src/precio/default/precio.default';
 import { EmpresaRetorno } from './retorno/empresa.retorno';
 import { ConfiguracionEmpresaMia } from './retorno/empresaMia.retorno';
+import { ConfiguracionRetorno } from '@src/configuracion/retorno/configuracion.retorno';
+import { toRespuestaEmpresa } from './util/toRespuestaEmpresa';
 
 @Injectable()
 export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa, DtoEmpresaCrear, DtoEmpresaEditar> {
@@ -45,13 +47,13 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
         selected: EMPRESA_SELECTED,
         where: { nombre: ILike(busqueda) },
         limite,
-        offset      
+        offset
       });
 
       const [datos, total] = await qR.manager.findAndCount(Empresa, criterio);
       return {
         total,
-        datos: datos.map((r) => this.remplaceToReturn(r)).filter(r=> r!= undefined),
+        datos: datos.map((r) => this.remplaceToReturn(r)).filter(r => r != undefined),
       }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar empresas`);
@@ -63,12 +65,22 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
    * Devuelve la fila con todas las columnas de la vista,
    * o undefined si la empresa no existe.
    */
-  async empresaById({ id, qR }: GetGenericoByIdProp): Promise<ConfiguracionEmpresaMia | undefined> {
+  async getEmpresaById({ id, qR }: GetGenericoByIdProp): Promise<ConfiguracionEmpresaMia | undefined> {
     try {
       const [dato]: ConfiguracionEmpresaMia[] = await qR.query(
         'SELECT * FROM vw_empresa_completa WHERE id = $1', [id],
       );
       return dato;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer la empresa ${id} desde vw_empresa_completa`);
+    }
+  }
+
+  async getDatoByIdCx({ id, qR }: GetGenericoByIdProp): Promise<EmpresaRetorno> {
+    try {
+      const empresa = await this.getEmpresaById({id, qR});
+      if(!empresa) throw new NotFoundException(`No existe la empresa con id buscado`);
+      return toRespuestaEmpresa({...empresa});
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer la empresa ${id} desde vw_empresa_completa`);
     }
@@ -93,11 +105,11 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
   async createDatoCx({ dto, entidad, qR }: CreateProp<DtoEmpresaCrear, typeof Entidad.EMPRESA>): Promise<EmpresaRetorno> {
     try {
       const newElemento: Empresa = await this.createDato({ dto, qR, entidad });
-      
+
       const precios = await this.precioService.CreatePrecioDefault(PRECIO_DEFAULT, qR, newElemento.id);
-      
+
       const retorno = this.remplaceToReturn(newElemento);
-      if(!retorno) throw new NotFoundException(`No se pudo crear la empresa ${dto.nombre}`);
+      if (!retorno) throw new NotFoundException(`No se pudo crear la empresa ${dto.nombre}`);
       return retorno;
     } catch (error) {
       throw this.erroresService.handleExceptions(
@@ -133,8 +145,8 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
     }
   }
 
-  remplaceToReturn(entidad: Empresa): EmpresaRetorno | undefined{
-    const empresa = new EmpresaRetorno({...entidad})
+  remplaceToReturn(entidad: Empresa): EmpresaRetorno | undefined {
+    const empresa = new EmpresaRetorno({ ...entidad })
     return empresa;
   };
 }
