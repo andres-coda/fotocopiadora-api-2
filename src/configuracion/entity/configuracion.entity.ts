@@ -22,28 +22,16 @@ export class Configuracion {
   fechaActualizacion!: Date;
 
   @Column({ type: 'date', name: 'fecha_entrega', nullable: true })
-  fechaEntrega?: string | null;
+  fechaEntrega?: string;
 
   @Column({ type: 'smallint', name: 'hora_entrega', nullable: true })
-  horaEntrega?: number | null;
-
-  @Column({ type: 'uuid', name: 'id_sede', nullable: true })
-  idSede?: string | null;
-
-  @Column({ type: 'uuid', name: 'id_dato_cobro', nullable: true })
-  idDatoCobro?: string | null;
-
-  @Column({ type: 'uuid', name: 'id_msj_pedido_tomado', nullable: true })
-  idMsjPedidoTomado?: string | null;
-
-  @Column({ type: 'uuid', name: 'id_msj_pedido_retirado', nullable: true })
-  idMsjPedidoRetirado?: string | null;
+  horaEntrega?: number;
 
   @Column({ type: 'boolean', name: 'msj_retiro', default: false, nullable: true })
-  msjRetiro?: boolean | null;
+  msjRetiro?: boolean;
 
   @Column({ type: 'boolean', name: 'msj_envio', default: false, nullable: true })
-  msjEnvio?: boolean | null;
+  msjEnvio?: boolean;
 
   /**
    * Relaciones de solo lectura usadas para resolver los nombres en GET /empresa/mia.
@@ -52,17 +40,17 @@ export class Configuracion {
    */
   @ManyToOne(() => Sede, { nullable: true })
   @JoinColumn({ name: 'id_sede' })
-  sede?: Sede | null;
+  sede?: Sede;
 
   @ManyToOne(() => DatoCobro, { nullable: true })
   @JoinColumn({ name: 'id_dato_cobro' })
-  datoCobro?: DatoCobro | null;
+  datoCobro?: DatoCobro;
 
   @ManyToOne(() => Mensaje, { nullable: true })
   @JoinColumn({ name: 'id_msj_pedido_tomado' })
-  msjPedidoTomado?: Mensaje | null;
+  msjPedidoTomado?: Mensaje;
 
   @ManyToOne(() => Mensaje, { nullable: true })
   @JoinColumn({ name: 'id_msj_pedido_retirado' })
-  msjPedidoRetirado?: Mensaje | null;
+  msjPedidoRetirado?: Mensaje;
 }

@@ -12,16 +12,46 @@ export interface UsuarioEmpresaMia {
   role: Role;
 }
 
-export interface ConfiguracionEmpresaMia {
+export interface ConfiguracionEmpresaMiaDetalle {
   fechaActualizacion: Date;
-  fechaEntrega?: string | null;
-  horaEntrega?: number | null;
-  msjRetiro?: boolean | null;
-  msjEnvio?: boolean | null;
-  sede?: string | null;
-  datoCobro?: string | null;
-  msjPedidoTomado?: string | null;
-  msjPedidoRetirado?: string | null;
+  fechaEntrega?: string;
+  horaEntrega?: number;
+  msjRetiro?: boolean;
+  msjEnvio?: boolean;
+  sede?: string;
+  datoCobro?: string;
+  msjPedidoTomado?: string;
+  msjPedidoRetirado?: string;
+}
+
+/**
+ * Retorno exacto de vw_empresa_completa: 21 columnas, una fila por empresa.
+ * Los campos de relacion son nullables porque la vista usa LEFT JOIN.
+ */
+export interface ConfiguracionEmpresaMia {
+  id: string;
+  fecha_creacion: Date;
+  fecha_actualizacion: Date;
+  deleted: boolean;
+  nombre: string;
+  email: string;
+  telefono: string;
+  fecha_entrega: string;
+  id_dato_cobro: string;
+  id_msj_pedido_tomado: string;
+  id_msj_pedido_retirado: string;
+  id_sede: string;
+  msj_retiro: boolean;
+  msj_envio: boolean;
+  hora_entrega: number;
+  dato_cobro_nombre: string;
+  dato_cobro_mensaje: string;
+  retirado_nombre: string;
+  retirado_mensaje: string;
+  tomado_nombre: string;
+  tomado_mensaje: string;
+  sede: string;
+  config_fecha_actualizacion: Date;
 }
 
 export interface EmpresaMiaRetorno {
@@ -32,6 +62,6 @@ export interface EmpresaMiaRetorno {
   nombre: string;
   telefono: string;
   email: string;
-  configuracion: ConfiguracionEmpresaMia | null;
+  configuracion: ConfiguracionEmpresaMiaDetalle;
   usuarios?: UsuarioEmpresaMia[];
 }

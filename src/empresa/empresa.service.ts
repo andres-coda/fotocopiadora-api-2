@@ -7,12 +7,13 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, ILike, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
-import { RetornoGenericoServiceGet } from '@src/interface/general.interface';
+import { GetGenericoByIdProp, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 import { EMPRESA_RELATIONS, EMPRESA_SELECTED } from './default/empresa.relacion';
 import { CreateProp, EditarProp, UpdateRetorno } from '@src/base/interface/base.interface';
 import { PrecioEmpresaService } from '@src/precio/precio_empresa.service';
 import { PRECIO_DEFAULT } from '@src/precio/default/precio.default';
 import { EmpresaRetorno } from './retorno/empresa.retorno';
+import { ConfiguracionEmpresaMia } from './retorno/empresaMia.retorno';
 
 @Injectable()
 export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa, DtoEmpresaCrear, DtoEmpresaEditar> {
@@ -54,6 +55,22 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
       }
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al buscar empresas`);
+    }
+  }
+
+  /**
+   * Lee una empresa desde vw_empresa_completa.
+   * Devuelve la fila con todas las columnas de la vista,
+   * o undefined si la empresa no existe.
+   */
+  async empresaById({ id, qR }: GetGenericoByIdProp): Promise<ConfiguracionEmpresaMia | undefined> {
+    try {
+      const [dato]: ConfiguracionEmpresaMia[] = await qR.query(
+        'SELECT * FROM vw_empresa_completa WHERE id = $1', [id],
+      );
+      return dato;
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al intentar leer la empresa ${id} desde vw_empresa_completa`);
     }
   }
 

@@ -1,3 +1,7 @@
+import { DatoCobroRetorno, DatoCobroRetornoProp } from "@src/dato_cobro/retorno/datoCobro.retorno";
+import { MensajeRetorno, MensajeRetornoProp } from "@src/mensaje/retorno/mensaje.retorno";
+import { SedeRetorno, SedeRetornoProp } from "@src/sede/retorno/sede.retorno";
+
 /**
  * Retorno de la configuracion de una empresa.
  *
@@ -8,38 +12,31 @@
  */
 export interface ConfiguracionRetornoProp {
   idEmpresa: string;
-  fechaActualizacion: Date;
-  fechaEntrega?: string | null;
-  horaEntrega?: number | null;
-  idSede?: string | null;
-  idDatoCobro?: string | null;
-  idMsjPedidoTomado?: string | null;
-  idMsjPedidoRetirado?: string | null;
-  msjRetiro?: boolean | null;
-  msjEnvio?: boolean | null;
+  fechaActualizacion?: Date;
+  fechaEntrega?: string;
+  horaEntrega?: number;
+  msjRetiro?: boolean;
+  msjEnvio?: boolean;
 }
 
 export class ConfiguracionRetorno {
   idEmpresa!: string;
-  fechaActualizacion!: Date;
-  fechaEntrega?: string | null;
-  horaEntrega?: number | null;
-  idSede?: string | null;
-  idDatoCobro?: string | null;
-  idMsjPedidoTomado?: string | null;
-  idMsjPedidoRetirado?: string | null;
-  msjRetiro?: boolean | null;
-  msjEnvio?: boolean | null;
+  fechaActualizacion?: Date;
+  fechaEntrega?: string;
+  horaEntrega?: number;
+  msjRetiro?: boolean;
+  msjEnvio?: boolean;
+
+  msjRetirado?: MensajeRetorno;
+  msjTomado?: MensajeRetorno;
+  sede?: SedeRetorno;
+  datoCobrado?: DatoCobroRetorno;
 
   constructor({
     idEmpresa,
     fechaActualizacion,
     fechaEntrega,
     horaEntrega,
-    idSede,
-    idDatoCobro,
-    idMsjPedidoTomado,
-    idMsjPedidoRetirado,
     msjRetiro,
     msjEnvio,
   }: ConfiguracionRetornoProp) {
@@ -47,11 +44,27 @@ export class ConfiguracionRetorno {
     this.fechaActualizacion = fechaActualizacion;
     this.fechaEntrega = fechaEntrega;
     this.horaEntrega = horaEntrega;
-    this.idSede = idSede;
-    this.idDatoCobro = idDatoCobro;
-    this.idMsjPedidoTomado = idMsjPedidoTomado;
-    this.idMsjPedidoRetirado = idMsjPedidoRetirado;
     this.msjRetiro = msjRetiro;
     this.msjEnvio = msjEnvio;
+  }
+
+  public agregarMsjRetirado({id, nombre, mensaje, favorito}:MensajeRetornoProp){
+    const msj = new MensajeRetorno({id, nombre, mensaje, favorito});
+    this.msjRetirado = msj;
+  }
+
+  public agregarMsjTomado({id, nombre, mensaje, favorito}:MensajeRetornoProp){
+    const msj = new MensajeRetorno({id, nombre, mensaje, favorito});
+    this.msjTomado = msj;
+  }
+
+  public agregarSede({id, nombre}:SedeRetornoProp){
+    const sede = new SedeRetorno({id, nombre});
+    this.sede = sede;
+  }
+
+  public agregarDatoCobro({id, nombre, mensaje }:DatoCobroRetornoProp){
+    const dc = new DatoCobroRetorno({id, nombre, mensaje})
+    this.datoCobrado = dc;
   }
 }
