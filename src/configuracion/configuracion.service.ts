@@ -5,6 +5,9 @@ import { ErroresService } from '../error/error.service';
 import { Configuracion } from './entity/configuracion.entity';
 import { DtoConfiguracionEditar } from './dto/configuracionEditar.dto';
 import { ConfiguracionRetorno } from './retorno/configuracion.retorno';
+import { Sede } from '@src/sede/entity/sede.entity';
+import { DatoCobro } from '@src/dato_cobro/entity/datoCobro.entity';
+import { Mensaje } from '@src/mensaje/entity/mensaje.entity';
 
 /**
  * Servicio de configuracion de la empresa.
@@ -49,25 +52,33 @@ export class ConfiguracionService {
 
       if (dto.fechaEntrega !== undefined) configuracion.fechaEntrega = dto.fechaEntrega;
       if (dto.horaEntrega !== undefined) configuracion.horaEntrega = dto.horaEntrega;
-      if (dto.idSede !== undefined) configuracion.idSede = dto.idSede;
-      if (dto.idDatoCobro !== undefined) configuracion.idDatoCobro = dto.idDatoCobro;
-      if (dto.idMsjPedidoTomado !== undefined) configuracion.idMsjPedidoTomado = dto.idMsjPedidoTomado;
-      if (dto.idMsjPedidoRetirado !== undefined) configuracion.idMsjPedidoRetirado = dto.idMsjPedidoRetirado;
+      // El FK no se mapea como columna: se escribe asignando la relacion.
+      if (dto.idSede !== undefined) configuracion.sede = { id: dto.idSede } as Sede;
+      if (dto.idDatoCobro !== undefined) configuracion.datoCobro = { id: dto.idDatoCobro } as DatoCobro;
+      if (dto.idMsjPedidoTomado !== undefined) configuracion.msjPedidoTomado = { id: dto.idMsjPedidoTomado } as Mensaje;
+      if (dto.idMsjPedidoRetirado !== undefined) configuracion.msjPedidoRetirado = { id: dto.idMsjPedidoRetirado } as Mensaje;
       if (dto.msjRetiro !== undefined) configuracion.msjRetiro = dto.msjRetiro;
       if (dto.msjEnvio !== undefined) configuracion.msjEnvio = dto.msjEnvio;
 
       configuracion.fechaActualizacion = new Date();
 
-      const newConfiguracion: Configuracion = await qR.manager.save(Configuracion, configuracion);
+      await qR.manager.save(Configuracion, configuracion);
 
-      return this.toRetorno(newConfiguracion);
+      // Las relaciones recien asignadas solo traen el id. Se relee para
+      // devolver el nombre y el mensaje completos de cada una.
+      const actualizada: Configuracion = await this.getEntityOrFail(qR);
+
+      return this.toRetorno(actualizada);
     } catch (error) {
       throw this.erroresService.handleExceptions(error, 'Error al intentar editar la configuracion de la empresa');
     }
   }
 
   private async getEntityOrFail(qR: QueryRunner): Promise<Configuracion> {
-    const datos: Configuracion[] = await qR.manager.find(Configuracion, { take: 1 });
+    const datos: Configuracion[] = await qR.manager.find(Configuracion, {
+      take: 1,
+      relations: { sede: true, datoCobro: true, msjPedidoTomado: true, msjPedidoRetirado: true },
+    });
     const dato: Configuracion | undefined = datos[0];
     if (!dato) throw new NotFoundException('No se encontro la configuracion de la empresa');
 
@@ -75,17 +86,22 @@ export class ConfiguracionService {
   }
 
   private toRetorno(configuracion: Configuracion): ConfiguracionRetorno {
-    return new ConfiguracionRetorno({
+    const retorno = new ConfiguracionRetorno({
       idEmpresa: configuracion.idEmpresa,
       fechaActualizacion: configuracion.fechaActualizacion,
       fechaEntrega: configuracion.fechaEntrega,
       horaEntrega: configuracion.horaEntrega,
-      idSede: configuracion.idSede,
-      idDatoCobro: configuracion.idDatoCobro,
-      idMsjPedidoTomado: configuracion.idMsjPedidoTomado,
-      idMsjPedidoRetirado: configuracion.idMsjPedidoRetirado,
       msjRetiro: configuracion.msjRetiro,
       msjEnvio: configuracion.msjEnvio,
     });
+
+    const { sede, datoCobro, msjPedidoTomado, msjPedidoRetirado } = configuracion;
+
+    if (sede) retorno.agregarSede({ id: sede.id, nombre: sede.nombre });
+    if (datoCobro) retorno.agregarDatoCobro({ id: datoCobro.id, nombre: datoCobro.nombre, mensaje: datoCobro.mensaje });
+    if (msjPedidoTomado) retorno.agregarMsjTomado({ id: msjPedidoTomado.id, nombre: msjPedidoTomado.nombre, mensaje: msjPedidoTomado.mensaje, favorito: msjPedidoTomado.favorito });
+    if (msjPedidoRetirado) retorno.agregarMsjRetirado({ id: msjPedidoRetirado.id, nombre: msjPedidoRetirado.nombre, mensaje: msjPedidoRetirado.mensaje, favorito: msjPedidoRetirado.favorito });
+
+    return retorno;
   }
 }
