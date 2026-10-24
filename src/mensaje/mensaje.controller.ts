@@ -6,6 +6,7 @@ import { RetornoGenericoControllerGet, RetornoGenericoServiceGet } from '@src/in
 import { MensajeService } from './mensaje.service';
 import { DtoMensajeCrear } from './dto/mensajeCrear.dto';
 import { DtoMensajeEditar } from './dto/mensajeEditar.dto';
+import { DtoMensajeFavorito } from './dto/mensajeFavorito.dto';
 import { MensajeRetorno } from './retorno/mensaje.retorno';
 
 /**
@@ -104,6 +105,19 @@ export class MensajeController {
     @Request() req: RequestWithUser,
   ): Promise<MensajeRetorno> {
     return this.mensajeService.updateMensaje(req.queryRunner, id, datos);
+  }
+
+  /**
+   * Marca o desmarca el mensaje como favorito del usuario autenticado.
+   * No usa AdminGuard: cada usuario administra sus propios favoritos.
+   */
+  @Put(':id/favorito')
+  async setFavorito(
+    @Param('id') id: string,
+    @Body() datos: DtoMensajeFavorito,
+    @Request() req: RequestWithUser,
+  ): Promise<MensajeRetorno> {
+    return this.mensajeService.setFavorito(req.queryRunner, id, datos.favorito);
   }
 
   /**

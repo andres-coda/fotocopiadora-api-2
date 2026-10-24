@@ -1,5 +1,5 @@
 import { BaseDto } from "../../base/dto/baseDto";
-import { IsBoolean, IsOptional, IsString, Length } from "class-validator";
+import { IsOptional, IsString, Length } from "class-validator";
 
 export class DtoMensajeEditar extends BaseDto {
   @IsOptional()
@@ -10,8 +10,4 @@ export class DtoMensajeEditar extends BaseDto {
   @IsOptional()
   @IsString({ message: 'El mensaje debe ser un texto' })
   mensaje?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  favorito?: boolean;
 }

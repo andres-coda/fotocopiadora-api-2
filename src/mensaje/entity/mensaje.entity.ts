@@ -28,7 +28,4 @@ export class Mensaje {
 
   @Column({ type: 'text', nullable: true })
   mensaje?: string;
-
-  @Column({ type: 'boolean', name: 'favorito' })
-  favorito!: boolean;
 }

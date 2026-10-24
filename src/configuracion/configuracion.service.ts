@@ -99,8 +99,8 @@ export class ConfiguracionService {
 
     if (sede) retorno.agregarSede({ id: sede.id, nombre: sede.nombre });
     if (datoCobro) retorno.agregarDatoCobro({ id: datoCobro.id, nombre: datoCobro.nombre, mensaje: datoCobro.mensaje });
-    if (msjPedidoTomado) retorno.agregarMsjTomado({ id: msjPedidoTomado.id, nombre: msjPedidoTomado.nombre, mensaje: msjPedidoTomado.mensaje, favorito: msjPedidoTomado.favorito });
-    if (msjPedidoRetirado) retorno.agregarMsjRetirado({ id: msjPedidoRetirado.id, nombre: msjPedidoRetirado.nombre, mensaje: msjPedidoRetirado.mensaje, favorito: msjPedidoRetirado.favorito });
+    if (msjPedidoTomado) retorno.agregarMsjTomado({ id: msjPedidoTomado.id, nombre: msjPedidoTomado.nombre, mensaje: msjPedidoTomado.mensaje });
+    if (msjPedidoRetirado) retorno.agregarMsjRetirado({ id: msjPedidoRetirado.id, nombre: msjPedidoRetirado.nombre, mensaje: msjPedidoRetirado.mensaje });
 
     return retorno;
   }
