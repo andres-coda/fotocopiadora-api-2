@@ -33,6 +33,7 @@ import { ClienteResumen } from './cliente/entity/clienteResumen.entity';
 import { LibroResumen } from './libro/entity/libro_resumen.entity';
 import { Stock } from './libro/entity/stock.entity';
 import { PrecioEmpresa } from './precio/entity/precio_empresa.entity';
+import { PrecioCategoria } from './precio/entity/precio_categoria.entity';
 import { EmpresaModule } from './empresa/empresa.module';
 import { Empresa } from './empresa/entity/empresa.entity';
 import { NivelModule } from './nivel/nivel.module';
@@ -78,6 +79,7 @@ import { Configuracion } from './configuracion/entity/configuracion.entity';
         Pedido,
         Precio,
         PrecioEmpresa,
+        PrecioCategoria,
         Propuesta,
         Sede,
         Stock,

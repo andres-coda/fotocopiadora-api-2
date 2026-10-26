@@ -7,6 +7,7 @@ import { ErroresModule } from '../error/error.module';
 import { GateWayModule } from '../gateway/gateway.module';
 import { Precio } from './entity/precio.entity';
 import { PrecioEmpresa } from './entity/precio_empresa.entity';
+import { PrecioCategoria } from './entity/precio_categoria.entity';
 import { PrecioEmpresaController } from './precio_empresa.controller';
 import { PrecioEmpresaService } from './precio_empresa.service';
 
@@ -14,7 +15,8 @@ import { PrecioEmpresaService } from './precio_empresa.service';
   imports: [
     TypeOrmModule.forFeature([
       Precio,
-      PrecioEmpresa
+      PrecioEmpresa,
+      PrecioCategoria
     ]),
     forwardRef(() => AuthModule),
     forwardRef(() => ErroresModule),

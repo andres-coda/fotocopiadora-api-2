@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { Precio } from './precio.entity';
+import { PrecioCategoria } from './precio_categoria.entity';
 
 /**
  * Tabla precio_empresa — precios configurados por cada empresa.
@@ -32,6 +33,17 @@ export class PrecioEmpresa {
 
   @Column({ type: 'varchar', length: 250, nullable: true, name: 'detalles' })
   detalles?: string;
+
+  @Column({ type: 'uuid', name: 'id_categoria', nullable: true })
+  id_categoria?: string;
+
+  /**
+   * Categoria a la que pertenece este precio de la empresa.
+   * Es nullable: los precios viejos no tienen categoria asignada.
+   */
+  @ManyToOne(() => PrecioCategoria, { eager: false })
+  @JoinColumn({ name: 'id_categoria' })
+  categoria?: PrecioCategoria;
 
   /**
    * Relación al catálogo global de precios.

@@ -33,7 +33,7 @@ export class PrecioEmpresaService {
   async getPreciosEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
     try {
       const criterio: FindManyOptions = {
-        relations: ['precio'],
+        relations: ['precio', 'categoria'],
         order: { precio: { abreviatura: 'ASC' } },
         take: limite ?? 20,
         skip: offset ?? 0
@@ -53,7 +53,7 @@ export class PrecioEmpresaService {
   async getPreciosEmpresaBusqueda({ qR, limite, offset, busqueda }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
     try {
       const criterio: FindManyOptions = {
-        relations: ['precio'],
+        relations: ['precio', 'categoria'],
         where: {
           precio: {
             nombre: ILike(`%${busqueda}%`)
@@ -81,7 +81,7 @@ export class PrecioEmpresaService {
   async getPrecioEmpresaByIdOrFail({ id, qR }: GetGenericoByIdProp): Promise<PrecioEmpresa> {
     try {
       const criterio: FindOneOptions = {
-        relations: ['precio'],
+        relations: ['precio', 'categoria'],
         where: { id_precio: id }
       }
 
@@ -218,6 +218,9 @@ export class PrecioEmpresaService {
       descripcion: pe.precio?.descripcion,
       nombre: pe.precio?.nombre ?? '',
       idPrecio: pe.id_precio,
+      categoria: pe.categoria
+        ? { id: pe.categoria.id, nombre: pe.categoria.nombre }
+        : undefined,
     })
     return precio;
   }
