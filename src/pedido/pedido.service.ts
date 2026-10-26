@@ -19,8 +19,13 @@ import { fc_cambiar_estado_pedido_prop, fc_crear_pedido_prop } from './interface
 import { PedidoRetorno } from './retorno/pedido.retorno';
 import { ItemRetorno } from '@src/pedido_item/retorno/item.retorno';
 
-interface BusquedaPedidoProp extends BusquedaGenericoProp {
-  estado: EstadoPedido | undefined
+interface BusquedaPedidoProp extends Omit<BusquedaGenericoProp, 'busqueda'> {
+  busqueda: string;
+  estados: number[];
+  especificaciones: string[];
+  entrega: string | null;
+  tomado: string | null;
+  orden: string[];
 }
 
 interface BuscarPedidoByIdClienteProp extends Omit<BusquedaGenericoProp, 'busqueda'> {
@@ -136,21 +141,21 @@ export class PedidoService extends BaseService<typeof Entidad.PEDIDO, Pedido, Dt
     return pedido;
   }
 
-  async buscarPedidos({ busqueda, limite = 20, offset = 0, qR, estado }: BusquedaPedidoProp): Promise<RetornoGenericoServiceGet<ItemRetorno>> {
+  async buscarPedidos({ busqueda, estados, especificaciones, entrega, tomado, orden, limite = 20, offset = 0, qR }: BusquedaPedidoProp): Promise<RetornoGenericoServiceGet<ItemRetorno>> {
     try {
 
-      const [total] = await qR.query(
-        `SELECT count(DISTINCT nro_pedido) as total  FROM fc_buscar_pedido($1, $2, 0,0)`,
-        [busqueda, estado],
+      const [conteo] = await qR.query(
+        'SELECT fc_contar_pedidos($1, $2::integer[], $3::text[], $4::date, $5::date) AS total',
+        [busqueda, estados, especificaciones, entrega, tomado],
       );
 
-      const rows = await qR.query(
-        `SELECT * FROM fc_buscar_pedido($1, $2, $3, $4)`,
-        [busqueda, estado, Number(limite), offset],
+      const rows: GetPedidoItemBusqueda[] = await qR.query(
+        'SELECT * FROM fc_buscar_pedido($1, $2::integer[], $3::text[], $4::date, $5::date, $6, $7, $8::text[])',
+        [busqueda, estados, especificaciones, entrega, tomado, limite, offset, orden],
       );
 
       return {
-        total: total.total,
+        total: Number(conteo?.total ?? 0),
         datos: rows.map((r: GetPedidoItemBusqueda) => toRespuestaPedidoItemCompleto(r))
       }
     } catch (er) {

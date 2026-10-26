@@ -15,6 +15,23 @@ import { OrdenPedidoClientePipe } from '@src/pipe/OrdenPedidoClientePipe';
 import { PedidoRetorno } from './retorno/pedido.retorno';
 import { ItemRetorno } from '@src/pedido_item/retorno/item.retorno';
 
+const aArreglo = (valor?: string | string[]): string[] => {
+  if (valor === undefined || valor === null) return [];
+  return Array.isArray(valor) ? valor : [valor];
+};
+
+const normalizarEstados = (valor?: string | string[]): number[] =>
+  aArreglo(valor).map(e => Number(e)).filter(e => Number.isInteger(e) && e > 0);
+
+const normalizarTexto = (valor?: string | string[]): string[] =>
+  aArreglo(valor).map(v => v.trim()).filter(v => v.length > 0);
+
+const normalizarFecha = (valor?: string): string | null => {
+  if (!valor) return null;
+  const limpio = valor.trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(limpio) ? limpio : null;
+};
+
 @Controller('pedido')
 @UseGuards(UsuarioGuard)
 export class PedidoController extends BaseController<
@@ -29,35 +46,42 @@ export class PedidoController extends BaseController<
   }
 
   /**
-   * Búsqueda de pedidos con filtro opcional de estado y paginado.
-   * GET /pedido/buscar?q=juan&estado=1&limite=20&pagina=1
+   * Búsqueda de pedidos con filtros opcionales y paginado.
+   * GET /pedido/buscar?q=juan&estado=1&estado=4&especificacion=color&entrega=2026-10-30&tomado=2026-10-20&limite=6&pagina=1&orden=fechaEntrega:asc&orden=cliente:desc
    */
 
   @Get('buscar')
   @HttpCode(200)
   async buscar(
     @Query('q') busqueda = '',
-    @Query('estado') estado: EstadoPedido | undefined,
-    @Query('limite') limite = 20,
-    @Query('pagina') pg = 1,
+    @Query('estado') estado: string | string[] | undefined,
+    @Query('especificacion') especificacion: string | string[] | undefined,
+    @Query('entrega') entrega: string | undefined,
+    @Query('tomado') tomado: string | undefined,
+    @Query('orden') orden: string | string[] | undefined,
+    @Query('limite') limite = '20',
+    @Query('pagina') pg = '1',
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGenericoControllerGet<ItemRetorno> | undefined> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
-
-    if (!busqueda || busqueda.length < 3) return undefined;
+  ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
+    const pagina = Number(pg) > 0 ? Number(pg) : 1;
+    const limiteNum = Number(limite) > 0 ? Number(limite) : 20;
+    const offset = (pagina - 1) * limiteNum;
 
     const retorno = await this.pedidoService.buscarPedidos({
       busqueda,
-      estado,
-      limite,
+      estados: normalizarEstados(estado),
+      especificaciones: normalizarTexto(especificacion),
+      entrega: normalizarFecha(entrega),
+      tomado: normalizarFecha(tomado),
+      orden: normalizarTexto(orden),
+      limite: limiteNum,
       offset,
       qR: req.queryRunner,
     });
 
     return {
       ...retorno,
-      limite,
+      limite: limiteNum,
       pagina,
     }
   }
