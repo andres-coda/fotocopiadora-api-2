@@ -8,7 +8,8 @@ import { UsuarioCrear } from './dto/userCrear.dto';
 import { AdminGuard } from '../auth/guard/admin.guard';
 import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { Role } from '@src/auth/rol/rol.enum';
-import type { EditarUsuario, ModificarRole } from './interface/usuario.interface';
+import type { ModificarRole } from './interface/usuario.interface';
+import { EditarUsuarioDto } from './dto/userEditar.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 
 @Controller('user')
@@ -58,16 +59,22 @@ export class UserController {
   async createUsuario(
     @Body() datos: UsuarioCrear,
     @Request() req: RequestWithUser,
-  ): Promise<boolean> {
-    const user: User = await this.userService.createUsuario(datos, req.queryRunner);
+  ): Promise<User> {
+    // El alta siempre cae en la empresa del admin que la pide: la toma el
+    // service del token y el RLS la vuelve a validar en pc_usuario_insert.
+    const user: User = await this.userService.createUsuario(
+      datos,
+      req.user?.idEmpresa,
+      req.queryRunner,
+    );
     if (!user) throw new BadRequestException('No se pudo crear el usuario');
-    return true
+    return user;
   }
 
   @Put()
   async updateUsuario(
     @Request() req: RequestWithUser,
-    @Body() datos: EditarUsuario
+    @Body() datos: EditarUsuarioDto
   ): Promise<User> {
     const usuario = req.user;
     if (!usuario || datos.id != usuario.sub) throw new NotFoundException("Acción prohibida. Solo puedes acceder a tus datos");

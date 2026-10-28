@@ -36,7 +36,11 @@ export class User {
   @Column({ type: 'varchar', length: 255, name: 'password_hash' })
   password!: string;
 
-  @Exclude()
+  /**
+   * El email se devuelve al cliente: lo necesita el formulario de edicion para
+   * precargarse, y el ABM de usuarios de la empresa para mostrarlo. No es un
+   * dato secreto. La contrasena sigue excluida.
+   */
   @Column({ type: 'varchar', length: 50, name: 'email' })
   email!: string;
 
