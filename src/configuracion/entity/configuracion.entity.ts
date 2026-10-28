@@ -10,7 +10,7 @@ import { Mensaje } from "@src/mensaje/entity/mensaje.entity";
  * - No tiene columna id: su PK es id_empresa.
  * - No tiene deleted ni fecha_creacion (solo fecha_actualizacion).
  * La fila la crea el trigger tr_empresa_config_insert al insertar una empresa.
- * El filtrado por empresa lo hace el RLS de PostgreSQL automaticamente.
+ * El service filtra explicitamente por id_empresa; el RLS es la segunda capa.
  */
 @Entity('configuraciones')
 export class Configuracion {

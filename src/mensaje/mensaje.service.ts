@@ -19,7 +19,7 @@ interface MensajeFila {
 /**
  * El favorito ahora es por usuario: se resuelve con un LEFT JOIN contra
  * usuario_mensaje_fav filtrando por fc_usuario_actual(). No se depende solo
- * del RLS porque el schema no habilita RLS en todas las tablas.
+ * del RLS: el join explicito funciona aunque una tabla tenga el RLS apagado.
  */
 const SELECT_MENSAJE_CON_FAVORITO = `
   select m.id, m.id_empresa, m.nombre, m.mensaje,

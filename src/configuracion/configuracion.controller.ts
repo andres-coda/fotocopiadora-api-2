@@ -9,7 +9,8 @@ import { ConfiguracionRetorno } from './retorno/configuracion.retorno';
  * Endpoints de configuracion de la empresa.
  * Solo lectura y edicion: la fila la crea el trigger de insercion de empresa
  * y la BD no da policy de insert ni delete sobre configuraciones.
- * El RLS filtra automaticamente la configuracion de la empresa del usuario.
+ * La empresa sale del JWT y se filtra explicitamente en el service; el RLS
+ * de PostgreSQL queda como segunda capa.
  */
 @Controller('configuracion')
 @UseGuards(UsuarioGuard)
@@ -21,7 +22,7 @@ export class ConfiguracionController {
   async getConfiguracion(
     @Request() req: RequestWithUser,
   ): Promise<ConfiguracionRetorno> {
-    return this.configuracionService.getConfiguracionOrFail(req.queryRunner);
+    return this.configuracionService.getConfiguracionOrFail(req.queryRunner, req.user?.idEmpresa);
   }
 
   @Put()
@@ -30,6 +31,6 @@ export class ConfiguracionController {
     @Body() datos: DtoConfiguracionEditar,
     @Request() req: RequestWithUser,
   ): Promise<ConfiguracionRetorno> {
-    return this.configuracionService.updateConfiguracion(req.queryRunner, datos);
+    return this.configuracionService.updateConfiguracion(req.queryRunner, datos, req.user?.idEmpresa);
   }
 }

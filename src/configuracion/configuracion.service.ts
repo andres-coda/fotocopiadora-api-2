@@ -14,7 +14,10 @@ import { Mensaje } from '@src/mensaje/entity/mensaje.entity';
  *
  * No extiende BaseService porque Configuracion no extiende Base:
  * la tabla configuraciones no tiene id, fecha_creacion ni deleted.
- * El filtrado por empresa lo hace el RLS de PostgreSQL automaticamente.
+ * El filtro por empresa es EXPLICITO (idEmpresa del JWT): la PK es id_empresa
+ * y hay una sola fila por empresa, asi que un find sin where devuelve la
+ * primera fila de la tabla, o sea la configuracion de cualquier otra empresa.
+ * El RLS queda como segunda capa, nunca como la unica.
  * La fila la crea el trigger de insercion de empresa: aca solo se lee y edita.
  */
 @Injectable()
@@ -27,13 +30,13 @@ export class ConfiguracionService {
   ) { }
 
   /**
-   * Devuelve la configuracion de la empresa actual.
-   * No se filtra por empresa a mano: el RLS la acota sola.
-   * Se usa find + take 1 porque manager.findOne exige un where.
+   * Devuelve la configuracion de la empresa del usuario autenticado.
+   * El filtro por idEmpresa es obligatorio: sin where, find devuelve la
+   * primera fila de la tabla, que es la configuracion de otra empresa.
    */
-  async getConfiguracionOrFail(qR: QueryRunner): Promise<ConfiguracionRetorno> {
+  async getConfiguracionOrFail(qR: QueryRunner, idEmpresa?: string | null): Promise<ConfiguracionRetorno> {
     try {
-      const dato: Configuracion = await this.getEntityOrFail(qR);
+      const dato: Configuracion = await this.getEntityOrFail(qR, idEmpresa);
       return this.toRetorno(dato);
     } catch (error) {
       throw this.erroresService.handleExceptions(error, 'Error al intentar leer la configuracion de la empresa');
@@ -46,9 +49,9 @@ export class ConfiguracionService {
    * a mano, porque la tabla no tiene trigger de update que lo haga.
    * No crea ni borra: la fila la crea el trigger de la DB.
    */
-  async updateConfiguracion(qR: QueryRunner, dto: DtoConfiguracionEditar): Promise<ConfiguracionRetorno> {
+  async updateConfiguracion(qR: QueryRunner, dto: DtoConfiguracionEditar, idEmpresa?: string | null): Promise<ConfiguracionRetorno> {
     try {
-      const configuracion: Configuracion = await this.getEntityOrFail(qR);
+      const configuracion: Configuracion = await this.getEntityOrFail(qR, idEmpresa);
 
       if (dto.fechaEntrega !== undefined) configuracion.fechaEntrega = dto.fechaEntrega;
       if (dto.horaEntrega !== undefined) configuracion.horaEntrega = dto.horaEntrega;
@@ -66,7 +69,7 @@ export class ConfiguracionService {
 
       // Las relaciones recien asignadas solo traen el id. Se relee para
       // devolver el nombre y el mensaje completos de cada una.
-      const actualizada: Configuracion = await this.getEntityOrFail(qR);
+      const actualizada: Configuracion = await this.getEntityOrFail(qR, idEmpresa);
 
       return this.toRetorno(actualizada);
     } catch (error) {
@@ -74,8 +77,16 @@ export class ConfiguracionService {
     }
   }
 
-  private async getEntityOrFail(qR: QueryRunner): Promise<Configuracion> {
+  /**
+   * Devuelve la configuracion de la empresa indicada.
+   * Sin idEmpresa no hay empresa que consultar: super_admin tiene
+   * id_empresa = NULL por constraint, asi que no tiene configuracion propia.
+   */
+  private async getEntityOrFail(qR: QueryRunner, idEmpresa?: string | null): Promise<Configuracion> {
+    if (!idEmpresa) throw new NotFoundException('El usuario no tiene una empresa asociada');
+
     const datos: Configuracion[] = await qR.manager.find(Configuracion, {
+      where: { idEmpresa },
       take: 1,
       relations: { sede: true, datoCobro: true, msjPedidoTomado: true, msjPedidoRetirado: true },
     });
