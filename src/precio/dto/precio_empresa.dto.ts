@@ -29,6 +29,10 @@ export class DtoPrecioEmpresaEditar extends DtoPrecioEditar {
   @IsOptional()
   @IsString()
   detalles?: string;
+
+  @IsOptional()
+  @IsString({ message: 'La categoría debe ser un texto' })
+  categoria?: string;
 }
 
 export class DtoPrecioEmpresaRespuesta {

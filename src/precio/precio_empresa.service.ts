@@ -9,6 +9,8 @@ import { Entidad, Mensaje } from '@src/gateway/dto/gatewayDto.dto';
 import { Mens } from '@src/gateway/enum/Mens.enum';
 import { PrecioService } from './precio.service';
 import { Precio } from './entity/precio.entity';
+import { PrecioCategoria } from './entity/precio_categoria.entity';
+import { PrecioCategoriaService } from './precio_categoria.service';
 import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 import { PrecioDefaultProp } from './interface/precio.interface';
 import { PrecioRetorno } from './retorno/precio.retorno';
@@ -22,7 +24,8 @@ export class PrecioEmpresaService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly erroresService: ErroresService,
     private readonly gateway: GatewayGateway,
-    private readonly precioService: PrecioService
+    private readonly precioService: PrecioService,
+    private readonly precioCategoriaService: PrecioCategoriaService
   ) { }
 
   /**
@@ -127,12 +130,16 @@ export class PrecioEmpresaService {
       pe.id_precio = precio.id;
       pe.importe = dto.importe;
       pe.detalles = dto.detalles;
-      if(dto.idEmpresa) pe.id_empresa = dto.idEmpresa;
+      if (dto.idEmpresa) pe.id_empresa = dto.idEmpresa;
+
+      const categoria = await this.resolverCategoria({ categoria: dto.categoria, qR });
+      if (categoria) pe.id_categoria = categoria.id;
 
       const saved = await qR.manager.save(PrecioEmpresa, pe);
       const newPrecio: PrecioEmpresa = {
         ...saved,
-        precio
+        precio,
+        categoria: categoria ?? undefined
       }
 
       const retorno = this.toRespuesta(newPrecio!);
@@ -159,8 +166,16 @@ export class PrecioEmpresaService {
       if (dto.importe !== undefined) pe.importe = dto.importe;
       if (dto.detalles !== undefined) pe.detalles = dto.detalles;
 
+      let categoria: PrecioCategoria | null | undefined = pe.categoria;
+
+      if (dto.categoria !== undefined) {
+        categoria = await this.resolverCategoria({ categoria: dto.categoria, qR });
+        pe.id_categoria = categoria?.id ?? null;
+        pe.categoria = categoria ?? undefined;
+      }
+
       const saved = await qR.manager.save(PrecioEmpresa, pe);
-      const retorno = this.toRespuesta({ ...pe, ...saved });
+      const retorno = this.toRespuesta({ ...pe, ...saved, categoria: categoria ?? undefined });
 
       /*  this.gateway.actualizacionDato({
          mensaje: Mens.EDITAR,
@@ -209,6 +224,12 @@ export class PrecioEmpresaService {
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al crear por defecto los precios`);
     }
+  }
+
+  private async resolverCategoria({ categoria, qR }: { categoria?: string; qR: QueryRunner }): Promise<PrecioCategoria | null> {
+    if (categoria === undefined || !categoria.trim()) return null;
+
+    return this.precioCategoriaService.createDato({ dto: { nombre: categoria }, qR });
   }
 
   private toRespuesta(pe: PrecioEmpresa): PrecioRetorno {

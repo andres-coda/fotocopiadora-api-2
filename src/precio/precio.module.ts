@@ -10,6 +10,8 @@ import { PrecioEmpresa } from './entity/precio_empresa.entity';
 import { PrecioCategoria } from './entity/precio_categoria.entity';
 import { PrecioEmpresaController } from './precio_empresa.controller';
 import { PrecioEmpresaService } from './precio_empresa.service';
+import { PrecioCategoriaController } from './precio_categoria.controller';
+import { PrecioCategoriaService } from './precio_categoria.service';
 
 @Module({
   imports: [
@@ -22,8 +24,8 @@ import { PrecioEmpresaService } from './precio_empresa.service';
     forwardRef(() => ErroresModule),
     forwardRef(() => GateWayModule),
   ],
-  controllers: [PrecioController, PrecioEmpresaController],
-  providers: [PrecioService, PrecioEmpresaService],
-  exports: [PrecioService, PrecioEmpresaService]
+  controllers: [PrecioController, PrecioEmpresaController, PrecioCategoriaController],
+  providers: [PrecioService, PrecioEmpresaService, PrecioCategoriaService],
+  exports: [PrecioService, PrecioEmpresaService, PrecioCategoriaService]
 })
 export class PrecioModule { }

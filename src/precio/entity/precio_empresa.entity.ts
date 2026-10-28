@@ -35,7 +35,7 @@ export class PrecioEmpresa {
   detalles?: string;
 
   @Column({ type: 'uuid', name: 'id_categoria', nullable: true })
-  id_categoria?: string;
+  id_categoria?: string | null;
 
   /**
    * Categoria a la que pertenece este precio de la empresa.
