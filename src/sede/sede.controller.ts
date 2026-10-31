@@ -60,26 +60,6 @@ export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, Dt
   }
 
   /**
-   * Elimina permanentemente un elemento de la base de datos.
-   * @param id - ID del elemento a eliminar.
-   * @returns Una promesa que resuelve a true si la eliminación fue exitosa.
-   */
-  @Delete(':id/eliminar')
-  @UseGuards(AdminGuard)
-  async deleteConstante(
-    @Param('id') id: string,
-    @Request() req: RequestWithUser,
-  ): Promise<boolean> {
-    const dto: DeletProp<Sede, typeof Entidad.SEDE> = {
-      id,
-      entidadError: this.entidadError,
-      entidad: this.entidad,
-      qR: req.queryRunner,
-    };
-    return this.baseService.delete(dto);
-  }
-
-  /**
    * Realiza un borrado lógico del elemento (marca como eliminado).
    * @param id - ID del elemento a marcar como eliminado.
    * @returns Una promesa que resuelve a true si el borrado lógico fue exitoso.

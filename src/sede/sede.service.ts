@@ -4,7 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindManyOptions, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
-import { CreateProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
+import { CreateProp, DeletProp, EditarProp, UpdateRetorno } from '../base/interface/base.interface';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { Sede } from './entity/sede.entity';
@@ -59,7 +59,20 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
         entidadError: 'sede'
       });
 
-      if (sedeExistente) return sedeExistente;
+      // El índice único por nombre (uq_sede_nombre) incluye las borradas, así
+      // que re-crear una sede con el nombre de una eliminada es el único camino
+      // para reutilizarlo. Si la existente está borrada, la revivimos en vez de
+      // devolverla con deleted = true (lo que hacía que reapareciera en el
+      // selector de nuevo pedido).
+      if (sedeExistente) {
+        if (sedeExistente.deleted) {
+          sedeExistente.deleted = false;
+          return qR
+            ? await qR.manager.save(Sede, sedeExistente)
+            : await this.sedeRepository.save(sedeExistente);
+        }
+        return sedeExistente;
+      }
 
       const sede: Sede = new Sede();
       sede.nombre = dto.nombre;
@@ -97,6 +110,19 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de sedes`)
     }
+  }
+
+  // Borrado lógico de sede: además de marcar deleted = true, se limpia la
+  // configuración de empresa que apuntaba a esta sede. El modal del front
+  // promete que "también se borrará de la configuración de por defecto" y,
+  // si no se limpia, el front toma sedes[0] en silencio y el pedido se crea
+  // en la sede equivocada. La columna configuraciones.id_sede es nullable.
+  async softDelete({ id, qR, entidadError, entidad }: DeletProp<Sede, typeof Entidad.SEDE>): Promise<boolean> {
+    const borrada: boolean = await super.softDelete({ id, qR, entidadError, entidad });
+    if (!borrada) return borrada;
+    const manager = qR ? qR.manager : this.dataSource.manager;
+    await manager.query('update configuraciones set id_sede = null where id_sede = $1', [id]);
+    return borrada;
   }
 
   remplaceToReturn(entidad: Sede): SedeRetorno {
