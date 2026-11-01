@@ -6,14 +6,14 @@ import { DtoLibroRespuesta } from "@src/libro/dto/libroRetorno.dto";
 import { jest } from '@jest/globals';
 
 export const mockLibro:Libro={
-  idLibro: '123e4567-e89b-12d3-a456-426614174000',
+  id_libro: '123e4567-e89b-12d3-a456-426614174000',
+  id_empresa: '12',
   deleted: false,
-  cantidadPg: 100,
-  adhesivo:2,
-  especificacionesDefecto: [Especificaciones.ABROCHADO],
-  pedidoItems:[],
-  propuesta:[],
-  idEmpresa:'12'
+  cantidad_pg: 100,
+  cantidad_adhesivo: 2,
+  especificaciones_defecto: [Especificaciones.ABROCHADO],
+  pedidoItems: [],
+  propuesta: [],
 }
 
 export const mockDtoCrearLibro:DtoLibroCrear = {

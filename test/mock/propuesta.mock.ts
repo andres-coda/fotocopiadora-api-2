@@ -9,15 +9,16 @@ import { DtoPropuestaEditar } from "@src/propuesta_pedido/dto/propuesta_pedidoEd
 
 export const mockPropuesta:Propuesta = {
   id: '123e4567-e89b-12d3-a456-426614174000',
+  id_empresa: '12',
   fechaCreacion: new Date('2024-01-01T00:00:00Z'),
-  fechaActualizacion: new Date('2024-01-02T00:00:00Z'), 
+  fechaActualizacion: new Date('2024-01-02T00:00:00Z'),
   deleted: false,
   nombre: 'Propuesta de prueba',
-  libros:[],
+  libros: [],
 }
 
 export const mockDtoCrearPropuesta:DtoPropuestaCrear = {
-  libros: [mockLibro.idLibro],
+  libros: [mockLibro.id_libro],
   nombre: 'Propuesta de prueba',
 }
 

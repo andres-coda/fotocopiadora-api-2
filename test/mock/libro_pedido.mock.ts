@@ -22,15 +22,15 @@ export const mockLibroPedido: PedidoItem = {
   libro: mockLibro,
   sede: mockSede,
   pedido: mockPedido,
-  libro_id: mockLibro.idLibro,
-  sede_id: mockSede.id
+  id_libro: mockLibro.id_libro,
+  id_sede: mockSede.id
 } */
 
 export const mockDtoLibroPedidoCrear:DtoLibroPedidoCrear = {
   pedido_id:'123e4567-e89b-12d3-a456-426614174000',
   cantidad: 1,
-  libro_id: mockLibro.idLibro,
-  sede_id: mockSede.id
+  id_libro: mockLibro.id_libro,
+  id_sede: mockSede.id
 }
 
 /* export const mockLibroPedidoService = {
