@@ -86,3 +86,10 @@ se escriben asserts nuevos contra el comportamiento vigente.
 - Inventario de escenarios recuperado: 230 tests en 18 suites.
 - Confirmado que `test/mock/*` solo lo consumen los specs (nada de producción lo importa).
 - Decisión del usuario: borrar y reconstruir (no restaurar).
+- T1 (mocks) ✅ — `test/mock/*` alineado con las entidades; tsc limpio (0 errores).
+- T2 (borrado) ✅ — 18 suites borradas; inventario en `back-suite-verde-inventario.md`.
+- T3 (template) ✅ — `componente.service.spec.ts` (8 tests).
+- T4 (servicios simples) ✅ — `error` (4), `sede` (9), `materia` (8), `precio` (8), `especificacion` (8).
+- T5/T6 parcial ✅ — `nivel`, `editorial`, `empresa` (controller + service) cableados como smoke tests (6 suites).
+- T7 (base) y T8 (libro, pedido, cliente, propuesta, pedido_item, user, auth) — pendientes.
+- Suite final: 16 suites, 79 tests, 0 fallos. `tsc --noEmit` limpio. `npm run build` verde.
