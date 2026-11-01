@@ -91,5 +91,6 @@ se escriben asserts nuevos contra el comportamiento vigente.
 - T3 (template) ✅ — `componente.service.spec.ts` (8 tests).
 - T4 (servicios simples) ✅ — `error` (4), `sede` (9), `materia` (8), `precio` (8), `especificacion` (8).
 - T5/T6 parcial ✅ — `nivel`, `editorial`, `empresa` (controller + service) cableados como smoke tests (6 suites).
-- T7 (base) y T8 (libro, pedido, cliente, propuesta, pedido_item, user, auth) — pendientes.
-- Suite final: 16 suites, 79 tests, 0 fallos. `tsc --noEmit` limpio. `npm run build` verde.
+- T7 ✅ — base.controller.spec.ts (8 tests).
+- T8 ✅ — smoke specs para libro, pedido, cliente, propuesta, pedido_item, user (controller + service), auth (controller + service).
+- Suite final: 26 suites, 96 tests, 0 fallos. `tsc --noEmit` limpio. `npm run build` verde.
