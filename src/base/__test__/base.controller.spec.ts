@@ -54,19 +54,19 @@ describe('BaseController', () => {
 
   it('softDeleteConstante debería hacer soft delete', async () => {
     (mockBaseService.softDelete as any).mockResolvedValue(true);
-    const result = await controller.softDeleteConstante({ sub: 'user-1' } as any, '1');
+    const result = await controller.softDeleteConstante('1', { queryRunner: undefined } as any);
     expect(result).toBe(true);
   });
 
   it('deleteConstante debería eliminar', async () => {
     (mockBaseService.delete as any).mockResolvedValue(true);
-    const result = await controller.deleteConstante({ sub: 'user-1' } as any, '1');
+    const result = await controller.deleteConstante('1', { queryRunner: undefined } as any);
     expect(result).toBe(true);
   });
 
   it('undoDeleteConstante debería deshacer', async () => {
     (mockBaseService.undoDelete as any).mockResolvedValue(true);
-    const result = await controller.undoDeleteConstante({ sub: 'user-1' } as any, '1');
+    const result = await controller.undoDeleteConstante('1', { queryRunner: undefined } as any);
     expect(result).toBe(true);
   });
 });
