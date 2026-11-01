@@ -13,13 +13,13 @@ describe('NivelController', () => {
       providers: [{ provide: NivelService, useValue: {} }],
     })
       .overrideGuard(UsuarioGuard)
-      .useValue({ canActivate: jest.fn(() => true) })
+      .useValue({ canActivate: () => true } as any)
       .compile();
 
     controller = module.get<NivelController>(NivelController);
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => { jest.restoreAllMocks(); });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

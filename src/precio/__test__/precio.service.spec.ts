@@ -6,7 +6,7 @@ import { PrecioService } from '../precio.service';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { DtoPrecioCrear, DtoPrecioEditar } from './dto/precio.dto';
+import { DtoPrecioCrear, DtoPrecioEditar } from '../dto/precio.dto';
 import { CreateGenericoProp, UpdateGenericoProp } from '@src/interface/general.interface';
 import { mockErrores } from 'test/mock/error.mocks';
 import { mockGateway } from 'test/mock/gateway.mocks';
@@ -41,7 +41,7 @@ describe('PrecioService', () => {
     jest.clearAllMocks();
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => { jest.restoreAllMocks(); });
 
   describe('createDato', () => {
     it('debería crear un precio nuevo (sin QueryRunner)', async () => {
@@ -50,6 +50,7 @@ describe('PrecioService', () => {
 
       const result = await service.createDato({
         dto: { nombre: 'Test Precio' },
+        qR: undefined as any,
         entidad: undefined,
       } as CreateGenericoProp<DtoPrecioCrear>);
 

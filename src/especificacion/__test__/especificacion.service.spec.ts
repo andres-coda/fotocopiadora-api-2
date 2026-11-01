@@ -40,7 +40,7 @@ describe('EspecificacionService', () => {
     jest.clearAllMocks();
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => { jest.restoreAllMocks(); });
 
   describe('createEspecificacion', () => {
     it('debería crear una especificación nueva', async () => {
@@ -113,7 +113,7 @@ describe('EspecificacionService', () => {
       jest.spyOn(service, 'getEspecificacionByIdOrFaild').mockRejectedValue(error);
 
       await expect(
-        service.updateEspecificacion({ id: mockEsp.id, dto: { nombre: 'X' }, qR: qr }),
+        service.updateEspecificacion({ id: mockEsp.id, dto: { nombre: Especificaciones.ANILLADO }, qR: qr }),
       ).rejects.toThrow(error);
 
       expect(mockErrores.handleExceptions).toHaveBeenCalled();

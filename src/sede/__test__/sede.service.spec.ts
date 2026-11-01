@@ -7,7 +7,8 @@ import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
-import { DtoSedeCrear, DtoSedeEditar } from '../dto/sedeCrear.dto';
+import { DtoSedeCrear } from '../dto/sedeCrear.dto';
+import { DtoSedeEditar } from '../dto/sedeEditar.dto';
 import { CreateProp, EditarProp } from '@src/base/interface/base.interface';
 import { mockSede, mockDtoCrearSede } from 'test/mock/sede.mock';
 import { mockErrores } from 'test/mock/error.mocks';
@@ -43,7 +44,7 @@ describe('SedeService', () => {
     jest.clearAllMocks();
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => { jest.restoreAllMocks(); });
 
   describe('createDato', () => {
     it('debería crear una sede nueva (sin QueryRunner)', async () => {
@@ -124,6 +125,7 @@ describe('SedeService', () => {
       const result = await service.updateDato({
         id: mockSede.id,
         dto: { nombre: 'Nueva' } as DtoSedeEditar,
+        qR: undefined as any,
         entidadError: 'sede',
         relaciones: [],
         selected: undefined,
@@ -141,6 +143,7 @@ describe('SedeService', () => {
       const result = await service.updateDato({
         id: mockSede.id,
         dto: { nombre: 'Sede Principal' } as DtoSedeEditar,
+        qR: undefined as any,
         entidadError: 'sede',
         relaciones: [],
         selected: undefined,
@@ -159,6 +162,7 @@ describe('SedeService', () => {
         service.updateDato({
           id: mockSede.id,
           dto: { nombre: 'X' } as DtoSedeEditar,
+          qR: undefined as any,
           entidadError: 'sede',
           relaciones: [],
           selected: undefined,
@@ -175,7 +179,7 @@ describe('SedeService', () => {
       const existente = { ...mockSede } as Sede;
       jest.spyOn(service, 'getDatoByIdOrFail').mockResolvedValue(existente);
       manager.save.mockResolvedValue({ ...existente, deleted: true } as Sede);
-      (manager as any).query = jest.fn().mockResolvedValue(undefined);
+      (manager as any).query = jest.fn();
 
       const result = await service.softDelete({
         id: mockSede.id,

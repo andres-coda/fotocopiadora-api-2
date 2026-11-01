@@ -14,15 +14,15 @@ describe('EmpresaController', () => {
       providers: [{ provide: EmpresaService, useValue: {} }],
     })
       .overrideGuard(UsuarioGuard)
-      .useValue({ canActivate: jest.fn(() => true) })
+      .useValue({ canActivate: () => true } as any)
       .overrideGuard(SuperAdminGuard)
-      .useValue({ canActivate: jest.fn(() => true) })
+      .useValue({ canActivate: () => true } as any)
       .compile();
 
     controller = module.get<EmpresaController>(EmpresaController);
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => { jest.restoreAllMocks(); });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

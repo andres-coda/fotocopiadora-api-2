@@ -13,13 +13,13 @@ describe('EditorialController', () => {
       providers: [{ provide: EditorialService, useValue: {} }],
     })
       .overrideGuard(UsuarioGuard)
-      .useValue({ canActivate: jest.fn(() => true) })
+      .useValue({ canActivate: () => true } as any)
       .compile();
 
     controller = module.get<EditorialController>(EditorialController);
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => { jest.restoreAllMocks(); });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

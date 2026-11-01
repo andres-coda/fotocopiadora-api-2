@@ -7,7 +7,8 @@ import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
-import { DtoMateriaCrear, DtoMateriaEditar } from '../dto/materiaCrear.dto';
+import { DtoMateriaCrear } from '../dto/materiaCrear.dto';
+import { DtoMateriaEditar } from '../dto/materiaEditar.dto';
 import { CreateProp } from '@src/base/interface/base.interface';
 import { mockMateria, mockDtoCrearMateria } from 'test/mock/materia.mock';
 import { mockErrores } from 'test/mock/error.mocks';
@@ -119,6 +120,7 @@ describe('MateriaService', () => {
       const result = await service.updateDato({
         id: mockMateria.id,
         dto: { nombre: 'Nuevo Nombre' } as DtoMateriaEditar,
+        qR: undefined as any,
         entidadError: 'materia',
         relaciones: [],
         selected: undefined,
@@ -156,6 +158,7 @@ describe('MateriaService', () => {
       const result = await service.updateDato({
         id: mockMateria.id,
         dto: { nombre: 'Test Materia' } as DtoMateriaEditar,
+        qR: undefined as any,
         entidadError: 'materia',
         relaciones: [],
         selected: undefined,
@@ -174,6 +177,7 @@ describe('MateriaService', () => {
         service.updateDato({
           id: mockMateria.id,
           dto: { nombre: 'X' } as DtoMateriaEditar,
+          qR: undefined as any,
           entidadError: 'materia',
           relaciones: [],
           selected: undefined,

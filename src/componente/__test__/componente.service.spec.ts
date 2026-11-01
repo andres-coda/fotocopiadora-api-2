@@ -7,7 +7,8 @@ import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
-import { DtoComponenteCrear, DtoComponenteEditar } from '../dto/componenteCrear.dto';
+import { DtoComponenteCrear } from '../dto/componenteCrear.dto';
+import { DtoComponenteEditar } from '../dto/componenteEditar.dto';
 import { CreateProp } from '@src/base/interface/base.interface';
 import { mockComponente, mockDtoCrearComponente } from 'test/mock/componente.mock';
 import { mockErrores } from 'test/mock/error.mocks';
@@ -119,6 +120,7 @@ describe('ComponenteService', () => {
       const result = await service.updateDato({
         id: mockComponente.id,
         dto: { nombre: 'Nuevo Nombre' } as DtoComponenteEditar,
+        qR: undefined as any,
         entidadError: 'componente',
         relaciones: [],
         selected: undefined,
@@ -156,6 +158,7 @@ describe('ComponenteService', () => {
       const result = await service.updateDato({
         id: mockComponente.id,
         dto: { nombre: 'Test Componente' } as DtoComponenteEditar,
+        qR: undefined as any,
         entidadError: 'componente',
         relaciones: [],
         selected: undefined,
@@ -174,6 +177,7 @@ describe('ComponenteService', () => {
         service.updateDato({
           id: mockComponente.id,
           dto: { nombre: 'X' } as DtoComponenteEditar,
+          qR: undefined as any,
           entidadError: 'componente',
           relaciones: [],
           selected: undefined,

@@ -33,7 +33,7 @@ describe('EmpresaService', () => {
     jest.clearAllMocks();
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => { jest.restoreAllMocks(); });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
