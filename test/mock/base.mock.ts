@@ -25,6 +25,9 @@ export const createMockBaseService = <
 
     getDato: jest.fn<(params: GetProp<T>) => Promise<T[]>>(),
 
+    getDatoCx: jest.fn<(params: GetProp<T>) => Promise<{ datos: T[], total: number }>>(),
+    getDatoByIdCx: jest.fn<(params: GetIdProp<T>) => Promise<T>>(),
+
     getDatoTodos: jest.fn<(params: GetProp<T>) => Promise<T[]>>(),
     getDatosByIds: jest.fn<(params: GetIdsProp<T>) => Promise<T[]>>(),
 
