@@ -144,6 +144,12 @@ export class PrecioEmpresaService {
 
       const retorno = this.toRespuesta(newPrecio!);
 
+      this.gateway.actualizacionDato({
+        mensaje: Mens.CREAR,
+        entidad: Entidad.PRECIO,
+        dato: retorno,
+      } as Mensaje);
+
       return retorno;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, 'Error al crear precio de empresa');
@@ -177,11 +183,11 @@ export class PrecioEmpresaService {
       const saved = await qR.manager.save(PrecioEmpresa, pe);
       const retorno = this.toRespuesta({ ...pe, ...saved, categoria: categoria ?? undefined });
 
-      /*  this.gateway.actualizacionDato({
-         mensaje: Mens.EDITAR,
-         entidad: Entidad.PRECIO,
-         dato: retorno,
-       } as Mensaje); */
+      this.gateway.actualizacionDato({
+        mensaje: Mens.EDITAR,
+        entidad: Entidad.PRECIO,
+        dato: retorno,
+      } as Mensaje);
 
       return retorno;
     } catch (er) {

@@ -27,6 +27,7 @@ import { Propuesta } from './propuesta_pedido/entity/propuesta_pedido.entity';
 import { ComponenteModule } from './componente/componente.module';
 import { Componente } from './componente/entity/componente.entity';
 import { DbContextInterceptor } from './common/interceptors/db-context.interceptor';
+import { CommonModule } from './common/common.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PedidoItem } from './pedido_item/entity/pedido_item.entity';
 import { ClienteResumen } from './cliente/entity/clienteResumen.entity';
@@ -49,6 +50,7 @@ import { Configuracion } from './configuracion/entity/configuracion.entity';
 
 @Module({
    imports: [
+    CommonModule,
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'client') }),
     ConfigModule.forRoot({
       isGlobal: true,
