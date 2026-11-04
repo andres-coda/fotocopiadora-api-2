@@ -24,25 +24,16 @@ export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, Dt
   @HttpCode(200)
   @UseGuards(AdminGuard)
   async findAllTodos(
-    @Query('pagina') pagina = 1,
-    @Query('limite') limite = 20,
     @Request() req: RequestWithUser,
-  ): Promise<RetornoGet<typeof Entidad.SEDE>> {
-    const offset = (pagina - 1) * limite;
+  ): Promise<SedeRetorno[]> {
     const datoRetorno: RetornoGenericoServiceGet<SedeRetorno> = await this.baseService.getSedesTodas({
       orden: this.orden,
-      limite,
-      offset,
+      limite: 1000,
+      offset: 0,
       qR: req.queryRunner
     });
 
-    return {
-      total: datoRetorno.total,
-      limite,
-      pagina,
-      datos: datoRetorno.datos,
-      query: '',
-    }
+    return datoRetorno.datos;
   }
 
   @Patch(':id/rehacer')
