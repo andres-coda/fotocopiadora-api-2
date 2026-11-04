@@ -10,6 +10,19 @@ import { PrecioCategoriaService } from './precio_categoria.service';
 export class PrecioCategoriaController {
   constructor(private readonly precioCategoriaService: PrecioCategoriaService) { }
 
+  @Get('todas')
+  @HttpCode(200)
+  async getAllCategorias(
+    @Request() req: RequestWithUser,
+  ): Promise<PrecioCategoria[]> {
+    const retorno = await this.precioCategoriaService.getCategorias({
+      qR: req.queryRunner,
+      limite: 1000,
+      offset: 0,
+    });
+    return retorno.datos;
+  }
+
   @Get()
   @HttpCode(200)
   async getAll(

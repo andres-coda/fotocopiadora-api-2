@@ -11,4 +11,7 @@ export class PrecioCategoria {
 
   @Column({ type: 'varchar', length: 30 })
   nombre!: string;
+
+  @Column({ type: 'boolean', default: false })
+  bloqueado!: boolean;
 }
