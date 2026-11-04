@@ -34,7 +34,8 @@ export class PrecioEmpresaController {
         total: datos.total,
         limite,
         pagina,
-        datos: datos.datos
+        datos: datos.datos,
+        query: busqueda ?? '',
       }
     }
 
@@ -44,7 +45,8 @@ export class PrecioEmpresaController {
       total: datos.total,
       limite,
       pagina,
-      datos: datos.datos
+      datos: datos.datos,
+      query: busqueda ?? '',
     }
   }
 

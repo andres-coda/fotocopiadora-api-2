@@ -74,6 +74,7 @@ export abstract class BaseController<
       limite,
       pagina,
       datos: datoRetorno.datos,
+      query: '',
     }
   }
 

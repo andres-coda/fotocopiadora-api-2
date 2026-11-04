@@ -39,6 +39,7 @@ export class MensajeController {
       limite,
       pagina,
       datos: retorno.datos,
+      query: '',
     };
   }
 
@@ -76,6 +77,7 @@ export class MensajeController {
       limite,
       pagina,
       datos: retorno.datos,
+      query: busqueda ?? '',
     };
   }
 

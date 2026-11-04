@@ -113,4 +113,5 @@ export interface RetornoGet < K extends keyof EntidadDatoMapType> {
   total: number,
   pagina: number,
   limite: number,
+  query?: string,
 }

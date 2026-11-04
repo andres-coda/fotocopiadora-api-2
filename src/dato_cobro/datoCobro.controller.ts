@@ -38,6 +38,7 @@ export class DatoCobroController {
       limite,
       pagina,
       datos: retorno.datos,
+      query: '',
     };
   }
 
@@ -75,6 +76,7 @@ export class DatoCobroController {
       limite,
       pagina,
       datos: retorno.datos,
+      query: busqueda ?? '',
     };
   }
 

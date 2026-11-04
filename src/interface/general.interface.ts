@@ -36,4 +36,5 @@ export interface RetornoGenericoServiceGet<T>{
 export interface RetornoGenericoControllerGet<T> extends RetornoGenericoServiceGet<T>{
   pagina: number,
   limite: number,
+  query?: string,
 }

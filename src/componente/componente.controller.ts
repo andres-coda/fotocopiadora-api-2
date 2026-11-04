@@ -41,7 +41,8 @@ export class ComponenteController extends BaseController<typeof Entidad.COMPONEN
         total: retorno.total,
         limite,
         pagina,
-        datos: retorno.datos
+        datos: retorno.datos,
+        query: busqueda ?? '',
       }
     }
 
@@ -55,7 +56,8 @@ export class ComponenteController extends BaseController<typeof Entidad.COMPONEN
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 }

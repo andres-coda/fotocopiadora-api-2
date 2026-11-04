@@ -45,7 +45,8 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
         total: retorno.total,
         limite,
         pagina,
-        datos: retorno.datos
+        datos: retorno.datos,
+        query: busqueda ?? '',
       }
     }
 
@@ -59,7 +60,8 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 
@@ -83,7 +85,8 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: '',
     }
   }
 

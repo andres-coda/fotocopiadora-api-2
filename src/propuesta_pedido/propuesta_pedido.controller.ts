@@ -45,15 +45,9 @@ export class PropuestaPedidoController extends BaseController<typeof Entidad.PRO
   ): Promise<RetornoGenericoControllerGet<PropuestaRetorno>> {
     const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
     const offset = (pagina - 1) * limite;
-    if (!busqueda || busqueda.length < 3) return {
-      total: 0,
-      limite,
-      pagina,
-      datos: []
-    };
 
     const retorno = await this.propuestaService.buscarPropuesta({
-      busqueda,
+      busqueda:busqueda || '',
       limite: Number(limite),
       offset: Number(offset),
       qR: req.queryRunner,
@@ -63,7 +57,8 @@ export class PropuestaPedidoController extends BaseController<typeof Entidad.PRO
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 }

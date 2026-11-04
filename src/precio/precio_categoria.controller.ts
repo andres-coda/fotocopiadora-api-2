@@ -32,7 +32,8 @@ export class PrecioCategoriaController {
       total: retorno.total,
       limite: Number(limite),
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 }

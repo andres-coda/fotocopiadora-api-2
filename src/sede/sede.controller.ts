@@ -40,7 +40,8 @@ export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, Dt
       total: datoRetorno.total,
       limite,
       pagina,
-      datos: datoRetorno.datos
+      datos: datoRetorno.datos,
+      query: '',
     }
   }
 

@@ -40,7 +40,8 @@ export class EditorialController extends BaseController<typeof Entidad.EDITORIAL
         total: retorno.total,
         limite,
         pagina,
-        datos: retorno.datos
+        datos: retorno.datos,
+        query: busqueda ?? '',
       }
     }
 
@@ -54,7 +55,8 @@ export class EditorialController extends BaseController<typeof Entidad.EDITORIAL
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 }

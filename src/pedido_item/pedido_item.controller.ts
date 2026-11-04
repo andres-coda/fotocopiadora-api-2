@@ -40,7 +40,8 @@ export class PedidoItemController {
       total: items.total,
       limite,
       pagina,
-      datos: items.datos
+      datos: items.datos,
+      query: '',
     }
   }
 
@@ -69,7 +70,8 @@ export class PedidoItemController {
       total: items.total,
       limite,
       pagina,
-      datos: items.datos
+      datos: items.datos,
+      query: '',
     };
   }
 
@@ -98,7 +100,8 @@ export class PedidoItemController {
       total: items.total,
       limite,
       pagina,
-      datos: items.datos
+      datos: items.datos,
+      query: '',
     };
   }
 

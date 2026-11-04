@@ -83,6 +83,7 @@ export class PedidoController extends BaseController<
       ...retorno,
       limite: limiteNum,
       pagina,
+      query: busqueda ?? '',
     }
   }
 
@@ -116,7 +117,8 @@ export class PedidoController extends BaseController<
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: '',
     }
   }
 

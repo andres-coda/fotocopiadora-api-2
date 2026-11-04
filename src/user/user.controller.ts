@@ -35,7 +35,8 @@ export class UserController {
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: '',
     }
   }
 

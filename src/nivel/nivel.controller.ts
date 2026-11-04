@@ -40,7 +40,8 @@ export class NivelController extends BaseController<typeof Entidad.NIVEL, Nivel,
         total: retorno.total,
         limite,
         pagina,
-        datos: retorno.datos
+        datos: retorno.datos,
+        query: busqueda ?? '',
       }
     }
 
@@ -54,7 +55,8 @@ export class NivelController extends BaseController<typeof Entidad.NIVEL, Nivel,
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 }

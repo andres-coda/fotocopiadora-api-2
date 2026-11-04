@@ -39,7 +39,8 @@ export class LibroController {
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 
@@ -67,7 +68,8 @@ export class LibroController {
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 
@@ -107,7 +109,8 @@ export class LibroController {
         total: retorno.total,
         limite,
         pagina,
-        datos: retorno.datos
+        datos: retorno.datos,
+        query: busqueda ?? '',
       }
     }
 
@@ -121,7 +124,8 @@ export class LibroController {
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 

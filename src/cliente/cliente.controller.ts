@@ -53,7 +53,8 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
         total: datoRetorno.total,
         limite,
         pagina,
-        datos: datoRetorno.datos
+        datos: datoRetorno.datos,
+        query: busqueda ?? '',
       }
     }
 
@@ -68,7 +69,8 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
       total: retorno.total,
       limite,
       pagina,
-      datos: retorno.datos
+      datos: retorno.datos,
+      query: busqueda ?? '',
     }
   }
 
