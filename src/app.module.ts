@@ -42,6 +42,7 @@ import { Nivel } from './nivel/entity/nivel.entity';
 import { EditorialModule } from './editorial/editorial.module';
 import { Editorial } from './editorial/entity/editorial.entity';
 import { MensajeModule } from './mensaje/mensaje.module';
+import { SolicitudModule } from './solicitud/solicitud.module';
 import { Mensaje } from './mensaje/entity/mensaje.entity';
 import { DatoCobroModule } from './dato_cobro/datoCobro.module';
 import { DatoCobro } from './dato_cobro/entity/datoCobro.entity';
@@ -107,6 +108,7 @@ import { Configuracion } from './configuracion/entity/configuracion.entity';
     NivelModule,
     EditorialModule,
     MensajeModule,
+    SolicitudModule,
     DatoCobroModule,
     ConfiguracionModule,
   ],
