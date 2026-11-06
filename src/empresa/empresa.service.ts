@@ -108,6 +108,14 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
 
       const precios = await this.precioService.CreatePrecioDefault(PRECIO_DEFAULT, qR, newElemento.id);
 
+      // Crear el primer usuario admin de la empresa en la misma transaccion.
+      // La contrasena se hashea en Postgres (pgcrypto), igual que en UserService.
+      await qR.manager.query(
+        `insert into usuario (nombre, email, password_hash, rol, id_empresa)
+         values ($1, $2, public.crypt($3, public.gen_salt('bf', 10)), 'admin', $4::uuid)`,
+        [dto.adminNombre, dto.adminEmail, dto.adminPassword, newElemento.id],
+      );
+
       const retorno = this.remplaceToReturn(newElemento);
       if (!retorno) throw new NotFoundException(`No se pudo crear la empresa ${dto.nombre}`);
       return retorno;

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, NotFoundException, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { Role } from '@src/auth/rol/rol.enum';
@@ -50,5 +50,18 @@ export class EmpresaController extends BaseController<typeof Entidad.EMPRESA, Em
     @Request() req: RequestWithUser,
   ): Promise<EmpresaRetorno> {
     return super.createDato(datos, req);
+  }
+
+  /**
+   * Eliminar (soft delete) una empresa exige rol super_admin.
+   * Se sobreescribe la ruta del BaseController para agregar el guard.
+   */
+  @Delete(':id')
+  @UseGuards(SuperAdminGuard)
+  async softDeleteConstante(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<boolean> {
+    return super.softDeleteConstante(id, req);
   }
 }

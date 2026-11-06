@@ -16,6 +16,22 @@ export class DtoEmpresaCrear extends BaseDto {
   @IsString({ message: 'El telefono debe estar pasado en formato string' })
   @IsPhoneNumber(undefined, { message: 'Debe ser un número de teléfono válido con código de país' })
   telefono!: string;
+
+  // Datos del primer usuario admin de la empresa.
+  // Se crean en la misma transaccion que la empresa.
+  @IsNotEmpty({ message: 'Debe proporcionar el nombre del administrador' })
+  @IsString({ message: 'El nombre del administrador debe ser un texto' })
+  @Length(1, 50, { message: 'El nombre del administrador no debe superar los 50 caracteres' })
+  adminNombre!: string;
+
+  @IsNotEmpty({ message: 'Debe proporcionar el email del administrador' })
+  @IsEmail({}, { message: 'El email del administrador no es válido' })
+  adminEmail!: string;
+
+  @IsNotEmpty({ message: 'Debe proporcionar la contraseña del administrador' })
+  @IsString({ message: 'La contraseña debe ser un texto' })
+  @Length(6, 255, { message: 'La contraseña debe tener entre 6 y 255 caracteres' })
+  adminPassword!: string;
 }
 
 // ------------- DTO EDITAR ---------------//
