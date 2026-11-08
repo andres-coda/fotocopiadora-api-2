@@ -17,27 +17,43 @@ Leyenda de guards:
 | POST | `/auth/login` | — | Login con nombre y password. Devuelve JWT. |
 | GET | `/auth/profile` | U | Perfil del usuario autenticado (payload del JWT). |
 
-## Base (`/base`) — genérico para entidades que extienden Base
+## Entidades que extienden Base (endpoints heredados)
+
+Los siguientes controladores extienden `BaseController` y por lo tanto exponen, además de sus endpoints propios listados abajo, los siguientes endpoints heredados (con el prefijo de su entidad):
+
 | Método | Ruta | Guard | Descripción |
 |---|---|---|---|
-| GET | `/base` | U | Listado paginado de la entidad. |
-| GET | `/base/:id` | U | Obtiene una entidad por id. |
-| POST | `/base` | U | Crea una entidad. |
-| PUT | `/base/:id` | U | Edita una entidad. |
-| DELETE | `/base/:id` | U | Borrado lógico. |
-| DELETE | `/base/:id/eliminar` | U | Borrado físico. |
-| PATCH | `/base/:id/rehacer` | U | Restaura un borrado lógico. |
+| GET | `/:id` | U | Obtiene una entidad por id. |
+| POST | `/` | U | Crea una entidad. |
+| PUT | `/:id` | U | Edita una entidad. |
+| DELETE | `/:id` | U | Borrado lógico. |
+| DELETE | `/:id/eliminar` | U | Borrado físico. |
+| PATCH | `/:id/rehacer` | U | Restaura un borrado lógico. |
+
+Entidades que extienden Base: `cliente`, `componente`, `editorial`, `empresa`, `materia`, `nivel`, `pedido`, `propuesta_pedido`, `sede`.
 
 ## Cliente (`/cliente`)
 | Método | Ruta | Guard | Descripción |
 |---|---|---|---|
 | GET | `/cliente` | U | Listado de clientes de la empresa. |
 | GET | `/cliente/idCliente` | U | Obtiene cliente por idCliente. |
+| GET | `/cliente/:id` | U | Obtiene cliente por id (heredado de Base). |
+| POST | `/cliente` | U | Crea cliente (heredado de Base). |
+| PUT | `/cliente/:id` | U | Edita cliente (heredado de Base). |
+| DELETE | `/cliente/:id` | U | Borrado lógico (heredado de Base). |
+| DELETE | `/cliente/:id/eliminar` | U | Borrado físico (heredado de Base). |
+| PATCH | `/cliente/:id/rehacer` | U | Restaura borrado lógico (heredado de Base). |
 
 ## Componente (`/componente`)
 | Método | Ruta | Guard | Descripción |
 |---|---|---|---|
 | GET | `/componente` | U | Listado de componentes. |
+| GET | `/componente/:id` | U | Obtiene por id (heredado de Base). |
+| POST | `/componente` | U | Crea (heredado de Base). |
+| PUT | `/componente/:id` | U | Edita (heredado de Base). |
+| DELETE | `/componente/:id` | U | Borrado lógico (heredado de Base). |
+| DELETE | `/componente/:id/eliminar` | U | Borrado físico (heredado de Base). |
+| PATCH | `/componente/:id/rehacer` | U | Restaura borrado lógico (heredado de Base). |
 
 ## Configuración (`/configuracion`)
 | Método | Ruta | Guard | Descripción |
@@ -59,6 +75,12 @@ Leyenda de guards:
 | Método | Ruta | Guard | Descripción |
 |---|---|---|---|
 | GET | `/editorial` | U | Listado de editoriales. |
+| GET | `/editorial/:id` | U | Obtiene por id (heredado de Base). |
+| POST | `/editorial` | U | Crea (heredado de Base). |
+| PUT | `/editorial/:id` | U | Edita (heredado de Base). |
+| DELETE | `/editorial/:id` | U | Borrado lógico (heredado de Base). |
+| DELETE | `/editorial/:id/eliminar` | U | Borrado físico (heredado de Base). |
+| PATCH | `/editorial/:id/rehacer` | U | Restaura borrado lógico (heredado de Base). |
 
 ## Empresa (`/empresa`)
 | Método | Ruta | Guard | Descripción |
@@ -69,6 +91,8 @@ Leyenda de guards:
 | POST | `/empresa` | S | Crea empresa + precios default + primer admin. |
 | PUT | `/empresa/:id` | U | Edita empresa. |
 | DELETE | `/empresa/:id` | S | Borrado lógico de empresa. |
+| DELETE | `/empresa/:id/eliminar` | S | Borrado físico (heredado de Base). |
+| PATCH | `/empresa/:id/rehacer` | S | Restaura borrado lógico (heredado de Base). |
 
 ## Especificación (`/especificacion`)
 | Método | Ruta | Guard | Descripción |
@@ -104,6 +128,8 @@ Leyenda de guards:
 | GET | `/materia/nombre` | U | Búsqueda por nombre. |
 | GET | `/materia/todos` | U | Listado completo. |
 | GET | `/materia` | U | Listado. |
+| GET | `/materia/:id` | U | Obtiene por id (heredado de Base). |
+| POST | `/materia` | U | Crea (heredado de Base). |
 | PATCH | `/materia/:id/rehacer` | U | Restaura borrado lógico. |
 | DELETE | `/materia/:id/eliminar` | U | Borrado físico. |
 | DELETE | `/materia/:id` | U | Borrado lógico. |
@@ -124,6 +150,12 @@ Leyenda de guards:
 | Método | Ruta | Guard | Descripción |
 |---|---|---|---|
 | GET | `/nivel` | U | Listado de niveles. |
+| GET | `/nivel/:id` | U | Obtiene por id (heredado de Base). |
+| POST | `/nivel` | U | Crea (heredado de Base). |
+| PUT | `/nivel/:id` | U | Edita (heredado de Base). |
+| DELETE | `/nivel/:id` | U | Borrado lógico (heredado de Base). |
+| DELETE | `/nivel/:id/eliminar` | U | Borrado físico (heredado de Base). |
+| PATCH | `/nivel/:id/rehacer` | U | Restaura borrado lógico (heredado de Base). |
 
 ## Pedido (`/pedido`)
 | Método | Ruta | Guard | Descripción |
@@ -131,6 +163,12 @@ Leyenda de guards:
 | GET | `/pedido/buscar` | U | Búsqueda de pedidos. |
 | GET | `/pedido/cliente/:id` | U | Pedidos por cliente. |
 | GET | `/pedido` | U | Listado paginado. |
+| GET | `/pedido/:id` | U | Obtiene por id (heredado de Base). |
+| POST | `/pedido` | U | Crea (heredado de Base). |
+| PUT | `/pedido/:id` | U | Edita (heredado de Base). |
+| DELETE | `/pedido/:id` | U | Borrado lógico (heredado de Base). |
+| DELETE | `/pedido/:id/eliminar` | U | Borrado físico (heredado de Base). |
+| PATCH | `/pedido/:id/rehacer` | U | Restaura borrado lógico (heredado de Base). |
 | PATCH | `/pedido/estado/:idPedido` | U | Cambia estado del pedido. |
 
 ## Pedido item (`/item`)
@@ -172,14 +210,22 @@ Leyenda de guards:
 |---|---|---|---|
 | DELETE | `/propuesta-pedido/quitar-libros/:id` | U | Quita libros de una propuesta. |
 | GET | `/propuesta-pedido/buscar` | U | Búsqueda. |
+| GET | `/propuesta-pedido/:id` | U | Obtiene por id (heredado de Base). |
+| POST | `/propuesta-pedido` | U | Crea (heredado de Base). |
+| PUT | `/propuesta-pedido/:id` | U | Edita (heredado de Base). |
+| DELETE | `/propuesta-pedido/:id` | U | Borrado lógico (heredado de Base). |
+| DELETE | `/propuesta-pedido/:id/eliminar` | U | Borrado físico (heredado de Base). |
+| PATCH | `/propuesta-pedido/:id/rehacer` | U | Restaura borrado lógico (heredado de Base). |
 
 ## Sede (`/sede`)
 | Método | Ruta | Guard | Descripción |
 |---|---|---|---|
 | GET | `/sede/todas` | A | Todas las sedes (admin). |
 | GET | `/sede` | U | Listado. |
+| GET | `/sede/:id` | U | Obtiene por id (heredado de Base). |
 | PATCH | `/sede/:id/rehacer` | U | Restaura borrado lógico. |
 | DELETE | `/sede/:id` | U | Borrado lógico. |
+| DELETE | `/sede/:id/eliminar` | U | Borrado físico (heredado de Base). |
 | POST | `/sede` | A | Crea sede. |
 | PUT | `/sede/:id` | A | Edita sede. |
 
