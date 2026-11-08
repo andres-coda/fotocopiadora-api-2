@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>foto-api — Índice de endpoints</title>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5f5; color: #222; margin: 0; padding: 20px; }
+  h1 { text-align: center; color: #1a1a2e; }
+  .search { width: 100%; max-width: 600px; margin: 0 auto 20px; display: block; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+  .entity { background: #fff; border-radius: 10px; margin: 12px auto; max-width: 900px; box-shadow: 0 2px 6px rgba(0,0,0,.08); overflow: hidden; }
+  .entity > summary { padding: 14px 18px; font-size: 16px; font-weight: 700; cursor: pointer; background: #1a1a2e; color: #fff; list-style: none; }
+  .entity > summary::-webkit-details-marker { display: none; }
+  .entity > summary::before { content: '▸ '; }
+  .entity[open] > summary::before { content: '▾ '; }
+  .endpoints { padding: 8px 12px; }
+  .ep { border: 1px solid #e0e0e0; border-radius: 8px; margin: 8px 0; overflow: hidden; }
+  .ep > summary { padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; list-style: none; background: #f0f0f5; }
+  .ep > summary::-webkit-details-marker { display: none; }
+  .ep > summary::before { content: '▸'; color: #666; }
+  .ep[open] > summary::before { content: '▾'; }
+  .method { font-weight: 700; font-size: 12px; padding: 3px 8px; border-radius: 4px; color: #fff; min-width: 58px; text-align: center; }
+  .GET { background: #2e7d32; }
+  .POST { background: #1565c0; }
+  .PUT { background: #ef6c00; }
+  .PATCH { background: #6a1b9a; }
+  .DELETE { background: #c62828; }
+  .route { font-family: monospace; font-size: 13px; color: #333; flex: 1; }
+  .guard { font-size: 11px; color: #666; background: #e8e8e8; padding: 2px 6px; border-radius: 4px; }
+  .body { padding: 12px 16px; background: #fafafa; }
+  .desc { margin: 0 0 8px; font-size: 13px; color: #444; }
+  .ret { font-family: monospace; font-size: 12px; background: #263238; color: #aed581; padding: 10px 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; margin: 0; }
+  .section-title { font-size: 13px; font-weight: 600; color: #555; margin: 8px 0 4px; }
+  footer { text-align: center; color: #888; font-size: 12px; margin-top: 30px; }
+</style>
+</head>
+<body>
+<h1>foto-api — Índice de endpoints</h1>
+<input class="search" id="q" placeholder="Buscar endpoint, entidad o método..." oninput="filter()" />
+
+<div id="app"></div>
+
+<footer>Generado a partir de los controllers de foto-api. Base URL: http://localhost:3000</footer>
+
+<script>
+const DATA = [
+{entity:'Auth', eps:[
+ {m:'POST',r:'/auth/login',g:'—',d:'Login con nombre y password. Devuelve JWT.',ret:'{ access_token: string }'},
+ {m:'GET',r:'/auth/profile',g:'U',d:'Perfil del usuario autenticado (payload del JWT).',ret:'{ sub: string; nombre: string; role: string }'},
+]},
+{entity:'Cliente', eps:[
+ {m:'GET',r:'/cliente',g:'U',d:'Listado de clientes de la empresa.',ret:'{ total: number; limite: number; pagina: number; datos: ClienteRetorno[]; query: string }'},
+ {m:'GET',r:'/cliente/idCliente',g:'U',d:'Obtiene cliente por idCliente.',ret:'ClienteRetorno'},
+ {m:'GET',r:'/cliente/:id',g:'U',d:'Obtiene cliente por id (heredado de Base).',ret:'ClienteRetorno'},
+ {m:'POST',r:'/cliente',g:'U',d:'Crea cliente (heredado de Base).',ret:'ClienteRetorno'},
+ {m:'PUT',r:'/cliente/:id',g:'U',d:'Edita cliente (heredado de Base).',ret:'ClienteRetorno'},
+ {m:'DELETE',r:'/cliente/:id',g:'U',d:'Borrado lógico (heredado de Base).',ret:'boolean'},
+ {m:'DELETE',r:'/cliente/:id/eliminar',g:'U',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/cliente/:id/rehacer',g:'U',d:'Restaura borrado lógico (heredado de Base).',ret:'boolean'},
+]},
+{entity:'Componente', eps:[
+ {m:'GET',r:'/componente',g:'U',d:'Listado de componentes.',ret:'{ total; limite; pagina; datos: ComponenteRetorno[]; query }'},
+ {m:'GET',r:'/componente/:id',g:'U',d:'Obtiene por id (heredado de Base).',ret:'ComponenteRetorno'},
+ {m:'POST',r:'/componente',g:'U',d:'Crea (heredado de Base).',ret:'ComponenteRetorno'},
+ {m:'PUT',r:'/componente/:id',g:'U',d:'Edita (heredado de Base).',ret:'ComponenteRetorno'},
+ {m:'DELETE',r:'/componente/:id',g:'U',d:'Borrado lógico (heredado de Base).',ret:'boolean'},
+ {m:'DELETE',r:'/componente/:id/eliminar',g:'U',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/componente/:id/rehacer',g:'U',d:'Restaura borrado lógico (heredado de Base).',ret:'boolean'},
+]},
+{entity:'Configuración', eps:[
+ {m:'GET',r:'/configuracion',g:'U',d:'Obtiene la configuración de la empresa.',ret:'ConfiguracionRetorno'},
+ {m:'PUT',r:'/configuracion',g:'U',d:'Edita la configuración.',ret:'ConfiguracionRetorno'},
+]},
+{entity:'Dato de cobro', eps:[
+ {m:'GET',r:'/dato-cobro',g:'U',d:'Listado paginado.',ret:'{ total; limite; pagina; datos: DatoCobroRetorno[]; query }'},
+ {m:'GET',r:'/dato-cobro/nombre',g:'U',d:'Búsqueda por nombre (ILIKE).',ret:'{ total; limite; pagina; datos: DatoCobroRetorno[]; query }'},
+ {m:'GET',r:'/dato-cobro/:id',g:'U',d:'Obtiene por id.',ret:'DatoCobroRetorno'},
+ {m:'POST',r:'/dato-cobro',g:'A',d:'Crea un dato de cobro.',ret:'DatoCobroRetorno'},
+ {m:'PUT',r:'/dato-cobro/:id',g:'A',d:'Edita un dato de cobro.',ret:'DatoCobroRetorno'},
+ {m:'DELETE',r:'/dato-cobro/:id',g:'A',d:'Elimina un dato de cobro.',ret:'boolean'},
+]},
+{entity:'Editorial', eps:[
+ {m:'GET',r:'/editorial',g:'U',d:'Listado de editoriales.',ret:'{ total; limite; pagina; datos: EditorialRetorno[]; query }'},
+ {m:'GET',r:'/editorial/:id',g:'U',d:'Obtiene por id (heredado de Base).',ret:'EditorialRetorno'},
+ {m:'POST',r:'/editorial',g:'U',d:'Crea (heredado de Base).',ret:'EditorialRetorno'},
+ {m:'PUT',r:'/editorial/:id',g:'U',d:'Edita (heredado de Base).',ret:'EditorialRetorno'},
+ {m:'DELETE',r:'/editorial/:id',g:'U',d:'Borrado lógico (heredado de Base).',ret:'boolean'},
+ {m:'DELETE',r:'/editorial/:id/eliminar',g:'U',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/editorial/:id/rehacer',g:'U',d:'Restaura borrado lógico (heredado de Base).',ret:'boolean'},
+]},
+{entity:'Empresa', eps:[
+ {m:'GET',r:'/empresa',g:'U',d:'Listado paginado de empresas.',ret:'{ total; limite; pagina; datos: EmpresaRetorno[]; query }'},
+ {m:'GET',r:'/empresa/mia',g:'U',d:'Empresa del usuario autenticado (desde el token).',ret:'EmpresaMiaRetorno'},
+ {m:'GET',r:'/empresa/:id',g:'U',d:'Obtiene empresa por id (vista completa).',ret:'EmpresaRetorno'},
+ {m:'POST',r:'/empresa',g:'S',d:'Crea empresa + precios default + primer admin.',ret:'EmpresaRetorno'},
+ {m:'PUT',r:'/empresa/:id',g:'U',d:'Edita empresa.',ret:'EmpresaRetorno'},
+ {m:'DELETE',r:'/empresa/:id',g:'S',d:'Borrado lógico de empresa.',ret:'boolean'},
+ {m:'DELETE',r:'/empresa/:id/eliminar',g:'S',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/empresa/:id/rehacer',g:'S',d:'Restaura borrado lógico (heredado de Base).',ret:'boolean'},
+]},
+{entity:'Especificación', eps:[
+ {m:'GET',r:'/especificacion',g:'U',d:'Listado.',ret:'{ total; limite; pagina; datos: EspecificacionRetorno[]; query }'},
+ {m:'GET',r:'/especificacion/:id',g:'U',d:'Obtiene por id.',ret:'EspecificacionRetorno'},
+ {m:'POST',r:'/especificacion',g:'U',d:'Crea.',ret:'EspecificacionRetorno'},
+ {m:'PUT',r:'/especificacion/:idEsp',g:'U',d:'Edita.',ret:'EspecificacionRetorno'},
+ {m:'DELETE',r:'/especificacion/:idEsp',g:'U',d:'Elimina.',ret:'boolean'},
+]},
+{entity:'Libro', eps:[
+ {m:'GET',r:'/libro/completo',g:'U',d:'Libro completo.',ret:'LibroRetorno'},
+ {m:'GET',r:'/libro/nombre',g:'U',d:'Búsqueda por nombre.',ret:'{ total; limite; pagina; datos: LibroRetorno[]; query }'},
+ {m:'GET',r:'/libro/:idLibro',g:'U',d:'Obtiene libro por id.',ret:'LibroRetorno'},
+ {m:'GET',r:'/libro',g:'U',d:'Listado paginado.',ret:'{ total; limite; pagina; datos: LibroRetorno[]; query }'},
+ {m:'POST',r:'/libro',g:'U',d:'Crea libro.',ret:'LibroRetorno'},
+ {m:'PATCH',r:'/libro/:idLibro',g:'U',d:'Edita datos de empresa del libro.',ret:'LibroRetorno'},
+ {m:'PATCH',r:'/libro/extra/:idLibro',g:'U',d:'Edita datos extras.',ret:'LibroRetorno'},
+ {m:'PATCH',r:'/libro/principal/:idLibro',g:'U',d:'Edita datos principales.',ret:'LibroRetorno'},
+ {m:'PUT',r:'/libro/:idLibro',g:'U',d:'Edita libro.',ret:'LibroRetorno'},
+ {m:'DELETE',r:'/libro/:idLibro',g:'S',d:'Elimina libro.',ret:'boolean'},
+]},
+{entity:'Libro stock', eps:[
+ {m:'PUT',r:'/libro/stock/:idLibro',g:'U',d:'Actualiza stock.',ret:'StockRetorno'},
+]},
+{entity:'Materia', eps:[
+ {m:'GET',r:'/materia/nombre',g:'U',d:'Búsqueda por nombre.',ret:'{ total; limite; pagina; datos: MateriaRetorno[]; query }'},
+ {m:'GET',r:'/materia/todos',g:'U',d:'Listado completo.',ret:'MateriaRetorno[]'},
+ {m:'GET',r:'/materia',g:'U',d:'Listado.',ret:'{ total; limite; pagina; datos: MateriaRetorno[]; query }'},
+ {m:'GET',r:'/materia/:id',g:'U',d:'Obtiene por id (heredado de Base).',ret:'MateriaRetorno'},
+ {m:'POST',r:'/materia',g:'U',d:'Crea (heredado de Base).',ret:'MateriaRetorno'},
+ {m:'PUT',r:'/materia/:id',g:'U',d:'Edita.',ret:'MateriaRetorno'},
+ {m:'PATCH',r:'/materia/:id/rehacer',g:'U',d:'Restaura borrado lógico.',ret:'boolean'},
+ {m:'DELETE',r:'/materia/:id/eliminar',g:'U',d:'Borrado físico.',ret:'boolean'},
+ {m:'DELETE',r:'/materia/:id',g:'U',d:'Borrado lógico.',ret:'boolean'},
+]},
+{entity:'Mensaje', eps:[
+ {m:'GET',r:'/mensaje',g:'U',d:'Listado paginado.',ret:'{ total; limite; pagina; datos: MensajeRetorno[]; query }'},
+ {m:'GET',r:'/mensaje/nombre',g:'U',d:'Búsqueda por nombre (ILIKE).',ret:'{ total; limite; pagina; datos: MensajeRetorno[]; query }'},
+ {m:'GET',r:'/mensaje/:id',g:'U',d:'Obtiene por id.',ret:'MensajeRetorno'},
+ {m:'POST',r:'/mensaje',g:'A',d:'Crea mensaje.',ret:'MensajeRetorno'},
+ {m:'PUT',r:'/mensaje/:id',g:'A',d:'Edita mensaje.',ret:'MensajeRetorno'},
+ {m:'PUT',r:'/mensaje/:id/favorito',g:'U',d:'Marca/desmarca favorito.',ret:'MensajeRetorno'},
+ {m:'DELETE',r:'/mensaje/:id',g:'A',d:'Elimina mensaje.',ret:'boolean'},
+]},
+{entity:'Nivel', eps:[
+ {m:'GET',r:'/nivel',g:'U',d:'Listado de niveles.',ret:'{ total; limite; pagina; datos: NivelRetorno[]; query }'},
+ {m:'GET',r:'/nivel/:id',g:'U',d:'Obtiene por id (heredado de Base).',ret:'NivelRetorno'},
+ {m:'POST',r:'/nivel',g:'U',d:'Crea (heredado de Base).',ret:'NivelRetorno'},
+ {m:'PUT',r:'/nivel/:id',g:'U',d:'Edita (heredado de Base).',ret:'NivelRetorno'},
+ {m:'DELETE',r:'/nivel/:id',g:'U',d:'Borrado lógico (heredado de Base).',ret:'boolean'},
+ {m:'DELETE',r:'/nivel/:id/eliminar',g:'U',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/nivel/:id/rehacer',g:'U',d:'Restaura borrado lógico (heredado de Base).',ret:'boolean'},
+]},
+{entity:'Pedido', eps:[
+ {m:'GET',r:'/pedido/buscar',g:'U',d:'Búsqueda de pedidos.',ret:'{ total; limite; pagina; datos: PedidoRetorno[]; query }'},
+ {m:'GET',r:'/pedido/cliente/:id',g:'U',d:'Pedidos por cliente.',ret:'PedidoRetorno[]'},
+ {m:'GET',r:'/pedido',g:'U',d:'Listado paginado.',ret:'{ total; limite; pagina; datos: PedidoRetorno[]; query }'},
+ {m:'GET',r:'/pedido/:id',g:'U',d:'Obtiene por id (heredado de Base).',ret:'PedidoRetorno'},
+ {m:'POST',r:'/pedido',g:'U',d:'Crea (heredado de Base).',ret:'PedidoRetorno'},
+ {m:'PUT',r:'/pedido/:id',g:'U',d:'Edita (heredado de Base).',ret:'PedidoRetorno'},
+ {m:'DELETE',r:'/pedido/:id',g:'U',d:'Borrado lógico (heredado de Base).',ret:'boolean'},
+ {m:'DELETE',r:'/pedido/:id/eliminar',g:'U',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/pedido/:id/rehacer',g:'U',d:'Restaura borrado lógico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/pedido/estado/:idPedido',g:'U',d:'Cambia estado del pedido.',ret:'PedidoRetorno'},
+]},
+{entity:'Pedido item', eps:[
+ {m:'GET',r:'/item',g:'U',d:'Listado.',ret:'{ total; limite; pagina; datos: ItemRetorno[]; query }'},
+ {m:'GET',r:'/item/pedido/:idPedido',g:'U',d:'Items de un pedido.',ret:'ItemRetorno[]'},
+ {m:'GET',r:'/item/libro/:idLibro',g:'U',d:'Items por libro.',ret:'ItemRetorno[]'},
+ {m:'POST',r:'/item/:idPedido/pedido',g:'U',d:'Agrega item a pedido.',ret:'ItemRetorno'},
+ {m:'PUT',r:'/item/:idPedido/pedido/:nroItem',g:'U',d:'Edita item.',ret:'ItemRetorno'},
+ {m:'PATCH',r:'/item/estado/:idPedido/:nroItem',g:'U',d:'Cambia estado del item.',ret:'ItemRetorno'},
+ {m:'PATCH',r:'/item/sede/:idPedido/:nroItem',g:'U',d:'Cambia sede del item.',ret:'ItemRetorno'},
+ {m:'DELETE',r:'/item/:idPedido/pedido:nroItem',g:'U',d:'Elimina item.',ret:'boolean'},
+]},
+{entity:'Precio', eps:[
+ {m:'GET',r:'/precio',g:'U',d:'Listado.',ret:'{ total; limite; pagina; datos: PrecioRetorno[]; query }'},
+ {m:'DELETE',r:'/precio/:id',g:'U',d:'Elimina.',ret:'boolean'},
+ {m:'PUT',r:'/precio/:id',g:'U',d:'Edita.',ret:'PrecioRetorno'},
+]},
+{entity:'Precio categoría', eps:[
+ {m:'GET',r:'/precio-categoria/todas',g:'U',d:'Todas las categorías.',ret:'PrecioCategoriaRetorno[]'},
+ {m:'GET',r:'/precio-categoria',g:'U',d:'Listado.',ret:'{ total; limite; pagina; datos: PrecioCategoriaRetorno[]; query }'},
+]},
+{entity:'Precio empresa', eps:[
+ {m:'GET',r:'/precio-empresa',g:'U',d:'Listado.',ret:'{ total; limite; pagina; datos: PrecioRetorno[]; query }'},
+ {m:'GET',r:'/precio-empresa/:idPrecio',g:'U',d:'Obtiene por id.',ret:'PrecioRetorno'},
+ {m:'POST',r:'/precio-empresa',g:'U',d:'Crea.',ret:'PrecioRetorno'},
+ {m:'PUT',r:'/precio-empresa/:idPrecio',g:'U',d:'Edita.',ret:'PrecioRetorno'},
+ {m:'DELETE',r:'/precio-empresa/:idPrecio',g:'U',d:'Elimina.',ret:'boolean'},
+]},
+{entity:'Propuesta pedido', eps:[
+ {m:'DELETE',r:'/propuesta-pedido/quitar-libros/:id',g:'U',d:'Quita libros de una propuesta.',ret:'boolean'},
+ {m:'GET',r:'/propuesta-pedido/buscar',g:'U',d:'Búsqueda.',ret:'{ total; limite; pagina; datos: PropuestaRetorno[]; query }'},
+ {m:'GET',r:'/propuesta-pedido/:id',g:'U',d:'Obtiene por id (heredado de Base).',ret:'PropuestaRetorno'},
+ {m:'POST',r:'/propuesta-pedido',g:'U',d:'Crea (heredado de Base).',ret:'PropuestaRetorno'},
+ {m:'PUT',r:'/propuesta-pedido/:id',g:'U',d:'Edita (heredado de Base).',ret:'PropuestaRetorno'},
+ {m:'DELETE',r:'/propuesta-pedido/:id',g:'U',d:'Borrado lógico (heredado de Base).',ret:'boolean'},
+ {m:'DELETE',r:'/propuesta-pedido/:id/eliminar',g:'U',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'PATCH',r:'/propuesta-pedido/:id/rehacer',g:'U',d:'Restaura borrado lógico (heredado de Base).',ret:'boolean'},
+]},
+{entity:'Sede', eps:[
+ {m:'GET',r:'/sede/todas',g:'A',d:'Todas las sedes (admin).',ret:'SedeRetorno[]'},
+ {m:'GET',r:'/sede',g:'U',d:'Listado.',ret:'{ total; limite; pagina; datos: SedeRetorno[]; query }'},
+ {m:'GET',r:'/sede/:id',g:'U',d:'Obtiene por id (heredado de Base).',ret:'SedeRetorno'},
+ {m:'PATCH',r:'/sede/:id/rehacer',g:'U',d:'Restaura borrado lógico.',ret:'boolean'},
+ {m:'DELETE',r:'/sede/:id',g:'U',d:'Borrado lógico.',ret:'boolean'},
+ {m:'DELETE',r:'/sede/:id/eliminar',g:'U',d:'Borrado físico (heredado de Base).',ret:'boolean'},
+ {m:'POST',r:'/sede',g:'A',d:'Crea sede.',ret:'SedeRetorno'},
+ {m:'PUT',r:'/sede/:id',g:'A',d:'Edita sede.',ret:'SedeRetorno'},
+]},
+{entity:'Solicitud', eps:[
+ {m:'GET',r:'/solicitud',g:'S',d:'Listado de solicitudes de edición de libros.',ret:'{ total; limite; pagina; datos: SolicitudRetorno[]; query }'},
+ {m:'GET',r:'/solicitud/:id',g:'S',d:'Detalle con peticiones.',ret:'SolicitudRetorno'},
+ {m:'PATCH',r:'/solicitud/:id',g:'S',d:'Acepta/rechaza solicitud (+observaciones).',ret:'SolicitudRetorno'},
+]},
+{entity:'Usuario', eps:[
+ {m:'GET',r:'/user',g:'A',d:'Listado de usuarios de la empresa.',ret:'{ total; limite; pagina; datos: UsuarioRetorno[]; query }'},
+ {m:'GET',r:'/user/empresa/:id',g:'U',d:'Usuarios por empresa.',ret:'UsuarioRetorno[]'},
+ {m:'GET',r:'/user/:id',g:'U',d:'Obtiene usuario por id.',ret:'UsuarioRetorno'},
+ {m:'POST',r:'/user',g:'A',d:'Crea usuario.',ret:'UsuarioRetorno'},
+ {m:'PUT',r:'/user',g:'U',d:'Edita propio perfil.',ret:'UsuarioRetorno'},
+ {m:'PUT',r:'/user/role',g:'A',d:'Cambia rol de usuario.',ret:'UsuarioRetorno'},
+]},
+];
+
+const RETS = {
+ClienteRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre?: string
+  telefono?: string
+  email?: string
+  resumen?: { id; pendiente; listo; retirado; cancelado }
+}`,
+ComponenteRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+}`,
+ConfiguracionRetorno: `{
+  idEmpresa: string
+  fechaActualizacion?: Date
+  fechaEntrega?: string
+  horaEntrega?: number
+  msjRetiro?: boolean
+  msjEnvio?: boolean
+  msjRetirado?: MensajeRetorno
+  msjTomado?: MensajeRetorno
+  sede?: SedeRetorno
+  datoCobrado?: DatoCobroRetorno
+}`,
+DatoCobroRetorno: `{
+  id: string
+  nombre: string
+  mensaje?: string | null
+}`,
+EditorialRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+}`,
+EmpresaRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+  telefono: string
+  email: string
+  configuracion?: ConfiguracionRetorno
+}`,
+EmpresaMiaRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+  telefono: string
+  email: string
+  configuracion: { fechaActualizacion; fechaEntrega?; horaEntrega?; msjRetiro?; msjEnvio?; sede?; datoCobro?; msjPedidoTomado?; msjPedidoRetirado? }
+  usuarios?: { id; nombre; email; role }[]
+}`,
+EspecificacionRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+}`,
+LibroRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre?: string
+  editorial?: string
+  descripcion?: string
+  edicion: string
+  anio?: string
+  nivel?: string
+  componentes?: string
+  materia?: string
+  autor?: string
+  img?: string
+  cantidad_pg?: number
+  cantidad_adhesivo?: number
+  especificaciones_defecto?: Especificaciones[]
+  detalle_impresion?: string
+  componentes_texto?: string
+  resumen?: { pendiente; listo; retirado; cancelado; stock }
+}`,
+StockRetorno: `{
+  id: string
+  stock: number
+  pendiente: number
+  listo: number
+  retirado: number
+  cancelado: number
+}`,
+MateriaRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+}`,
+MensajeRetorno: `{
+  id: string
+  nombre: string
+  mensaje?: string | null
+  favorito: boolean
+}`,
+NivelRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+}`,
+PedidoRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  estado: EstadoPedido
+  fechaEntrega?: string
+  importeTotal?: number
+  archivos?: number
+  anillados?: number
+  sena?: number
+  items: ItemRetorno[]
+  cliente?: ClienteRetorno
+}`,
+ItemRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  estado?: EstadoPedido
+  idPedido: string
+  cantidad?: number
+  detalles?: string
+  especificaciones: Especificaciones[]
+  libro: LibroRetorno
+  sede?: SedeRetorno
+  pedido?: PedidoRetorno
+}`,
+PrecioRetorno: `{
+  id (idPrecio): string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+  descripcion?: string
+  abreviatura?: PrecioAbareviatura
+  importe: number
+  categoria?: { id; nombre }
+}`,
+PrecioCategoriaRetorno: `{
+  id: string
+  nombre: string
+}`,
+PropuestaRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+  libros: LibroRetorno[]
+}`,
+SedeRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+}`,
+SolicitudRetorno: `{
+  id: string
+  idLibroCompleto: string
+  nombreLibro: string
+  fechaCreacion: Date
+  fechaResolucion: Date | null
+  idUsuario: string
+  nombreUsuario: string
+  estado: number  (1=pendiente,2=aceptada,3=rechazada)
+  idEmpresa: string
+  peticiones: PeticionRetorno[]
+}`,
+PeticionRetorno: `{
+  id: string
+  campo: string
+  valorAnterior: string | null
+  valorNuevo: string | null
+  observaciones: string | null
+  estado: number
+}`,
+UsuarioRetorno: `{
+  id: string
+  fechaCreacion?: Date
+  fechaActualizacion?: Date
+  deleted?: boolean
+  nombre: string
+  email: string
+  role: Role  (super_admin | admin | operador)
+}`,
+ResumenRetorno: `{
+  id: string
+  pendiente: number
+  listo: number
+  retirado: number
+  cancelado: number
+  stock?: number
+}`,
+};
+
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  DATA.forEach(ent => {
+    const eps = ent.eps.filter(e =>
+      !q || ent.entity.toLowerCase().includes(q) || e.r + ' ' + e.m + ' ' + e.d.toLowerCase().includes(q)
+    );
+    if (!eps.length) return;
+    const det = document.createElement('details');
+    det.className = 'entity';
+    det.open = !!q;
+    const sum = document.createElement('summary');
+    sum.textContent = ent.entity + ' (' + eps.length + ')';
+    det.appendChild(sum);
+    const box = document.createElement('div');
+    box.className = 'endpoints';
+    eps.forEach(e => {
+      const ep = document.createElement('details');
+      ep.className = 'ep';
+      const es = document.createElement('summary');
+      const meth = document.createElement('span');
+      meth.className = 'method ' + e.m;
+      meth.textContent = e.m;
+      const route = document.createElement('span');
+      route.className = 'route';
+      route.textContent = e.r;
+      const guard = document.createElement('span');
+      guard.className = 'guard';
+      guard.textContent = e.g;
+      es.appendChild(meth);
+      es.appendChild(route);
+      es.appendChild(guard);
+      ep.appendChild(es);
+      const body = document.createElement('div');
+      body.className = 'body';
+      const p = document.createElement('p');
+      p.className = 'desc';
+      p.textContent = e.d;
+      body.appendChild(p);
+      const st = document.createElement('div');
+      st.className = 'section-title';
+      st.textContent = 'Retorna:';
+      body.appendChild(st);
+      const pre = document.createElement('pre');
+      pre.className = 'ret';
+      // resolve return type name (strip array/generics)
+      let key = e.ret.replace(/[\[\]]/g,'').replace(/[^A-Za-z]/g,'');
+      // find a RETS key that matches start
+      let retText = RETS[e.ret.split(' ')[0].replace(/[^A-Za-z]/g,'')] || null;
+      if (!retText) {
+        // try first token
+        const tok = e.ret.match(/[A-Za-z]+Retorno|[A-Za-z]+Prop/);
+        if (tok && RETS[tok[0]]) retText = RETS[tok[0]];
+      }
+      pre.textContent = retText || e.ret;
+      body.appendChild(pre);
+      ep.appendChild(body);
+      box.appendChild(ep);
+    });
+    det.appendChild(box);
+    app.appendChild(det);
+  });
+}
+render();
+</script>
+</body>
+</html>
