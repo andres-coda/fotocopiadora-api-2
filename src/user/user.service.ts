@@ -10,6 +10,10 @@ import { ModificarRole } from './interface/usuario.interface';
 import { Role } from '@src/auth/rol/rol.enum';
 import { GetGenericoProp, RetornoGenericoControllerGet, RetornoGenericoServiceGet } from '@src/interface/general.interface';
 
+interface GetUsuariosByEmpresaProp extends GetGenericoProp{
+ id:string;
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -39,6 +43,30 @@ export class UserService {
       }
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar leer todos los usuarios`)
+    }
+  }
+
+  async getUsuariosByEmpresa({id, qR, limite, offset }: GetUsuariosByEmpresaProp): Promise<RetornoGenericoServiceGet<User>> {
+    try {
+ 
+      const criterio: FindManyOptions = {
+        take: limite ?? 20,
+        skip: offset ?? 0,
+        // El listado es el ABM de la empresa: un usuario dado de baja no
+        // aparece. Antes el front lo daba por hecho y el back no lo filtraba.
+        where: { 
+          deleted: false,
+          idEmpresa: id
+         },
+      }
+
+      const [datos, total] = await qR.manager.findAndCount(User, criterio);
+
+      return {
+        datos, total
+      }
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar leer todos los usuarios de la empresa ${id}`)
     }
   }
 

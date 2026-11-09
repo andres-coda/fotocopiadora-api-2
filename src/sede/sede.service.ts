@@ -36,8 +36,8 @@ export class SedeService extends BaseService<typeof Entidad.SEDE, Sede, DtoSedeC
       const [datos, total] = await qR.manager.findAndCount(Sede, criterio);
 
       const retorno: SedeRetorno[] = (datos ?? []).flatMap(e => {
-        const esp = this.remplaceToReturn(e);
-        return esp ? [esp] : [];
+        const sede = this.remplaceToReturn(e);
+        return sede ? [sede] : [];
       });
 
       return {

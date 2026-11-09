@@ -1,8 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AuthService } from '../auth/auth.service';
 import { UsuarioGuard } from '../auth/guard/user.guard';
-import { AuthParcialDto } from '../auth/dto/authParcial.dto';
 import { User } from './entity/user.entity';
 import { UsuarioCrear } from './dto/userCrear.dto';
 import { AdminGuard } from '../auth/guard/admin.guard';
@@ -11,6 +9,7 @@ import { Role } from '@src/auth/rol/rol.enum';
 import type { ModificarRole } from './interface/usuario.interface';
 import { EditarUsuarioDto } from './dto/userEditar.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
+import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 
 @Controller('user')
 @UseGuards(UsuarioGuard)
@@ -39,6 +38,31 @@ export class UserController {
       query: '',
     }
   }
+
+  @Get('empresa/:id')
+  @HttpCode(200)
+  @UseGuards(SuperAdminGuard)
+  async getUsuariosByEmpresa(
+    @Param('id') id:string,
+    @Query('pagina') pagina = 1,
+    @Query('limite') limite = 20,
+    @Request() req: RequestWithUser,
+  ): Promise<RetornoGenericoControllerGet<User>> {
+    if(!id ) throw new NotFoundException('Requiere seleccionar una empresa para obtener sus usuarios')
+    const offset = (pagina - 1) * limite;
+
+    const retorno = await this.userService.getUsuariosByEmpresa({ id, qR: req.queryRunner, limite, offset });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos,
+      query: '',
+    }
+  }
+
+
 
   @Get(':id')
   @HttpCode(200)

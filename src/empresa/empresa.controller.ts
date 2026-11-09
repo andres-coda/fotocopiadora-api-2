@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { Role } from '@src/auth/rol/rol.enum';
@@ -12,6 +12,7 @@ import { EMPRESA_RELATIONS, EMPRESA_SELECTED } from './default/empresa.relacion'
 import { EmpresaRetorno } from './retorno/empresa.retorno';
 import { Configuracion } from '@src/configuracion/entity/configuracion.entity';
 import { User } from '@src/user/entity/user.entity';
+import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 
 @Controller('empresa')
 @UseGuards(UsuarioGuard)
@@ -35,7 +36,31 @@ export class EmpresaController extends BaseController<typeof Entidad.EMPRESA, Em
     const idEmpresa: string | null | undefined = req.user?.idEmpresa;
     if (!idEmpresa) throw new NotFoundException('El usuario no tiene una empresa asociada');
 
-    return this.empresaService.getDatoByIdCx({ id: idEmpresa, qR: req.queryRunner });
+    return await this.empresaService.getDatoByIdCx({ id: idEmpresa, qR: req.queryRunner });
+  }
+
+
+  @UseGuards(SuperAdminGuard)
+  @Get('libro')
+  @HttpCode(200)
+  async getEmpresaByLibro(
+    @Query('q') idLibro: string | undefined,
+    @Query('limite') limite = 20,
+    @Query('pagina') pagDto = 1,
+    @Request() req: RequestWithUser
+  ): Promise<RetornoGenericoControllerGet<EmpresaRetorno>> {
+    if (!idLibro) throw new NotFoundException('Falta el id del libro')
+    const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
+    const offset = (pagina - 1) * limite;
+
+    const datoRetorno = await this.empresaService.getEmpresasByLibro(idLibro, limite, offset, req.queryRunner);
+    return {
+        total: datoRetorno.total,
+        limite,
+        pagina,
+        datos: datoRetorno.datos,
+        query: idLibro ?? '',
+      }
   }
 
   /**

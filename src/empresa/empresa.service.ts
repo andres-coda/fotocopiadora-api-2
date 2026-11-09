@@ -16,6 +16,7 @@ import { EmpresaRetorno } from './retorno/empresa.retorno';
 import { ConfiguracionEmpresaMia } from './retorno/empresaMia.retorno';
 import { ConfiguracionRetorno } from '@src/configuracion/retorno/configuracion.retorno';
 import { toRespuestaEmpresa } from './util/toRespuestaEmpresa';
+import { EmpresaByLibroRetornoProps } from './dto/empresa.interface';
 
 @Injectable()
 export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa, DtoEmpresaCrear, DtoEmpresaEditar> {
@@ -60,6 +61,32 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
     }
   }
 
+  async getEmpresasByLibro(
+    id: string,
+    limite = 20,
+    offset = 0,
+    qR: QueryRunner,
+  ): Promise<RetornoGenericoServiceGet<EmpresaRetorno>> {
+    try {
+
+      const rows:EmpresaByLibroRetornoProps[] = await qR.query(
+        `SELECT *, COUNT(le.id_libro) OVER() AS total
+        FROM empresa e
+        JOIN libro_empresa le ON le.id_empresa = e.id
+        WHERE le.id_libro = $1
+        LIMIT $2 OFFSET $3`,
+        [id, limite, offset],
+      );
+
+      return {
+        total: rows[0].total || 0,
+        datos: rows.map((r) => this.remplaceToReturn(r)).filter(r => r != undefined),
+      }
+    } catch (er) {
+      throw this.erroresService.handleExceptions(er, `Error al buscar empresas`);
+    }
+  }
+
   /**
    * Lee una empresa desde vw_empresa_completa.
    * Devuelve la fila con todas las columnas de la vista,
@@ -78,9 +105,9 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
 
   async getDatoByIdCx({ id, qR }: GetGenericoByIdProp): Promise<EmpresaRetorno> {
     try {
-      const empresa = await this.getEmpresaById({id, qR});
-      if(!empresa) throw new NotFoundException(`No existe la empresa con id buscado`);
-      return toRespuestaEmpresa({...empresa});
+      const empresa = await this.getEmpresaById({ id, qR });
+      if (!empresa) throw new NotFoundException(`No existe la empresa con id buscado`);
+      return toRespuestaEmpresa({ ...empresa });
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar leer la empresa ${id} desde vw_empresa_completa`);
     }
