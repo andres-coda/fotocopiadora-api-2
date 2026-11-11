@@ -48,6 +48,7 @@ import { DatoCobroModule } from './dato_cobro/datoCobro.module';
 import { DatoCobro } from './dato_cobro/entity/datoCobro.entity';
 import { ConfiguracionModule } from './configuracion/configuracion.module';
 import { Configuracion } from './configuracion/entity/configuracion.entity';
+import { ImgSubirModule } from './img_subir/img_subir.module';
 
 @Module({
    imports: [
@@ -111,6 +112,7 @@ import { Configuracion } from './configuracion/entity/configuracion.entity';
     SolicitudModule,
     DatoCobroModule,
     ConfiguracionModule,
+    ImgSubirModule,
   ],
   controllers: [],
   providers: [
