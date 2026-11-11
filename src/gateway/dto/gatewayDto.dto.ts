@@ -11,6 +11,7 @@ import { SedeRetorno } from "@src/sede/retorno/sede.retorno";
 import { EmpresaRetorno } from "@src/empresa/retorno/empresa.retorno";
 import { NivelRetorno } from "@src/nivel/retorno/nivel.retorno";
 import { EditorialRetorno } from "@src/editorial/retorno/editorial.retorno";
+import { MensajeRetorno } from "@src/mensaje/retorno/mensaje.retorno";
 import { BaseRetorno } from "@src/base/retorno/base.retorno";
 
 export const EntidadDatoMap = {
@@ -26,6 +27,7 @@ export const EntidadDatoMap = {
   empresa: {} as EmpresaRetorno,
   nivel: {} as NivelRetorno,
   editorial: {} as EditorialRetorno,
+  mensaje: {} as MensajeRetorno,
 } satisfies Record<string, BaseRetorno>;
 
 

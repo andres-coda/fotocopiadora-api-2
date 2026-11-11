@@ -7,6 +7,10 @@ import { Mensaje } from './entity/mensaje.entity';
 import { DtoMensajeCrear } from './dto/mensajeCrear.dto';
 import { DtoMensajeEditar } from './dto/mensajeEditar.dto';
 import { MensajeRetorno } from './retorno/mensaje.retorno';
+import { GatewayGateway } from '@src/gateway/gateway.gateway';
+import { Entidad } from '@src/gateway/dto/gatewayDto.dto';
+import type { Mensaje as MensajeGateway } from '@src/gateway/dto/gatewayDto.dto';
+import { Mens } from '@src/gateway/enum/Mens.enum';
 
 interface MensajeFila {
   id: string;
@@ -45,6 +49,7 @@ export class MensajeService {
     private readonly mensajeRepository: Repository<Mensaje>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly erroresService: ErroresService,
+    private readonly gateway: GatewayGateway,
   ) { }
 
   /**
@@ -122,7 +127,15 @@ export class MensajeService {
 
       const newMensaje: Mensaje = await qR.manager.save(Mensaje, mensaje);
 
-      return this.toRetorno(newMensaje, false);
+      const retorno: MensajeRetorno = this.toRetorno(newMensaje, false);
+
+      this.gateway.actualizacionDato({
+        mensaje: Mens.CREAR,
+        entidad: Entidad.MENSAJE,
+        dato: retorno,
+      } as MensajeGateway);
+
+      return retorno;
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar crear el mensaje ${dto.nombre}`);
     }
@@ -137,7 +150,15 @@ export class MensajeService {
 
       const newMensaje: Mensaje = await qR.manager.save(Mensaje, mensaje);
 
-      return this.toRetorno(newMensaje, await this.esFavorito(qR, id));
+      const retorno: MensajeRetorno = this.toRetorno(newMensaje, await this.esFavorito(qR, id));
+
+      this.gateway.actualizacionDato({
+        mensaje: Mens.EDITAR,
+        entidad: Entidad.MENSAJE,
+        dato: retorno,
+      } as MensajeGateway);
+
+      return retorno;
     } catch (error) {
       throw this.erroresService.handleExceptions(error, `Error al intentar editar el mensaje ${id}`);
     }
@@ -146,6 +167,10 @@ export class MensajeService {
   /**
    * Marca o desmarca el mensaje como favorito del usuario autenticado.
    * El id_usuario lo resuelve el DEFAULT fc_usuario_actual() al insertar.
+   *
+   * No emite por el gateway a proposito: el favorito es por usuario, no por
+   * empresa. Emitirlo pisaria el favorito de los demas usuarios de la sala.
+   * El usuario que lo modifica ya recibe el cambio en su propia respuesta.
    */
   async setFavorito(qR: QueryRunner, id: string, favorito: boolean): Promise<MensajeRetorno> {
     try {
@@ -187,6 +212,12 @@ export class MensajeService {
       const mensaje: Mensaje = await this.getEntityByIdOrFail(qR, id);
 
       await qR.manager.remove(Mensaje, mensaje);
+
+      this.gateway.actualizacionDato({
+        mensaje: Mens.ELIMINAR,
+        entidad: Entidad.MENSAJE,
+        id,
+      } as MensajeGateway);
 
       return true;
     } catch (error) {
