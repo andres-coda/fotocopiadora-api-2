@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { GatewayGateway } from '../gateway/gateway.gateway';
 import { CreateDefaultProp, CreateProp, EditarProp, GetIdProp, GetProp, RetornoGet, UpdateRetorno } from '../base/interface/base.interface';
@@ -88,16 +88,26 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     }
   }
 
+  /**
+   * Retorno armado desde la vista, que es el mismo shape que devuelve el GET.
+   * Devuelve undefined cuando la propuesta no tiene libros: la vista parte de
+   * propuesta_libro_empresa, asi que sin libros no hay filas.
+   */
+  private async getRetornoVista(id: string, qR: QueryRunner): Promise<PropuestaRetorno | undefined> {
+    const rows = await qR.query(
+      'SELECT * FROM vw_propuesta WHERE id_propuesta = $1 ORDER BY nombre',
+      [id]
+    );
+
+    const propuesta = toRespuestaPropuesta(rows);
+    return propuesta.length === 1 ? propuesta[0] : undefined;
+  }
+
   async getPropuestaById({ qR, id }: GetGenericoByIdProp): Promise<PropuestaRetorno> {
     try {
-      const rows = await qR.query(
-        'SELECT * FROM vw_propuesta WHERE id_propuesta = $1 ORDER BY nombre',
-        [id]
-      );
-
-      const propuesta = toRespuestaPropuesta(rows);
-      if (propuesta.length != 1) throw new NotFoundException('Hay propuesta con id duplicadas');
-      return propuesta[0];
+      const propuesta = await this.getRetornoVista(id, qR);
+      if (!propuesta) throw new NotFoundException('Hay propuesta con id duplicadas');
+      return propuesta;
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar leer las propusetas`)
     }
@@ -141,6 +151,26 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
     }
   }
 
+
+  async createDatoCx({ dto, entidad, qR }: CreateProp<DtoPropuestaCrear, typeof Entidad.PROPUESTA_PEDIDO>): Promise<PropuestaRetorno> {
+    try {
+      const nueva: Propuesta = await this.createDato({ dto, qR, entidad });
+
+      // Se emite el retorno de la vista (libros completos) y no el del base,
+      // que arma PropuestaRetorno con libros vacios.
+      const retorno: PropuestaRetorno = (await this.getRetornoVista(nueva.id, qR)) ?? this.remplaceToReturn(nueva);
+
+      this.gatewayGateway.actualizacionDato({
+        mensaje: Mens.CREAR,
+        entidad,
+        dato: retorno,
+      } as Mensaje);
+
+      return retorno;
+    } catch (error) {
+      throw this.erroresService.handleExceptions(error, `Error al intentar crear la propuesta ${dto.nombre}`);
+    }
+  }
 
   async createDato({ dto, qR, entidad }: CreateProp<DtoPropuestaCrear, typeof Entidad.PROPUESTA_PEDIDO>): Promise<Propuesta> {
     try {
@@ -205,15 +235,19 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
         ? await qR.manager.save(Propuesta, propuesta)
         : await this.propuestaRepository.save(propuesta);
 
-      const payload: Mensaje = {
+      // La entidad solo trae filas de libro_empresa (sin nombre ni materia):
+      // el frontend necesita el shape de la vista para armar los libros.
+      const retorno: PropuestaRetorno = (await this.getRetornoVista(newPropuesta.id, qR)) ?? this.remplaceToReturn(newPropuesta);
+
+      this.gatewayGateway.actualizacionDato({
         mensaje: Mens.EDITAR,
         entidad,
-        dato: newPropuesta
-      }
+        dato: retorno,
+      } as Mensaje);
 
-      this.gatewayGateway.actualizacionDato(payload);
-
-      return { dato: newPropuesta, isQr: true }
+      // isQr en false: ya se emitio aca. Con true, BaseService emitiria un
+      // segundo EDITAR con libros vacios.
+      return { dato: newPropuesta, isQr: false }
 
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de propuestas`)
@@ -222,11 +256,23 @@ export class PropuestaService extends BaseService<typeof Entidad.PROPUESTA_PEDID
 
   async quitarLibro({id, id_libros, qR}:QuitarLibrosProp): Promise<boolean>{
     try {
-      qR.query(
+      await qR.query(
         `DELETE FROM propuesta_libro_empresa 
         where id_propuesta = $1 AND id_libro = ANY($2::uuid[])`,
         [id, id_libros]
       )
+
+      // Si se quitaron todos los libros la propuesta sale de la vista y no hay
+      // payload posible: se evita el evento antes que romper el endpoint.
+      const retorno: PropuestaRetorno | undefined = await this.getRetornoVista(id, qR);
+
+      if (retorno) {
+        this.gatewayGateway.actualizacionDato({
+          mensaje: Mens.EDITAR,
+          entidad: Entidad.PROPUESTA_PEDIDO,
+          dato: retorno,
+        } as Mensaje);
+      }
 
       return true;
     } catch (er) {
