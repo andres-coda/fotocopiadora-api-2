@@ -1,0 +1,4 @@
+# El dump debe conservarse byte a byte: sin conversion de saltos de linea.
+# Con core.autocrlf=true git reescribia el archivo y rompia la comparacion
+# contra DB/db_postgres.sql.
+src/dataBase/schema.sql -text
