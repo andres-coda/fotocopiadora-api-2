@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ensureDatabaseSchema } from './dataBase/schema.bootstrap';
 import { UserModule } from './user/user.module';
 import { User } from './user/entity/user.entity';
 import { GateWayModule } from './gateway/gateway.module';
@@ -51,46 +52,59 @@ import { Configuracion } from './configuracion/entity/configuracion.entity';
 import { ImgSubirModule } from './img_subir/img_subir.module';
 
 @Module({
-   imports: [
+  imports: [
     CommonModule,
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'client') }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USERNAME || 'app_role',
-      password: process.env.DB_PASSWORD || 'root',
-      database: process.env.DB_NAME || 'fotocopiadora',
-      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-      entities: [
-        Cliente,
-        ClienteResumen,
-        Componente,
-        Configuracion,
-        DatoCobro,
-        Editorial,
-        Empresa,
-        Especificacion,
-        Materia,
-        Libro,
-        LibroResumen,
-        Mensaje,
-        Nivel,
-        PedidoItem,
-        Pedido,
-        Precio,
-        PrecioEmpresa,
-        PrecioCategoria,
-        Propuesta,
-        Sede,
-        Stock,
-        User,
-      ],
-      synchronize: false,
-      logging: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => {
+        // El esquema se garantiza antes de abrir el pool: TypeORM no puede
+        // conectar contra un schema que todavia no existe.
+        await ensureDatabaseSchema(config);
+
+        return {
+          type: 'postgres',
+          host: config.get<string>('DB_HOST') || 'localhost',
+          port: parseInt(config.get<string>('DB_PORT') || '5432', 10),
+          username: config.get<string>('DB_USERNAME') || 'app_role',
+          password: config.get<string>('DB_PASSWORD') || 'root',
+          database: config.get<string>('DB_NAME') || 'fotocopiadora',
+          ssl:
+            config.get<string>('DB_SSL') === 'true'
+              ? { rejectUnauthorized: false }
+              : false,
+          entities: [
+            Cliente,
+            ClienteResumen,
+            Componente,
+            Configuracion,
+            DatoCobro,
+            Editorial,
+            Empresa,
+            Especificacion,
+            Materia,
+            Libro,
+            LibroResumen,
+            Mensaje,
+            Nivel,
+            PedidoItem,
+            Pedido,
+            Precio,
+            PrecioEmpresa,
+            PrecioCategoria,
+            Propuesta,
+            Sede,
+            Stock,
+            User,
+          ],
+          synchronize: false,
+          logging: true,
+        };
+      },
     }),
     ErroresModule,
     GateWayModule,
@@ -119,7 +133,7 @@ import { ImgSubirModule } from './img_subir/img_subir.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: DbContextInterceptor,
-    }
+    },
   ],
 })
 export class AppModule {}
