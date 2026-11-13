@@ -6,6 +6,10 @@ import { DtoPrecioEmpresaCrear, DtoPrecioEmpresaEditar } from './dto/precio_empr
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { PrecioRetorno } from './retorno/precio.retorno';
 
+/** Un query param repetible llega como string o string[]; se normaliza a lista. */
+const normalizarLista = (valor?: string | string[]): string[] =>
+  (Array.isArray(valor) ? valor : valor ? [valor] : []).filter(v => v.trim().length > 0);
+
 /**
  * Endpoints de precios por empresa.
  * Restringido a admin (gestión) y operador (solo lectura via GET).
@@ -16,20 +20,32 @@ import { PrecioRetorno } from './retorno/precio.retorno';
 export class PrecioEmpresaController {
   constructor(private readonly precioEmpresaService: PrecioEmpresaService) { }
 
+  /**
+   * `bloqueado=true` limita la lista a las categorias bloqueadas (la carga
+   * inicial de precios del front). `categoria` es repetible y filtra por uno o
+   * varios ids de categoria.
+   */
   @Get()
   @HttpCode(200)
   async getAll(
     @Query('q') busqueda: string,
+    @Query('categoria') categoria: string | string[] | undefined,
+    @Query('bloqueado') bloqueado: string | undefined,
     @Query('limite') limite = 20,
     @Query('pagina') pagDto = 1,
     @Request() req: RequestWithUser
   ): Promise<RetornoGenericoControllerGet<PrecioRetorno>> {
 
-
     const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
     const offset = (pagina - 1) * limite;
+
+    const filtros = {
+      bloqueado: bloqueado === 'true',
+      categorias: normalizarLista(categoria),
+    };
+
     if (!busqueda || busqueda.length < 3) {
-      const datos = await this.precioEmpresaService.getPreciosEmpresa({ qR: req.queryRunner, limite, offset });
+      const datos = await this.precioEmpresaService.getPreciosEmpresa({ qR: req.queryRunner, limite, offset, ...filtros });
       return {
         total: datos.total,
         limite,
@@ -39,7 +55,7 @@ export class PrecioEmpresaController {
       }
     }
 
-    const datos = await this.precioEmpresaService.getPreciosEmpresaBusqueda({ qR: req.queryRunner, busqueda, limite, offset });
+    const datos = await this.precioEmpresaService.getPreciosEmpresaBusqueda({ qR: req.queryRunner, busqueda, limite, offset, ...filtros });
 
     return {
       total: datos.total,

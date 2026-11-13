@@ -13,55 +13,82 @@ export const NAMES_PRECIO = {
   TROKELADO: 'Adhesivo blanco brilloso trokelado',
 } as const;
 
+/**
+ * Categorias que nacen con la empresa.
+ *
+ * Son las unicas categorias bloqueadas del sistema: el lateral de precios las
+ * muestra siempre y la carga inicial de precios trae justo las de estas
+ * categorias. Cualquier categoria creada despues nace con `bloqueado = false`.
+ */
+export const CATEGORIAS_PRECIO_DEFAULT = {
+  IMPRESIONES: 'impresiones',
+  ANILLADOS: 'anillados',
+  PAPELES_ESPECIALES: 'papeles especiales',
+} as const;
+
+export const CATEGORIAS_PRECIO_DEFAULT_LISTA: string[] = Object.values(
+  CATEGORIAS_PRECIO_DEFAULT,
+);
+
 export const PRECIO_DEFAULT: PrecioDefaultProp[] = [
   {
     nombre:NAMES_PRECIO.COLOR_DOBLEFAZ,
     importe: 200,
-    abreviatura: PrecioAbareviatura.COLOR_D_F
+    abreviatura: PrecioAbareviatura.COLOR_D_F,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.IMPRESIONES
   }, 
   {
     nombre:NAMES_PRECIO.COLOR_SIMPLEFAZ,
     importe: 180,
-    abreviatura: PrecioAbareviatura.COLOR_S_F
+    abreviatura: PrecioAbareviatura.COLOR_S_F,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.IMPRESIONES
   },
   {
     nombre:NAMES_PRECIO.BLANCOYNEGRO_DOBLEFAZ,
     importe: 140,
-    abreviatura: PrecioAbareviatura.BLANCO_Y_NEGRO_D_F
+    abreviatura: PrecioAbareviatura.BLANCO_Y_NEGRO_D_F,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.IMPRESIONES
   },
   {
     nombre:NAMES_PRECIO.BLANCOYNEGRO_SIMPLEFAZ,
     importe: 120,
-    abreviatura: PrecioAbareviatura.BLANCO_Y_NEGRO_S_F
+    abreviatura: PrecioAbareviatura.BLANCO_Y_NEGRO_S_F,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.IMPRESIONES
   },
   {
     nombre:NAMES_PRECIO.ANILLADO1,
     importe: 2400,
-    abreviatura: PrecioAbareviatura.ANILLADO_1
+    abreviatura: PrecioAbareviatura.ANILLADO_1,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.ANILLADOS
   },
   {
     nombre:NAMES_PRECIO.ANILLADO2,
     importe: 2500,
-    abreviatura: PrecioAbareviatura.ANILLADO_2
+    abreviatura: PrecioAbareviatura.ANILLADO_2,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.ANILLADOS
   },
   {
     nombre:NAMES_PRECIO.ANILLADO3,
     importe:2600,
-    abreviatura: PrecioAbareviatura.ANILLADO_3
+    abreviatura: PrecioAbareviatura.ANILLADO_3,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.ANILLADOS
   },
   {
     nombre:NAMES_PRECIO.ANILLADO4,
     importe: 2700,
-    abreviatura: PrecioAbareviatura.ANILLADO_4
+    abreviatura: PrecioAbareviatura.ANILLADO_4,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.ANILLADOS
   },
   {
     nombre:NAMES_PRECIO.ADHESIVO,
     importe: 850,
-    abreviatura: PrecioAbareviatura.ADHESIVO
+    abreviatura: PrecioAbareviatura.ADHESIVO,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.PAPELES_ESPECIALES
   },
   {
     nombre:NAMES_PRECIO.TROKELADO,
     importe: 1700,
-    abreviatura: PrecioAbareviatura.TROKELADO
+    abreviatura: PrecioAbareviatura.TROKELADO,
+    categoria: CATEGORIAS_PRECIO_DEFAULT.PAPELES_ESPECIALES
   },
 ]

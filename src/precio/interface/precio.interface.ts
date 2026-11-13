@@ -4,6 +4,8 @@ export interface PrecioDefaultProp {
   nombre: typeof NAMES_PRECIO[keyof typeof NAMES_PRECIO];
   importe: number;
   abreviatura?: PrecioAbareviatura;
+  /** Nombre de la categoria bloqueada a la que pertenece el precio por defecto. */
+  categoria: string;
 }
 
 export enum PrecioAbareviatura {

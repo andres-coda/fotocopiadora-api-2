@@ -6,6 +6,18 @@ export interface PrecioCategoriaRetornoProp {
   nombre: string;
 }
 
+/**
+ * Categoria con la marca de uso de la empresa actual.
+ *
+ * `usada` indica si la empresa tiene al menos un precio en esa categoria.
+ * El lateral muestra siempre las `bloqueado`, y el modal de filtros solo las
+ * no bloqueadas que la empresa usa.
+ */
+export interface PrecioCategoriaUsoRetornoProp extends PrecioCategoriaRetornoProp {
+  bloqueado: boolean;
+  usada: boolean;
+}
+
 export interface PrecioRetornoProp extends Omit<BaseRetornoProp, 'id'> {
   idPrecio: string;
   nombre: string;

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindManyOptions, FindOneOptions, ILike, QueryRunner, Repository } from 'typeorm';
+import { DataSource, FindManyOptions, FindOneOptions, ILike, In, QueryRunner, Repository } from 'typeorm';
 import { PrecioEmpresa } from './entity/precio_empresa.entity';
 import { ErroresService } from '@src/error/error.service';
 import { GatewayGateway } from '@src/gateway/gateway.gateway';
@@ -14,6 +14,15 @@ import { PrecioCategoriaService } from './precio_categoria.service';
 import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 import { PrecioDefaultProp } from './interface/precio.interface';
 import { PrecioRetorno } from './retorno/precio.retorno';
+import { CATEGORIAS_PRECIO_DEFAULT_LISTA } from './default/precio.default';
+
+/** Filtros opcionales de la lista de precios de la empresa. */
+interface PrecioEmpresaFiltroProp {
+  /** Solo precios de categorias bloqueadas: es la carga inicial del lateral. */
+  bloqueado?: boolean;
+  /** Ids de categoria a los que restringir la busqueda. */
+  categorias?: string[];
+}
 
 
 @Injectable()
@@ -29,17 +38,32 @@ export class PrecioEmpresaService {
   ) { }
 
   /**
+   * Filtro por categoria para las dos ramas de la busqueda.
+   * Devuelve `undefined` cuando no hay nada que filtrar, para no anidar un
+   * `where` vacio en TypeORM.
+   */
+  private filtroCategoria({ bloqueado, categorias }: PrecioEmpresaFiltroProp): Record<string, unknown> | undefined {
+    const filtro: Record<string, unknown> = {};
+    if (bloqueado) filtro.bloqueado = true;
+    if (categorias?.length) filtro.id = In(categorias);
+    return Object.keys(filtro).length ? filtro : undefined;
+  }
+
+  /**
    * Devuelve todos los precios de la empresa actual.
    * El RLS filtra automáticamente por id_empresa.
    * Hace join con precio para traer nombre y descripcion.
    */
-  async getPreciosEmpresa({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
+  async getPreciosEmpresa({ qR, limite, offset, bloqueado, categorias }: GetGenericoProp & PrecioEmpresaFiltroProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
     try {
+      const categoria = this.filtroCategoria({ bloqueado, categorias });
+
       const criterio: FindManyOptions = {
         relations: ['precio', 'categoria'],
         order: { precio: { abreviatura: 'ASC' } },
         take: limite ?? 20,
-        skip: offset ?? 0
+        skip: offset ?? 0,
+        ...(categoria && { where: { categoria } }),
       }
 
       const [datos, total] = await qR.manager.findAndCount(PrecioEmpresa, criterio);
@@ -53,14 +77,17 @@ export class PrecioEmpresaService {
     }
   }
 
-  async getPreciosEmpresaBusqueda({ qR, limite, offset, busqueda }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
+  async getPreciosEmpresaBusqueda({ qR, limite, offset, busqueda, bloqueado, categorias }: BusquedaGenericoProp & PrecioEmpresaFiltroProp): Promise<RetornoGenericoServiceGet<PrecioRetorno>> {
     try {
+      const categoria = this.filtroCategoria({ bloqueado, categorias });
+
       const criterio: FindManyOptions = {
         relations: ['precio', 'categoria'],
         where: {
           precio: {
             nombre: ILike(`%${busqueda}%`)
-          }
+          },
+          ...(categoria && { categoria }),
         },
         take: limite ?? 20,
         skip: offset ?? 0
@@ -215,6 +242,13 @@ export class PrecioEmpresaService {
 
   async CreatePrecioDefault(preciosDefault: PrecioDefaultProp[], qR:QueryRunner, idEmpresa:string):Promise<PrecioRetorno[]>{
     try{
+      // Las categorias por defecto existen desde que nace la empresa y son las
+      // unicas bloqueadas: el lateral y la carga inicial de precios dependen de
+      // que cada precio por defecto tenga su categoria asignada.
+      for(const nombre of CATEGORIAS_PRECIO_DEFAULT_LISTA) {
+        await this.precioCategoriaService.createDato({ dto: { nombre, bloqueado: true }, qR });
+      }
+
       const preciosCreados:PrecioRetorno[] = [];
       for(const p of preciosDefault) {
         let aux:Precio | null= null;
@@ -223,7 +257,7 @@ export class PrecioEmpresaService {
         if(!aux) {
           aux = await this.precioService.createDato({dto: {nombre:p.nombre, abreviatura:p.abreviatura}, qR});
         }
-        const precioCompleto:PrecioRetorno = await this.createPrecioEmpresa({dto:{nombre:p.nombre, importe:p.importe, idEmpresa}, qR});
+        const precioCompleto:PrecioRetorno = await this.createPrecioEmpresa({dto:{nombre:p.nombre, importe:p.importe, idEmpresa, categoria:p.categoria}, qR});
         preciosCreados.push(precioCompleto);
       }
       return preciosCreados;
