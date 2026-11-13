@@ -7,6 +7,7 @@ import { Role } from '../auth/rol/rol.enum';
 
 export const EMPRESA_ROOM_PREFIX = 'empresa:';
 export const GLOBAL_ROOM = 'global';
+export const SUPER_ROOM = 'super';
 
 interface JwtSocketsPayload {
   sub?: string;
@@ -24,6 +25,9 @@ interface JwtSocketsPayload {
  * accion, no a la empresa de la entidad. Los usuarios de otra empresa no
  * reciben el payload. Solo un actor sin empresa (superAdmin) emite a
  * `global`, que es el unico caso de modificacion global.
+ *
+ * Los super admins tambien entran a la sala `super`: `actualizacionDatoEmpresas`
+ * emite a las empresas afectadas y a esa sala en un unico emit.
  */
 @WebSocketGateway()
 export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -49,6 +53,10 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
         cliente.join(`${EMPRESA_ROOM_PREFIX}${payload.idEmpresa}`);
       }
       cliente.join(GLOBAL_ROOM);
+
+      if (payload.role === Role.SuperAdmin) {
+        cliente.join(SUPER_ROOM);
+      }
 
       console.log(`Cliente conectado: ${cliente.id}`);
     } catch {
@@ -80,6 +88,19 @@ export class GatewayGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
 
     this.server.to(GLOBAL_ROOM).emit(mensaje.mensaje, mensaje);
+  }
+
+  /**
+   * Emite a las empresas indicadas y a la sala de super admins.
+   * Un solo emit por llamada: socket.io une las salas y entrega una copia.
+   */
+  actualizacionDatoEmpresas(mensaje: Mensaje, idsEmpresa: string[]) {
+    const salas = Array.from(new Set(idsEmpresa)).map(
+      (id) => `${EMPRESA_ROOM_PREFIX}${id}`,
+    );
+    salas.push(SUPER_ROOM);
+
+    this.server.to(salas).emit(mensaje.mensaje, mensaje);
   }
 
   private extraerToken(cliente: Socket): string | undefined {

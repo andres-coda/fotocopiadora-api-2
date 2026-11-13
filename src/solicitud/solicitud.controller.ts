@@ -40,14 +40,14 @@ export class SolicitudController {
     return this.solicitudService.getSolicitudById(req.queryRunner, id);
   }
 
-  @Patch(':id')
+  @Patch('peticion/:idPeticion')
   @HttpCode(200)
   @UseGuards(SuperAdminGuard)
-  async resolverSolicitud(
-    @Param('id') id: string,
+  async resolverPeticion(
+    @Param('idPeticion') idPeticion: string,
     @Body() datos: DtoSolicitudResolver,
     @Request() req: RequestWithUser,
   ): Promise<SolicitudRetorno> {
-    return this.solicitudService.resolverSolicitud(req.queryRunner, id, datos);
+    return this.solicitudService.resolverPeticion(req.queryRunner, idPeticion, datos);
   }
 }

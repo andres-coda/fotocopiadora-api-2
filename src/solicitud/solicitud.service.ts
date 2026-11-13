@@ -4,12 +4,18 @@ import { DataSource, QueryRunner } from 'typeorm';
 import { ErroresService } from '../error/error.service';
 import { SolicitudRetorno, PeticionRetorno } from './retorno/solicitud.retorno';
 import { DtoSolicitudResolver } from './dto/solicitud.dto';
+import { GatewayGateway } from '../gateway/gateway.gateway';
+import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
+import { Mens } from '../gateway/enum/Mens.enum';
+import { toRespuestaLibro } from '../libro/utils/toRespuestaLibro';
+import { RetornoVistaLibroProp } from '../libro/interface/libro.interface';
 
 @Injectable()
 export class SolicitudService {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly erroresService: ErroresService,
+    private readonly gateway: GatewayGateway,
   ) { }
 
   async getSolicitudes(qR: QueryRunner, limite = 20, offset = 0): Promise<{ datos: SolicitudRetorno[]; total: number }> {
@@ -106,28 +112,60 @@ export class SolicitudService {
     }
   }
 
-  async resolverSolicitud(qR: QueryRunner, id: string, dto: DtoSolicitudResolver): Promise<SolicitudRetorno> {
+  async resolverPeticion(
+    qR: QueryRunner,
+    idPeticion: string,
+    dto: DtoSolicitudResolver,
+  ): Promise<SolicitudRetorno> {
     try {
-      const estado = dto.estado; // 2 = aceptada, 3 = rechazada
-
-      // Si se acepta, aplicar los cambios de las peticiones al libro_completo.
-      // Por simplicidad, solo actualizamos el estado de la solicitud y peticiones.
-      // La aplicacion real de cambios requiere logica por campo (nivel, nombre, etc.)
-      // que depende del back existente. Por ahora marcamos como resuelta.
-
-      await qR.manager.query(
-        `update solicitud set estado = $1, fecha_resolucion = now() where id = $2`,
-        [estado, id],
+      const [fila]: { id_solicitud: string }[] = await qR.manager.query(
+        `select id_solicitud from peticion where id = $1`,
+        [idPeticion],
       );
 
-      await qR.manager.query(
-        `update peticion set estado = $1, observaciones = coalesce($2, observaciones) where id_solicitud = $3`,
-        [estado, dto.observaciones ?? null, id],
+      if (!fila) throw new NotFoundException('No se encontro la peticion');
+
+      // Acepta (2) o rechaza (3) una peticion. La funcion aplica el campo en el
+      // libro correcto y cierra la solicitud cuando no quedan pendientes.
+      const afectados: { id_afectado: string }[] = await qR.manager.query(
+        `select id_afectado from fc_aplicar_peticion($1, $2, $3)`,
+        [idPeticion, dto.estado, dto.observaciones ?? null],
       );
 
-      return this.getSolicitudById(qR, id);
+      if (afectados.length > 0) {
+        await this.emitirLibros(qR, afectados.map((a) => a.id_afectado));
+      }
+
+      return this.getSolicitudById(qR, fila.id_solicitud);
     } catch (error) {
-      throw this.erroresService.handleExceptions(error, `Error al intentar resolver la solicitud ${id}`);
+      throw this.erroresService.handleExceptions(
+        error,
+        `Error al intentar resolver la peticion ${idPeticion}`,
+      );
+    }
+  }
+
+  /**
+   * Una fila de `vw_libro_busqueda` por empresa que usa el libro. Cada empresa
+   * recibe solo la suya; la sala de super admins recibe todas.
+   */
+  private async emitirLibros(qR: QueryRunner, ids: string[]): Promise<void> {
+    const filas: RetornoVistaLibroProp[] = await qR.manager.query(
+      `select * from vw_libro_busqueda where id = any($1::uuid[])`,
+      [ids],
+    );
+
+    for (const fila of filas) {
+      const libro = toRespuestaLibro(fila);
+      if (!libro || !fila.id_empresa) continue;
+
+      const payload: Mensaje = {
+        mensaje: Mens.EDITAR,
+        entidad: Entidad.LIBRO,
+        dato: libro,
+      };
+
+      this.gateway.actualizacionDatoEmpresas(payload, [fila.id_empresa]);
     }
   }
 }
