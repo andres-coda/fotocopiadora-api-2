@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ensureDatabaseSchema } from './dataBase/schema.bootstrap';
+import { ensureDatabaseSeed } from './dataBase/seed';
 import { UserModule } from './user/user.module';
 import { User } from './user/entity/user.entity';
 import { GateWayModule } from './gateway/gateway.module';
@@ -65,6 +66,11 @@ import { ImgSubirModule } from './img_subir/img_subir.module';
         // El esquema se garantiza antes de abrir el pool: TypeORM no puede
         // conectar contra un schema que todavia no existe.
         await ensureDatabaseSchema(config);
+
+        // Despues del esquema y antes del pool: los datos iniciales corren en
+        // su propia transaccion, asi que un fallo de datos no arrastra las
+        // tablas, y la base queda usable en el primer arranque.
+        await ensureDatabaseSeed(config);
 
         return {
           type: 'postgres',

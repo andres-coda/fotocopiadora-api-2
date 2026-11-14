@@ -57,7 +57,8 @@ function readSsl(config: ConfigService): PostgresConnectionOptions['ssl'] {
     : false;
 }
 
-function readDatabase(config: ConfigService): string {
+/** Exportada para que `seed.ts` apunte exactamente a la misma base. */
+export function readDatabase(config: ConfigService): string {
   return config.get<string>('DB_NAME') || 'fotocopiadora';
 }
 
@@ -72,7 +73,14 @@ function bootstrapCredentials(config: ConfigService) {
   };
 }
 
-function buildDataSource(config: ConfigService, database: string): DataSource {
+/**
+ * Exportada para que `seed.ts` se conecte con las mismas credenciales de
+ * bootstrap y el mismo host/puerto que el esquema.
+ */
+export function buildDataSource(
+  config: ConfigService,
+  database: string,
+): DataSource {
   const { username, password } = bootstrapCredentials(config);
 
   return new DataSource({
