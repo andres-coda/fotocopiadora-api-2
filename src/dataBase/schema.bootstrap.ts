@@ -208,6 +208,16 @@ export async function ensureDatabaseSchema(
 ): Promise<void> {
   const logger = new Logger(LOGGER_CONTEXT);
   const database = readDatabase(config);
+  const { username } = bootstrapCredentials(config);
+  const host = config.get<string>('DB_HOST') || 'localhost';
+  const port = readNumber(config, 'DB_PORT', 5432);
+
+  // En otra maquina el sintoma tipico es "no creo la base, quedo el public
+  // vacio" cuando en realidad la API apunto a otra base o con otro usuario.
+  // Con esta linea el log dice exactamente contra que se intento.
+  logger.log(
+    `Bootstrap de esquema: base "${database}" en ${host}:${port} como "${username}".`,
+  );
 
   await ensureDatabaseExists(config, database, logger);
 
@@ -257,26 +267,43 @@ export async function ensureDatabaseSchema(
       logger,
     );
 
-    // Sin parametros, TypeORM delega en el protocolo simple de pg y acepta
-    // varias sentencias en una sola llamada: el dump entra como una unidad.
-    await source.query('BEGIN');
+    // Un QueryRunner propio, no `source.query`: DataSource.query abre un
+    // query runner nuevo en cada llamada y lo devuelve al pool, asi que el
+    // BEGIN, el dump y el COMMIT terminaban en conexiones distintas y la
+    // transaccion no envolvia nada. Con el runner prendido, toda la secuencia
+    // viaja por la misma conexion y el dump es realmente todo o nada.
+    const runner = source.createQueryRunner();
+    await runner.connect();
+
     try {
-      await source.query(schemaSql);
+      // Sin parametros, TypeORM delega en el protocolo simple de pg y acepta
+      // varias sentencias en una sola llamada: el dump entra como una unidad.
+      await runner.query('BEGIN');
+      try {
+        await runner.query(schemaSql);
 
-      const check = await source.query<{ ok: boolean }[]>(
-        `SELECT to_regclass($1) IS NOT NULL AS ok`,
-        [SENTINEL_TABLE],
-      );
-      if (!check[0].ok) {
-        throw new Error(
-          `${SENTINEL_TABLE} no quedo creada despues de aplicar el esquema.`,
-        );
+        // `QueryRunner.query` no acepta el generico de `DataSource.query`:
+        // devuelve `any`, asi que el tipo se pone del lado del consumidor.
+        const check = (await runner.query(
+          `SELECT to_regclass($1) IS NOT NULL AS ok`,
+          [SENTINEL_TABLE],
+        )) as { ok: boolean }[];
+        if (!check[0].ok) {
+          throw new Error(
+            `${SENTINEL_TABLE} no quedo creada despues de aplicar el esquema.`,
+          );
+        }
+
+        await runner.query('COMMIT');
+      } catch (error) {
+        // Si el dump falla, la conexion queda en transaccion abortada y no
+        // vuelve limpia al pool sin el ROLLBACK. Si el ROLLBACK tambien falla
+        // (conexion caida) no enmascara el error original.
+        await runner.query('ROLLBACK').catch(() => undefined);
+        throw error;
       }
-
-      await source.query('COMMIT');
-    } catch (error) {
-      await source.query('ROLLBACK');
-      throw error;
+    } finally {
+      await runner.release();
     }
 
     logger.log(`Esquema creado en "${database}" (sin datos).`);

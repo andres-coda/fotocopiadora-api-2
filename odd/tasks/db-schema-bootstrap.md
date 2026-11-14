@@ -101,6 +101,16 @@ re-ejecución.
       `yarn build` limpio, `npx tsc --noEmit` limpio, `eslint` limpio sobre los archivos tocados.
       Criterio: sin errores. ✅
 
+- [x] **T5 — Restore en una sola conexión.**
+      El `BEGIN` / dump / `COMMIT` usaba `DataSource.query`, que abre un query runner nuevo
+      por llamada: las tres sentencias caían en conexiones distintas del pool y la transacción
+      no envolvía nada. Ahora la secuencia entera corre sobre un `QueryRunner` propio.
+      Criterio: `yarn build` y `npx tsc --noEmit` limpios. ✅
+
+      También se agregó un log de arranque con base, host, puerto y rol de bootstrap: el
+      síntoma "no creó la base y quedó el public vacío" casi siempre es que la API apuntó a
+      otra base o con otro usuario, y antes eso no se veía en la salida.
+
 ## Hallazgos durante la implementación
 
 1. **`CREATE SCHEMA public;` incondicional (línea 58 del dump).** En una base nueva `public`
@@ -111,6 +121,13 @@ re-ejecución.
    nueva, el bootstrap usa el `DataSource` de TypeORM (que ya trae tipos y usa `pg` por
    debajo). Sin parámetros, TypeORM delega en el protocolo simple de `pg`, que acepta el
    dump multi-sentencia en una sola llamada.
+3. **`DataSource.query` no sirve para transacciones.** Abre un query runner nuevo en cada
+   llamada y lo devuelve al pool, así que `BEGIN` y `COMMIT` terminaban en conexiones
+   distintas. El dump seguía siendo atómico por sí solo (el protocolo simple envuelve el
+   multi-sentencia en una transacción implícita), pero el `ROLLBACK` del `catch` no
+   deshacía nada. Corregido en T5 con un `QueryRunner` explícito.
+   `QueryRunner.query` tampoco acepta el genérico de `DataSource.query`: devuelve `any`, así
+   que el tipo del `SELECT` de verificación se pone del lado del consumidor.
 
 ## Verificación
 
