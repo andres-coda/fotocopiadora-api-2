@@ -79,15 +79,3 @@ export const EDITORIALES_DEFAULT: string[] = [
  */
 export const ESPECIFICACIONES_DEFAULT: string[] =
   Object.values(Especificaciones);
-
-/** Empresa que nace con una base nueva. Solo se crea si `empresa` esta vacia. */
-export const EMPRESA_DEFAULT: {
-  nombre: string;
-  email: string;
-  telefono: string;
-} = {
-  nombre: 'Fotocopiadora Demo',
-  email: 'demo@fotocopiadora.local',
-  // `ch_telefono` exige 10 digitos o mas, con "+" opcional.
-  telefono: '1100000000',
-};

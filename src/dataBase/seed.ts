@@ -1,15 +1,11 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DataSource, QueryRunner } from 'typeorm';
-import {
-  CATEGORIAS_PRECIO_DEFAULT_LISTA,
-  PRECIO_DEFAULT,
-} from '@src/precio/default/precio.default';
+import { QueryRunner } from 'typeorm';
+import { CATEGORIAS_PRECIO_DEFAULT_LISTA } from '@src/precio/default/precio.default';
 import { buildDataSource, readDatabase } from './schema.bootstrap';
 import {
   COMPONENTES_DEFAULT,
   EDITORIALES_DEFAULT,
-  EMPRESA_DEFAULT,
   ESPECIFICACIONES_DEFAULT,
   MATERIAS_DEFAULT,
   NIVELES_DEFAULT,
@@ -26,46 +22,53 @@ import {
  *   2. Si el dump commitea y esto fallara en la misma transaccion, el bootstrap
  *      cortaria en `public.usuario` y los datos no llegarian nunca mas.
  *
- * ORDEN OBLIGATORIO: primero el super_admin, despues el catalogo.
- * Los triggers de auditoria (`tr_nivel_auditoria`, `tr_empresa_auditoria`,
- * `tr_auditoria_lprecio`, ...) escriben `auditoria.id_usuario` con
- * `fc_usuario_actual()`, y `fc_auditoria` ademas llama `fc_empresa_actual()`,
- * que hace `PERFORM fc_cargar_contexto_usuario()` y lanza
- * `Usuario % no encontrado` cuando `app.user_id` esta vacio. O sea: sin un
- * usuario en el contexto, el primer `insert into nivel` ya falla. Por eso el
- * super_admin se crea antes (la tabla `usuario` no tiene trigger de auditoria
- * en INSERT) y su id se publica con `set_config('app.user_id', ..., true)`.
+ * REPARTO DE ROLES: lo unico que corre fuera de `app_role` es la creacion del
+ * `super_admin`. Todo el catalogo se carga DESPUES de `SET LOCAL ROLE app_role`
+ * y con ese usuario en el contexto de auditoria, igual que un request real.
  *
- * Las policies de INSERT de los catalogos piden `fc_usuario_actual() IS NOT
- * NULL`: con el GUC puesto se cumplen. Lo que NO se puede saltear es el rol:
- * `auditoria` tiene FORCE ROW LEVEL SECURITY y su unica policy es de SELECT
- * (`pc_auditoria_select`), asi que el INSERT de `fc_auditoria` solo pasa con un
- * rol superusuario o con BYPASSRLS. `DB_BOOTSTRAP_USERNAME` tiene que ser uno
- * de los dos; `app_role` no sirve para el seed.
+ * POR QUE ESE ORDEN
+ *   - `nivel`, `componente` y `materia` tienen trigger de auditoria: su `insert`
+ *     dispara `fc_auditoria`, que escribe `auditoria.id_usuario` NOT NULL con
+ *     `fc_usuario_actual()` y ademas llama `fc_empresa_actual()` ->
+ *     `fc_cargar_contexto_usuario()`, que lanza `Usuario % no encontrado` cuando
+ *     `app.user_id` esta vacio. `editorial`, `especificacion` y `precio_categoria`
+ *     no tienen trigger, pero sus policies llaman a las mismas funciones. Sin
+ *     usuario en el contexto, el primer `insert` ya falla.
+ *   - `pc_especificacion_insert` es la unica de las seis que no se conforma con
+ *     `fc_usuario_actual() IS NOT NULL`: exige `fc_es_super_admin()`. Con el
+ *     super_admin logueado pasa; con cualquier otro contexto, no.
+ *   - `usuario` no tiene trigger de auditoria en INSERT, por eso el super se
+ *     puede crear antes de que exista el GUC.
+ *
+ * SOBRE `auditoria`
+ *   Tiene FORCE ROW LEVEL SECURITY y su unica policy es de SELECT. `app_role`
+ *   solo tiene GRANT SELECT sobre ella: el INSERT lo hace `fc_auditoria`, que es
+ *   SECURITY DEFINER y corre como su dueno (el rol de bootstrap, superusuario).
+ *   Por eso el catalogo puede auditarse como `app_role` sin BYPASSRLS.
+ *
+ * REQUISITO DEL ROL DE BOOTSTRAP
+ *   `DB_BOOTSTRAP_USERNAME` tiene que cumplir dos cosas:
+ *     1. Ser superusuario o tener BYPASSRLS. No por `app_role`: el INSERT en
+ *        `auditoria` lo hace `fc_auditoria`, que es SECURITY DEFINER y corre
+ *        como su dueno, o sea el rol que aplico el dump. Si ese rol no saltea
+ *        RLS, cada insert de catalogo falla con un error de policy.
+ *     2. Poder asumir `app_role` (`set local role`), es decir ser superusuario o
+ *        miembro de `app_role`. `postgres` siempre puede.
+ *   Las dos condiciones se verifican antes de mutar nada; si fallan, se avisa y
+ *   el arranque sigue sin datos.
  */
 
 const LOGGER_CONTEXT = 'DatabaseSeed';
+const APP_ROLE = 'app_role';
 
 /** `usuario.nombre` y `usuario.email` son varchar(50). */
 const MAX_LARGO_USUARIO = 50;
 
 /**
- * `auditoria` es FORCE RLS con una sola policy de SELECT: sin BYPASSRLS, el
- * trigger de auditoria rechaza el insert y el seed no puede escribir nada.
+ * Catalogos con UNIQUE(nombre): `on conflict (nombre) do nothing` hace de
+ * verificacion previa en la misma instruccion, sin round-trip extra y sin
+ * ventana de carrera.
  */
-async function rolPuedeEscribirAuditoria(source: DataSource): Promise<boolean> {
-  // `DataSource.query` si acepta el generico (a diferencia de `QueryRunner.query`).
-  const filas = await source.query<{ ok: boolean }[]>(
-    `select coalesce(
-       (select rolsuper or rolbypassrls from pg_roles where rolname = current_user),
-       false
-     ) as ok`,
-  );
-
-  return filas[0]?.ok === true;
-}
-
-/** Catalogos con UNIQUE(nombre): el conflicto alcanza para ser idempotente. */
 type TablaConNombreUnico =
   | 'nivel'
   | 'componente'
@@ -73,147 +76,62 @@ type TablaConNombreUnico =
   | 'editorial'
   | 'especificacion';
 
-/** Inserta solo los nombres que faltan y devuelve cuantos entraron. */
+/**
+ * Inserta todos los nombres en UNA sola instruccion y devuelve cuantos entraron.
+ *
+ * `unnest($1::text[])` convierte el array en filas dentro del servidor: un solo
+ * viaje por tabla en vez de uno por nombre.
+ */
 async function insertarCatalogo(
   runner: QueryRunner,
   tabla: TablaConNombreUnico,
   nombres: string[],
 ): Promise<number> {
-  let nuevos = 0;
-
-  for (const nombre of nombres) {
-    // `tabla` viene de una union cerrada, no de datos externos.
-    const insertadas = (await runner.query(
-      `insert into ${tabla} (nombre) values ($1)
-       on conflict (nombre) do nothing
-       returning id`,
-      [nombre],
-    )) as { id: string }[];
-
-    nuevos += insertadas.length;
+  if (nombres.length === 0) {
+    return 0;
   }
 
-  return nuevos;
+  // `tabla` viene de una union cerrada, no de datos externos.
+  const insertadas = (await runner.query(
+    `insert into ${tabla} (nombre)
+     select t.nombre from unnest($1::text[]) as t(nombre)
+     on conflict (nombre) do nothing
+     returning 1`,
+    [nombres],
+  )) as unknown[];
+
+  return insertadas.length;
 }
 
 /**
- * Garantiza las tres categorias bloqueadas y devuelve cuantas se crearon.
+ * Garantiza las tres categorias bloqueadas en una sola instruccion.
  *
- * Si una categoria con ese nombre ya existia pero quedo desbloqueada, la vuelve
- * a marcar: el lateral de precios y la carga inicial dependen de que esas tres
- * esten bloqueadas.
+ * Devuelve cuantas filas quedaron tocadas: las nuevas y las que existian
+ * desbloqueadas. El `do update` con `where` corrige el caso de una categoria
+ * que alguien desbloqueo a mano, sin tocar las que ya estan bien.
  */
 async function asegurarCategoriasBloqueadas(
   runner: QueryRunner,
-  logger: Logger,
 ): Promise<number> {
-  let nuevas = 0;
+  const afectadas = (await runner.query(
+    `insert into precio_categoria (nombre, bloqueado)
+     select t.nombre, true from unnest($1::text[]) as t(nombre)
+     on conflict (nombre) do update set bloqueado = true
+     where precio_categoria.bloqueado is distinct from true
+     returning 1`,
+    [CATEGORIAS_PRECIO_DEFAULT_LISTA],
+  )) as unknown[];
 
-  for (const nombre of CATEGORIAS_PRECIO_DEFAULT_LISTA) {
-    const creadas = (await runner.query(
-      `insert into precio_categoria (nombre, bloqueado) values ($1, true)
-       on conflict (nombre) do nothing
-       returning id`,
-      [nombre],
-    )) as { id: string }[];
-
-    if (creadas.length > 0) {
-      nuevas += 1;
-      continue;
-    }
-
-    const corregidas = (await runner.query(
-      `update precio_categoria set bloqueado = true
-       where nombre = $1 and bloqueado is distinct from true
-       returning id`,
-      [nombre],
-    )) as { id: string }[];
-
-    if (corregidas.length > 0) {
-      logger.warn(
-        `La categoria "${nombre}" existia desbloqueada: quedo bloqueada.`,
-      );
-    }
-  }
-
-  return nuevas;
-}
-
-/**
- * Crea la empresa inicial solo si no hay ninguna, con los precios por defecto.
- *
- * Una empresa sin precios no puede presupuestar nada, y su alta normal
- * (`EmpresaService.createDatoCx`) siempre crea empresa + precios en la misma
- * transaccion: aca se hace lo mismo, sin el usuario admin porque no hay
- * credenciales para el en el entorno.
- */
-async function sembrarEmpresa(
-  runner: QueryRunner,
-  logger: Logger,
-): Promise<void> {
-  const [{ total }] = (await runner.query(
-    'select count(*)::int as total from empresa',
-  )) as { total: number }[];
-
-  if (total > 0) {
-    return;
-  }
-
-  const [empresa] = (await runner.query(
-    `insert into empresa (nombre, email, telefono) values ($1, $2, $3)
-     on conflict do nothing
-     returning id`,
-    [EMPRESA_DEFAULT.nombre, EMPRESA_DEFAULT.email, EMPRESA_DEFAULT.telefono],
-  )) as { id: string }[];
-
-  if (!empresa) {
-    // Otra instancia gano la carrera por el nombre/email/telefono unico.
-    logger.warn(
-      'La empresa inicial ya fue creada por otra instancia: no se cargan sus precios.',
-    );
-    return;
-  }
-
-  for (const precio of PRECIO_DEFAULT) {
-    // `precio` es global y tiene DOS unicos: nombre y abreviatura. `on conflict
-    // (nombre)` no cubriria el caso de una fila que quedo con la misma
-    // abreviatura y otro nombre, asi que se pregunta por los dos.
-    await runner.query(
-      `insert into precio (nombre, abreviatura)
-       select $1, $2
-       where not exists (
-         select 1 from precio where nombre = $1 or abreviatura = $2
-       )
-       on conflict do nothing`,
-      [precio.nombre, precio.abreviatura ?? null],
-    );
-
-    const [fila] = (await runner.query(
-      `select id from precio where nombre = $1 or abreviatura = $2 limit 1`,
-      [precio.nombre, precio.abreviatura ?? null],
-    )) as { id: string }[];
-
-    const [categoria] = (await runner.query(
-      'select id from precio_categoria where nombre = $1',
-      [precio.categoria],
-    )) as { id: string }[];
-
-    await runner.query(
-      `insert into precio_empresa (id_empresa, id_precio, importe, id_categoria)
-       values ($1, $2, $3, $4)
-       on conflict do nothing`,
-      [empresa.id, fila.id, precio.importe, categoria?.id ?? null],
-    );
-  }
-
-  logger.log(
-    `Empresa inicial "${EMPRESA_DEFAULT.nombre}" creada con ${PRECIO_DEFAULT.length} precios.`,
-  );
+  return afectadas.length;
 }
 
 /**
  * Deja un super_admin disponible y devuelve su id, que es el contexto de
  * auditoria de todo lo que se inserta despues.
+ *
+ * Es lo unico que corre fuera de `app_role`: `pc_usuario_insert` exige
+ * `fc_es_super_admin()`, que necesita un `app.rol` que todavia no existe (huevo
+ * y gallina), asi que la creacion va con el rol de bootstrap.
  *
  * Nunca tumba el arranque: si no puede crearlo avisa y devuelve null, y el
  * caller no carga el catalogo. La base admite un solo super_admin
@@ -225,18 +143,33 @@ async function asegurarSuperAdmin(
   config: ConfigService,
   logger: Logger,
 ): Promise<{ id: string; creado: boolean } | null> {
-  const [{ total }] = (await runner.query(
-    `select count(*)::int as total from usuario where rol = 'super_admin'`,
-  )) as { total: number }[];
+  // `uq_super_admin` cuenta tambien las filas borradas, pero un super_admin
+  // dado de baja no sirve como contexto de auditoria. Se distinguen los dos
+  // casos para no intentar un insert que el indice unico va a rechazar.
+  const [{ activos, total }] = (await runner.query(
+    `select
+       count(*) filter (where deleted = false)::int as activos,
+       count(*)::int as total
+     from usuario where rol = 'super_admin'`,
+  )) as { activos: number; total: number }[];
 
-  if (total > 0) {
+  if (activos > 0) {
     const [existente] = (await runner.query(
-      `select id from usuario where rol = 'super_admin'
+      `select id from usuario where rol = 'super_admin' and deleted = false
        order by fecha_creacion limit 1`,
     )) as { id: string }[];
 
     logger.log('Ya existe un super_admin: se usa como contexto de auditoria.');
     return { id: existente.id, creado: false };
+  }
+
+  if (total > 0) {
+    logger.warn(
+      'No se pudo crear el super: hay un super_admin marcado como borrado y ' +
+        'uq_super_admin (indice unico parcial, incluye filas borradas) impide ' +
+        'crear otro. Restauralo o cambialo a mano.',
+    );
+    return null;
   }
 
   const nombre = config.get<string>('SUPER_USER')?.trim() ?? '';
@@ -313,6 +246,54 @@ async function asegurarSuperAdmin(
 }
 
 /**
+ * Verifica que la auditoria acepte inserts.
+ *
+ * `auditoria` es FORCE RLS y su unica policy es de SELECT. Los inserts llegan
+ * por `fc_auditoria`, que es SECURITY DEFINER y corre como su dueno: si ese rol
+ * no es superusuario ni tiene BYPASSRLS, cada insert de catalogo muere con
+ * "new row violates row-level security policy for table auditoria" y el error
+ * aparece lejos de la causa. Se pregunta antes de tocar nada.
+ */
+async function auditoriaEscribible(runner: QueryRunner): Promise<boolean> {
+  const filas = (await runner.query(
+    `select coalesce(
+       (select r.rolsuper or r.rolbypassrls
+        from pg_proc p
+        join pg_roles r on r.oid = p.proowner
+        where p.oid = to_regprocedure('public.fc_auditoria()')),
+       false
+     ) as ok`,
+  )) as { ok: boolean }[];
+
+  return filas[0]?.ok === true;
+}
+
+/**
+ * Pasa la conexion a `app_role` para el resto de la transaccion.
+ *
+ * De aca en adelante todo se inserta como lo haria la aplicacion: las policies
+ * de RLS se evaluan de verdad y el catalogo queda auditado igual que en
+ * produccion. Si el rol de bootstrap no puede asumirlo, el error de Postgres no
+ * lo explica, asi que se reemplaza por uno propio.
+ */
+async function asumirRolApp(
+  runner: QueryRunner,
+  logger: Logger,
+): Promise<void> {
+  try {
+    await runner.query(`set local role ${APP_ROLE}`);
+  } catch (error) {
+    throw new Error(
+      `No pude asumir el rol "${APP_ROLE}" para cargar los datos iniciales. ` +
+        `DB_BOOTSTRAP_USERNAME tiene que ser superusuario o miembro de ` +
+        `"${APP_ROLE}". Detalle: ${(error as Error).message}`,
+    );
+  }
+
+  logger.log(`Cargando los datos iniciales como "${APP_ROLE}".`);
+}
+
+/**
  * Garantiza los datos iniciales. Idempotente: se puede correr en cada arranque.
  */
 export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
@@ -323,37 +304,46 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
   await source.initialize();
 
   try {
-    // `auditoria` es FORCE RLS con una unica policy de SELECT, y cada insert de
-    // catalogo escribe ahi via `fc_auditoria`. Sin BYPASSRLS el seed no puede
-    // hacer nada, y el error de Postgres no lo explica: se avisa y se sale.
-    if (!(await rolPuedeEscribirAuditoria(source))) {
-      logger.warn(
-        'No se cargan los datos iniciales: el rol de bootstrap no puede ' +
-          'escribir en public.auditoria (FORCE RLS, sin policy de INSERT). ' +
-          'Necesita ser superusuario o tener BYPASSRLS (DB_BOOTSTRAP_USERNAME).',
-      );
-      return;
-    }
-
     const runner = source.createQueryRunner();
     await runner.connect();
 
     try {
+      // `fc_login` y el hash de contrasenas usan public.crypt / public.gen_salt.
+      // El dump no crea la extension, asi que en una base nueva no existe y
+      // nadie podria iniciar sesion. Va FUERA de la transaccion a proposito: si
+      // falla (rol sin permisos, extension ya instalada en otro schema) la
+      // transaccion no queda abortada y `asegurarSuperAdmin` avisa con precision
+      // de que falta `public.crypt`.
+      await runner
+        .query('CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public')
+        .catch((error: Error) => {
+          logger.warn(
+            `No pude instalar pgcrypto: ${error.message}. Sigo y verifico si ` +
+              'public.crypt ya existe.',
+          );
+        });
+
+      // Antes de abrir la transaccion: si la auditoria no acepta inserts, no hay
+      // nada que hacer y se sale con un mensaje que nombra la causa real.
+      if (!(await auditoriaEscribible(runner))) {
+        logger.warn(
+          'No se cargan los datos iniciales: el dueno de public.fc_auditoria ' +
+            'no puede escribir en public.auditoria (FORCE RLS, sin policy de ' +
+            'INSERT). DB_BOOTSTRAP_USERNAME tiene que ser superusuario o tener ' +
+            'BYPASSRLS: es el rol que aplico el dump y por lo tanto el dueno ' +
+            'de esa funcion.',
+        );
+        return;
+      }
+
       await runner.query('BEGIN');
 
       try {
-        // `fc_login` y el hash de contrasenas usan public.crypt /
-        // public.gen_salt. El dump no crea la extension, asi que en una base
-        // nueva no existe y nadie podria iniciar sesion. Se instala en `public`
-        // porque las funciones del esquema la llaman calificada.
-        await runner.query(
-          'CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public',
-        );
-
+        // Unico paso fuera de `app_role`.
         const superAdmin = await asegurarSuperAdmin(runner, config, logger);
 
         if (!superAdmin) {
-          // Sin usuario no hay contexto de auditoria y los triggers de INSERT
+          // Sin usuario no hay contexto de auditoria: las policies y los triggers
           // de los catalogos tiran excepcion. Se corta sin romper el arranque.
           logger.warn(
             'No se cargan los datos iniciales: hace falta un usuario para el ' +
@@ -362,6 +352,9 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
           await runner.query('COMMIT');
           return;
         }
+
+        // Todo el catalogo corre como la aplicacion, con el super logueado.
+        await asumirRolApp(runner, logger);
 
         // `true` = local a la transaccion: el GUC muere en el COMMIT y no
         // contamina las conexiones del pool de la aplicacion.
@@ -394,9 +387,7 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
           'especificacion',
           ESPECIFICACIONES_DEFAULT,
         );
-        const categorias = await asegurarCategoriasBloqueadas(runner, logger);
-
-        await sembrarEmpresa(runner, logger);
+        const categorias = await asegurarCategoriasBloqueadas(runner);
 
         await runner.query('COMMIT');
 
