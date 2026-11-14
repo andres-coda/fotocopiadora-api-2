@@ -14,7 +14,7 @@ export class DtoEmpresaCrear extends BaseDto {
 
   @IsNotEmpty({ message: 'Debe proporcionar teléfono' })
   @IsString({ message: 'El telefono debe estar pasado en formato string' })
-  @IsPhoneNumber(undefined, { message: 'Debe ser un número de teléfono válido con código de país' })
+  @IsPhoneNumber('AR', { message: 'Debe ser un número de teléfono válido con código de país' })
   telefono!: string;
 
   // Datos del primer usuario admin de la empresa.
