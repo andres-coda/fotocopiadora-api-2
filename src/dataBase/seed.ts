@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { QueryRunner } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import {
   CATEGORIAS_PRECIO_DEFAULT_LISTA,
   PRECIO_DEFAULT,
@@ -26,9 +26,22 @@ import {
  *   2. Si el dump commitea y esto fallara en la misma transaccion, el bootstrap
  *      cortaria en `public.usuario` y los datos no llegarian nunca mas.
  *
+ * ORDEN OBLIGATORIO: primero el super_admin, despues el catalogo.
+ * Los triggers de auditoria (`tr_nivel_auditoria`, `tr_empresa_auditoria`,
+ * `tr_auditoria_lprecio`, ...) escriben `auditoria.id_usuario` con
+ * `fc_usuario_actual()`, y `fc_auditoria` ademas llama `fc_empresa_actual()`,
+ * que hace `PERFORM fc_cargar_contexto_usuario()` y lanza
+ * `Usuario % no encontrado` cuando `app.user_id` esta vacio. O sea: sin un
+ * usuario en el contexto, el primer `insert into nivel` ya falla. Por eso el
+ * super_admin se crea antes (la tabla `usuario` no tiene trigger de auditoria
+ * en INSERT) y su id se publica con `set_config('app.user_id', ..., true)`.
+ *
  * Las policies de INSERT de los catalogos piden `fc_usuario_actual() IS NOT
- * NULL`, que en el arranque es NULL: por eso esto corre con el rol de bootstrap
- * (superusuario), que saltea RLS. Con `app_role` falla.
+ * NULL`: con el GUC puesto se cumplen. Lo que NO se puede saltear es el rol:
+ * `auditoria` tiene FORCE ROW LEVEL SECURITY y su unica policy es de SELECT
+ * (`pc_auditoria_select`), asi que el INSERT de `fc_auditoria` solo pasa con un
+ * rol superusuario o con BYPASSRLS. `DB_BOOTSTRAP_USERNAME` tiene que ser uno
+ * de los dos; `app_role` no sirve para el seed.
  */
 
 const LOGGER_CONTEXT = 'DatabaseSeed';
@@ -36,8 +49,29 @@ const LOGGER_CONTEXT = 'DatabaseSeed';
 /** `usuario.nombre` y `usuario.email` son varchar(50). */
 const MAX_LARGO_USUARIO = 50;
 
+/**
+ * `auditoria` es FORCE RLS con una sola policy de SELECT: sin BYPASSRLS, el
+ * trigger de auditoria rechaza el insert y el seed no puede escribir nada.
+ */
+async function rolPuedeEscribirAuditoria(source: DataSource): Promise<boolean> {
+  // `DataSource.query` si acepta el generico (a diferencia de `QueryRunner.query`).
+  const filas = await source.query<{ ok: boolean }[]>(
+    `select coalesce(
+       (select rolsuper or rolbypassrls from pg_roles where rolname = current_user),
+       false
+     ) as ok`,
+  );
+
+  return filas[0]?.ok === true;
+}
+
 /** Catalogos con UNIQUE(nombre): el conflicto alcanza para ser idempotente. */
-type TablaConNombreUnico = 'nivel' | 'componente' | 'materia' | 'editorial';
+type TablaConNombreUnico =
+  | 'nivel'
+  | 'componente'
+  | 'materia'
+  | 'editorial'
+  | 'especificacion';
 
 /** Inserta solo los nombres que faltan y devuelve cuantos entraron. */
 async function insertarCatalogo(
@@ -63,33 +97,11 @@ async function insertarCatalogo(
 }
 
 /**
- * `especificacion` es el unico catalogo sin UNIQUE(nombre), asi que el
- * `on conflict` no sirve: se pregunta antes.
- */
-async function insertarEspecificaciones(runner: QueryRunner): Promise<number> {
-  let nuevos = 0;
-
-  for (const nombre of ESPECIFICACIONES_DEFAULT) {
-    const insertadas = (await runner.query(
-      `insert into especificacion (nombre)
-       select $1
-       where not exists (select 1 from especificacion where nombre = $1)
-       returning id`,
-      [nombre],
-    )) as { id: string }[];
-
-    nuevos += insertadas.length;
-  }
-
-  return nuevos;
-}
-
-/**
- * Garantiza las tres categorias bloqueadas.
+ * Garantiza las tres categorias bloqueadas y devuelve cuantas se crearon.
  *
- * Devuelve cuantas se crearon. Si una categoria con ese nombre ya existia pero
- * quedo desbloqueada, la vuelve a marcar: el lateral de precios y la carga
- * inicial dependen de que esas tres esten bloqueadas.
+ * Si una categoria con ese nombre ya existia pero quedo desbloqueada, la vuelve
+ * a marcar: el lateral de precios y la carga inicial dependen de que esas tres
+ * esten bloqueadas.
  */
 async function asegurarCategoriasBloqueadas(
   runner: QueryRunner,
@@ -149,17 +161,35 @@ async function sembrarEmpresa(
 
   const [empresa] = (await runner.query(
     `insert into empresa (nombre, email, telefono) values ($1, $2, $3)
+     on conflict do nothing
      returning id`,
     [EMPRESA_DEFAULT.nombre, EMPRESA_DEFAULT.email, EMPRESA_DEFAULT.telefono],
   )) as { id: string }[];
 
+  if (!empresa) {
+    // Otra instancia gano la carrera por el nombre/email/telefono unico.
+    logger.warn(
+      'La empresa inicial ya fue creada por otra instancia: no se cargan sus precios.',
+    );
+    return;
+  }
+
   for (const precio of PRECIO_DEFAULT) {
-    // `precio` es global (UNIQUE por nombre): se reusa si ya existe y despues
-    // se vincula a la empresa en `precio_empresa` (PK id_empresa + id_precio).
+    // `precio` es global y tiene DOS unicos: nombre y abreviatura. `on conflict
+    // (nombre)` no cubriria el caso de una fila que quedo con la misma
+    // abreviatura y otro nombre, asi que se pregunta por los dos.
+    await runner.query(
+      `insert into precio (nombre, abreviatura)
+       select $1, $2
+       where not exists (
+         select 1 from precio where nombre = $1 or abreviatura = $2
+       )
+       on conflict do nothing`,
+      [precio.nombre, precio.abreviatura ?? null],
+    );
+
     const [fila] = (await runner.query(
-      `insert into precio (nombre, abreviatura) values ($1, $2)
-       on conflict (nombre) do update set nombre = precio.nombre
-       returning id`,
+      `select id from precio where nombre = $1 or abreviatura = $2 limit 1`,
       [precio.nombre, precio.abreviatura ?? null],
     )) as { id: string }[];
 
@@ -170,7 +200,8 @@ async function sembrarEmpresa(
 
     await runner.query(
       `insert into precio_empresa (id_empresa, id_precio, importe, id_categoria)
-       values ($1, $2, $3, $4)`,
+       values ($1, $2, $3, $4)
+       on conflict do nothing`,
       [empresa.id, fila.id, precio.importe, categoria?.id ?? null],
     );
   }
@@ -181,17 +212,33 @@ async function sembrarEmpresa(
 }
 
 /**
- * Crea el super admin desde `SUPER_USER` / `SUPER_MAIL` / `SUPER_PASS`.
+ * Deja un super_admin disponible y devuelve su id, que es el contexto de
+ * auditoria de todo lo que se inserta despues.
  *
- * Nunca tumba el arranque: si faltan variables avisa y sigue. La base admite un
- * solo super_admin (`uq_super_admin` es un indice unico parcial sobre `rol`, y
- * cuenta tambien las filas borradas), asi que se pregunta antes de insertar.
+ * Nunca tumba el arranque: si no puede crearlo avisa y devuelve null, y el
+ * caller no carga el catalogo. La base admite un solo super_admin
+ * (`uq_super_admin` es un indice unico parcial sobre `rol`, y cuenta tambien
+ * las filas borradas), asi que se pregunta antes de insertar.
  */
-async function sembrarSuperAdmin(
+async function asegurarSuperAdmin(
   runner: QueryRunner,
   config: ConfigService,
   logger: Logger,
-): Promise<void> {
+): Promise<{ id: string; creado: boolean } | null> {
+  const [{ total }] = (await runner.query(
+    `select count(*)::int as total from usuario where rol = 'super_admin'`,
+  )) as { total: number }[];
+
+  if (total > 0) {
+    const [existente] = (await runner.query(
+      `select id from usuario where rol = 'super_admin'
+       order by fecha_creacion limit 1`,
+    )) as { id: string }[];
+
+    logger.log('Ya existe un super_admin: se usa como contexto de auditoria.');
+    return { id: existente.id, creado: false };
+  }
+
   const nombre = config.get<string>('SUPER_USER')?.trim() ?? '';
   const email = config.get<string>('SUPER_MAIL')?.trim() ?? '';
   const password = config.get<string>('SUPER_PASS') ?? '';
@@ -208,7 +255,7 @@ async function sembrarSuperAdmin(
     logger.warn(
       `No se pudo crear el super: variables inexistentes (${faltantes.join(', ')}).`,
     );
-    return;
+    return null;
   }
 
   if (nombre.length > MAX_LARGO_USUARIO || email.length > MAX_LARGO_USUARIO) {
@@ -216,25 +263,53 @@ async function sembrarSuperAdmin(
       `No se pudo crear el super: SUPER_USER y SUPER_MAIL no pueden pasar de ` +
         `${MAX_LARGO_USUARIO} caracteres (largo de la tabla usuario).`,
     );
-    return;
+    return null;
   }
 
-  const [{ total }] = (await runner.query(
-    `select count(*)::int as total from usuario where rol = 'super_admin'`,
-  )) as { total: number }[];
+  const [mismoEmail] = (await runner.query(
+    'select 1 as ok from usuario where email = $1',
+    [email],
+  )) as { ok: number }[];
 
-  if (total > 0) {
-    logger.log('Ya existe un super_admin: la base solo admite uno.');
-    return;
+  if (mismoEmail) {
+    logger.warn(
+      `No se pudo crear el super: el email "${email}" ya pertenece a otro usuario.`,
+    );
+    return null;
   }
 
-  await runner.query(
+  const [{ ok: hayCrypt }] = (await runner.query(
+    `select to_regprocedure('public.crypt(text,text)') is not null as ok`,
+  )) as { ok: boolean }[];
+
+  if (!hayCrypt) {
+    logger.warn(
+      'No se pudo crear el super: public.crypt no existe. pgcrypto tiene que ' +
+        'estar instalada en el schema public (fc_login la usa para validar).',
+    );
+    return null;
+  }
+
+  const [creado] = (await runner.query(
     `insert into usuario (nombre, email, password_hash, rol, id_empresa)
-     values ($1, $2, public.crypt($3, public.gen_salt('bf', 10)), 'super_admin', null)`,
+     values ($1, $2, public.crypt($3, public.gen_salt('bf', 10)), 'super_admin', null)
+     on conflict do nothing
+     returning id`,
     [nombre, email, password],
-  );
+  )) as { id: string }[];
+
+  if (!creado) {
+    // Otra instancia lo creo entre el count y este insert.
+    logger.warn(
+      'No se pudo crear el super: otra instancia lo creo en paralelo. ' +
+        'Se reintenta en el proximo arranque.',
+    );
+    return null;
+  }
 
   logger.log(`super_admin "${nombre}" creado.`);
+
+  return { id: creado.id, creado: true };
 }
 
 /**
@@ -248,6 +323,18 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
   await source.initialize();
 
   try {
+    // `auditoria` es FORCE RLS con una unica policy de SELECT, y cada insert de
+    // catalogo escribe ahi via `fc_auditoria`. Sin BYPASSRLS el seed no puede
+    // hacer nada, y el error de Postgres no lo explica: se avisa y se sale.
+    if (!(await rolPuedeEscribirAuditoria(source))) {
+      logger.warn(
+        'No se cargan los datos iniciales: el rol de bootstrap no puede ' +
+          'escribir en public.auditoria (FORCE RLS, sin policy de INSERT). ' +
+          'Necesita ser superusuario o tener BYPASSRLS (DB_BOOTSTRAP_USERNAME).',
+      );
+      return;
+    }
+
     const runner = source.createQueryRunner();
     await runner.connect();
 
@@ -262,6 +349,25 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
         await runner.query(
           'CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public',
         );
+
+        const superAdmin = await asegurarSuperAdmin(runner, config, logger);
+
+        if (!superAdmin) {
+          // Sin usuario no hay contexto de auditoria y los triggers de INSERT
+          // de los catalogos tiran excepcion. Se corta sin romper el arranque.
+          logger.warn(
+            'No se cargan los datos iniciales: hace falta un usuario para el ' +
+              'contexto de auditoria (app.user_id).',
+          );
+          await runner.query('COMMIT');
+          return;
+        }
+
+        // `true` = local a la transaccion: el GUC muere en el COMMIT y no
+        // contamina las conexiones del pool de la aplicacion.
+        await runner.query(`select set_config('app.user_id', $1, true)`, [
+          superAdmin.id,
+        ]);
 
         const niveles = await insertarCatalogo(
           runner,
@@ -283,11 +389,14 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
           'editorial',
           EDITORIALES_DEFAULT,
         );
-        const especificaciones = await insertarEspecificaciones(runner);
+        const especificaciones = await insertarCatalogo(
+          runner,
+          'especificacion',
+          ESPECIFICACIONES_DEFAULT,
+        );
         const categorias = await asegurarCategoriasBloqueadas(runner, logger);
 
         await sembrarEmpresa(runner, logger);
-        await sembrarSuperAdmin(runner, config, logger);
 
         await runner.query('COMMIT');
 
