@@ -1167,7 +1167,7 @@ $_$;
 -- Name: fc_busqueda_libro_completo(text, integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.fc_busqueda_libro_completo(p_busqueda text, p_limite integer DEFAULT 50, p_offset integer DEFAULT 0) RETURNS TABLE(id uuid, nombre character varying, descripcion character varying, edicion integer, autor character varying, anio character varying, img character varying, nivel character varying, componentes text, materia character varying, editorial character varying, total bigint)
+CREATE FUNCTION public.fc_busqueda_libro_completo(p_busqueda text, p_limite integer DEFAULT 50, p_offset integer DEFAULT 0) RETURNS TABLE(id uuid, nombre character varying, descripcion character varying, edicion integer, autor character varying, anio character varying, img character varying, nivel character varying, componentes text, materia character varying, editorial character varying, id_libro_nombre uuid, id_materia uuid, total bigint)
     LANGUAGE plpgsql
     AS $_$
 BEGIN
@@ -3096,7 +3096,9 @@ CREATE VIEW public.vw_libro_completo WITH (security_invoker='true') AS
     n.nombre AS nivel,
     vw_c.componentes,
     m.nombre AS materia,
-    e.nombre AS editorial
+    e.nombre AS editorial,
+    l.id AS id_libro_nombre,
+    m.id AS id_materia
    FROM (((((public.libro_completo lc
      LEFT JOIN public.nivel n ON ((lc.id_nivel = n.id)))
      JOIN public.libro l ON ((l.id = lc.id_libro)))
