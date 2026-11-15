@@ -15,24 +15,26 @@ export class LibroController {
     protected readonly libroService: LibroService,
   ) { }
 
-  @Get('/completo')
+  @Get('/completo/:idLibro')
   @HttpCode(200)
   async getLibrosCompletoBusqueda(
     @Request() req: RequestWithUser,
-    @Query('q') busqueda: string,
+    @Param('idLibro') idLibro: string,
+    @Query('comp') componentes: string | undefined = undefined,
+    @Query('nivel') nivel: string | undefined = undefined,
     @Query('limite') limite = 20,
     @Query('pagina') pg = 1,
   ): Promise<RetornoGenericoControllerGet<LibroRetorno> | undefined> {
     const pagina: number = pg > 0 ? Number(pg) : 1;
     const offset = (Number(pagina) - 1) * Number(limite);
 
-    if (!busqueda || busqueda.length < 3) return undefined;
-
     const retorno = await this.libroService.buscarLibroCompleto({
       limite: Number(limite),
       offset,
       qR: req.queryRunner,
-      busqueda
+      id: idLibro,
+      componentes,
+      nivel
     });
 
     return {
@@ -40,7 +42,7 @@ export class LibroController {
       limite,
       pagina,
       datos: retorno.datos,
-      query: busqueda ?? '',
+      query: `{id:${idLibro}, comp: ${componentes}, nivel: ${nivel}`,
     }
   }
 
@@ -164,7 +166,7 @@ export class LibroController {
     @Body() dto: DtoLibroExtraEditar,
     @Request() req: RequestWithUser,
   ): Promise<LibroRetorno> {
-    if(!req.user.idEmpresa) throw new NotFoundException('No puede editar el libro porque no tiene acceso a la empresa');
+    if (!req.user.idEmpresa) throw new NotFoundException('No puede editar el libro porque no tiene acceso a la empresa');
     const libro = await this.libroService.updateLibroExtra({
       id: idLibro,
       dto,

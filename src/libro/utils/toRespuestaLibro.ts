@@ -1,7 +1,7 @@
 import { GetPedidoItemBusqueda } from "@src/pedido_item/interface/pedido_item_busqueda.interface";
 import { DtoLibroEmpresaRespuesta, DtoLibroNombreRespuesta, DtoLibroRespuesta, ResumenLibro } from "../dto/libroRetorno.dto";
 import { Libro } from "../entity/libro.entity";
-import { RetornoLibroNombreProp, RetornoVistaLibroProp } from "../interface/libro.interface";
+import { RetornoLibroNombreProp, RetornoVistaLibroCompletoProp, RetornoVistaLibroProp } from "../interface/libro.interface";
 import { toRespuestaMateria } from "@src/materia/util/toRespuestaMateria";
 import { LibroRetorno } from "../retorno/libro.retorno";
 
@@ -36,6 +36,15 @@ export const toRespuestaLibro = (dato?: RetornoVistaLibroProp): LibroRetorno | u
   const libro = new LibroRetorno({...dato});
   libro.armarLibroCompletoRetorno({...dato, componentes:[], componentes_texto: dato.componentes ?? ''});
 
+  return libro;
+}
+
+export const toRespuestaLibroCompleto = (dato?: RetornoVistaLibroCompletoProp): LibroRetorno | undefined => {
+  if(!dato) return undefined;
+  const libro = new LibroRetorno({...dato});
+  libro.armarLibroBasicoRetorno({...dato, edicion: dato.edicion?.toString()?? ''});
+  libro.agregarMateriaLibroRetorno({nombre:dato.materia, id:dato.id_materia});
+  libro.agregarAutorImg({...dato});
   return libro;
 }
 

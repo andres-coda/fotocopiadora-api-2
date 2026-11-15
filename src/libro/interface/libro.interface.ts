@@ -55,4 +55,21 @@ export interface RetornoVistaLibroProp extends GetLibroMinimo{
   id_emrpesa?:string;
 }
 
+export interface RetornoVistaLibroCompletoProp {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  nivel?: string;
+  anio?: string;
+  edicion?: number;
+  componentes?: string;
+  
+  autor?:string;
+  img?:string;
+  
+  materia:string;
+  editorial?: string;
+  id_libro_nombre:string;
+  id_materia:string;
+}
 

@@ -9,8 +9,8 @@ import { GatewayGateway } from '../gateway/gateway.gateway';
 import { Entidad, Mensaje } from '../gateway/dto/gatewayDto.dto';
 import { Mens } from '../gateway/enum/Mens.enum';
 import { PropuestaService } from '@src/propuesta_pedido/propuesta_pedido.service';
-import { RetornoLibroNombreProp, RetornoVistaLibroProp } from './interface/libro.interface';
-import { toRespuestaLibro, toRespuestaLibroEmptresXlibro, toRespuestaLibroNombre } from './utils/toRespuestaLibro';
+import { RetornoLibroNombreProp, RetornoVistaLibroCompletoProp, RetornoVistaLibroProp } from './interface/libro.interface';
+import { toRespuestaLibro, toRespuestaLibroCompleto, toRespuestaLibroEmptresXlibro, toRespuestaLibroNombre } from './utils/toRespuestaLibro';
 import { BusquedaGenericoProp, CreateGenericoProp, GetGenericoByIdProp, GetGenericoProp, RetornoGenericoServiceGet, UpdateGenericoProp } from '@src/interface/general.interface';
 import { LibroRetorno } from './retorno/libro.retorno';
 
@@ -24,9 +24,10 @@ export interface BuscarLibroProp extends GetLibroProp {
   busqueda: string,
 }
 
-interface GetLibroByIdProp {
+interface BusquedaLibroCompletoProp extends Omit<BusquedaGenericoProp, 'busqueda'> {
   id: string;
-  qR: QueryRunner,
+  componentes?: string;
+  nivel?: string;
 }
 
 interface GetLibrosByIdsProp {
@@ -84,18 +85,48 @@ export class LibroService {
   }
 
 
-  async buscarLibroCompleto({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
+  async buscarLibroCompleto({ id, nivel, componentes, limite = 20, offset = 0, qR }: BusquedaLibroCompletoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
     try {
-      const rows = await qR.query(
-        `SELECT * FROM fc_busqueda_libro_completo($1, $2, $3)`,
-        [busqueda, Number(limite), Number(offset)]
+      const filtros: (string | number)[] = [id];
+
+      let where = `WHERE id_libro_nombre = $1`;
+
+      if (componentes) {
+        filtros.push(componentes);
+        where += ` AND componentes = $${filtros.length}`;
+      }
+
+      if (nivel) {
+        filtros.push(nivel);
+        where += ` AND nivel = $${filtros.length}`;
+      }
+
+      // El total se cuenta aparte y no depende de las filas de la pagina. Con
+      // `count(*) OVER()` el total viajaba dentro de cada fila: si el OFFSET caia
+      // mas alla del final, la pagina volvia vacia y el total se reportaba como 0.
+      const totalRows = await qR.query(
+        `SELECT count(*)::int AS total FROM vw_libro_completo ${where}`,
+        filtros
       );
+      const total = Number(totalRows?.[0]?.total ?? 0);
+
+      if (total === 0) return { total: 0, datos: [] };
+
+      // ORDER BY explicito: LIMIT/OFFSET sin orden no es determinista, dos
+      // paginas consecutivas pueden repetir o saltear filas.
+      const rows = await qR.query(
+        `SELECT * FROM vw_libro_completo ${where}
+         ORDER BY nivel, componentes, id
+         LIMIT $${filtros.length + 1} OFFSET $${filtros.length + 2}`,
+        [...filtros, Number(limite), Number(offset)]
+      );
+
       return {
-        total: Number(rows[0]?.total ?? 0),
-        datos: rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+        total,
+        datos: rows.map((r: RetornoVistaLibroCompletoProp) => toRespuestaLibroCompleto(r))
       }
     } catch (er) {
-      this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
+      this.erroresService.handleExceptions(er, `Error al intentar la busqueda de libros con id ${id}`);
     }
   }
 

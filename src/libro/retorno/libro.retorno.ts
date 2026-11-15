@@ -42,6 +42,8 @@ interface LibroCompletoRetornoProp extends LibroMinimoRetornoProp, LibroSimpleRe
   componentes_texto?: string;
 }
 
+interface AgregarAutorImgProp extends Pick<LibroSimpleRetornoProp, 'autor' | 'img'>{}
+
 export interface LibroVistaPropuestaRetornoProp {
   id_materia: string;
   descripcion: string;
@@ -174,5 +176,10 @@ export class LibroRetorno extends BaseRetorno {
     if (componentes) this.componentes_texto = componentes;
     if (edicion) this.edicion = edicion;
     if (anio) this.anio = anio;
+  }
+
+  public agregarAutorImg({autor, img}:AgregarAutorImgProp){
+    if(autor) this.autor = autor;
+    if(img) this.img = img;
   }
 }
