@@ -5,6 +5,7 @@ import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet, UpdateGenericoProp } from '@src/interface/general.interface';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('precio')
 @UseGuards(UsuarioGuard)
@@ -16,12 +17,11 @@ export class PrecioController {
   @HttpCode(200)
   async findAll(
     @Query('q') busqueda: string,
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<DtoPrecioRespuesta> | undefined> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     if (!busqueda || busqueda.length < 3) return undefined;
 

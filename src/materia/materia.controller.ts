@@ -12,6 +12,7 @@ import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { DeletProp, EditarElementoControllerProp, RetornoGet } from '@src/base/interface/base.interface';
 import { MateriaRetorno } from './retorno/materia.retorno';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('materia')
 @UseGuards(UsuarioGuard)
@@ -27,15 +28,14 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
   @HttpCode(200)
   async buscarMateria(
     @Query('q') busqueda: string,
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGet<'materia'>> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     if (busqueda) {
       const retorno = await this.materiaService.buscarMateriaNombre({
-        limite: Number(limite),
+        limite,
         offset,
         qR: req.queryRunner,
         busqueda
@@ -68,12 +68,11 @@ export class MateriaController extends BaseController<typeof Entidad.MATERIA, Ma
   @Get('todos')
   @HttpCode(200)
   async findAllTodos(
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<MateriaRetorno>> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno = await this.materiaService.getDatoTodosCx({
       limite,

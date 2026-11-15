@@ -29,7 +29,7 @@ describe('BaseController', () => {
 
   it('findAll debería devolver datos', async () => {
     (mockBaseService.getDatoCx as any).mockResolvedValue({ datos: [mockTestEntity], total: 1 });
-    const result = await controller.findAll(1, 20, { queryRunner: undefined } as any);
+    const result = await controller.findAll('1', '20', { queryRunner: undefined } as any);
     expect(result.datos).toEqual([mockTestEntity]);
     expect(mockBaseService.getDatoCx).toHaveBeenCalled();
   });

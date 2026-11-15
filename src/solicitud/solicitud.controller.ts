@@ -5,6 +5,7 @@ import type { RequestWithUser } from '../auth/dto/RequestWhitUser.interface';
 import { SolicitudService } from './solicitud.service';
 import { DtoSolicitudResolver } from './dto/solicitud.dto';
 import { SolicitudRetorno } from './retorno/solicitud.retorno';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('solicitud')
 @UseGuards(UsuarioGuard)
@@ -15,16 +16,16 @@ export class SolicitudController {
   @HttpCode(200)
   @UseGuards(SuperAdminGuard)
   async getSolicitudes(
-    @Query('pagina') pagina = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<{ total: number; limite: number; pagina: number; datos: SolicitudRetorno[]; query: string }> {
-    const offset = (pagina - 1) * limite;
-    const retorno = await this.solicitudService.getSolicitudes(req.queryRunner, Number(limite), offset);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
+    const retorno = await this.solicitudService.getSolicitudes(req.queryRunner, limite, offset);
     return {
       total: retorno.total,
-      limite: Number(limite),
-      pagina: Number(pagina),
+      limite,
+      pagina,
       datos: retorno.datos,
       query: '',
     };

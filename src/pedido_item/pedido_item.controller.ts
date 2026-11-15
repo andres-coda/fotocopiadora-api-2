@@ -7,6 +7,7 @@ import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { ItemRetorno } from './retorno/item.retorno';
 import { PedidoRetorno } from '@src/pedido/retorno/pedido.retorno';
 import { EstadoPedido } from '@src/pedido/interface/estadoPedido.enum';
+import { parsearPaginado } from '@src/utils/paginado';
 
 export enum OrdenPedidoItem {
   ESTADO = 'estado',
@@ -23,14 +24,14 @@ export class PedidoItemController {
   @HttpCode(200)
   async getItems(
     @Request() req: RequestWithUser,
-    @Query('limite') limite = 20,
-    @Query('pagina') pagina = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
     @Query('orden') orden: OrdenPedidoItem = OrdenPedidoItem.ESTADO
   ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
 
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     const items = await this.itemService.getItems({
-      limite: Number(limite),
+      limite,
       offset,
       qR: req.queryRunner,
       orden
@@ -52,14 +53,14 @@ export class PedidoItemController {
   async getItemsByPedido(
     @Param('idPedido') idPedido: string,
     @Request() req: RequestWithUser,
-    @Query('limite') limite = 1000,
-    @Query('pagina') pagina = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
   ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
     const id_empresa = req.user.idEmpresa;
     if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery, 1000);
     const items = await this.itemService.getItemByPedido({
-      limite: Number(limite),
+      limite,
       id_pedido: idPedido,
       offset,
       qR: req.queryRunner,
@@ -80,15 +81,15 @@ export class PedidoItemController {
   async getItemsByLibro(
     @Param('idLibro') idLibro: string,
     @Request() req: RequestWithUser,
-    @Query('limite') limite = 20,
-    @Query('pagina') pagina = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
         @Query('estado') estado: EstadoPedido | undefined = undefined,
   ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
     const id_empresa = req.user.idEmpresa;
     if (!id_empresa) throw new NotFoundException('No puede acceder a los pedidos porque no pertenece a ninguna empresa')
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     const items = await this.itemService.getItemsPedidoByLibroId({
-      limite: Number(limite),
+      limite,
       id_libro: idLibro,
       offset,
       qR: req.queryRunner,

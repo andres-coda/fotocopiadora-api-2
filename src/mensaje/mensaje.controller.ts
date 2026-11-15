@@ -8,6 +8,7 @@ import { DtoMensajeCrear } from './dto/mensajeCrear.dto';
 import { DtoMensajeEditar } from './dto/mensajeEditar.dto';
 import { DtoMensajeFavorito } from './dto/mensajeFavorito.dto';
 import { MensajeRetorno } from './retorno/mensaje.retorno';
+import { parsearPaginado } from '@src/utils/paginado';
 
 /**
  * Endpoints de mensajes por empresa.
@@ -22,11 +23,11 @@ export class MensajeController {
   @Get()
   @HttpCode(200)
   async getMensajes(
-    @Query('pagina') pagina = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<MensajeRetorno>> {
-    const offset = (pagina - 1) * limite;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno: RetornoGenericoServiceGet<MensajeRetorno> = await this.mensajeService.getMensajes({
       qR: req.queryRunner,
@@ -53,22 +54,21 @@ export class MensajeController {
   async buscarMensaje(
     @Request() req: RequestWithUser,
     @Query('q') busqueda: string,
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
   ): Promise<RetornoGenericoControllerGet<MensajeRetorno>> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno: RetornoGenericoServiceGet<MensajeRetorno> = busqueda
       ? await this.mensajeService.buscarMensajeNombre({
         qR: req.queryRunner,
-        limite: Number(limite),
+        limite,
         offset,
         busqueda,
       })
       : await this.mensajeService.getMensajes({
         qR: req.queryRunner,
-        limite: Number(limite),
+        limite,
         offset,
       });
 

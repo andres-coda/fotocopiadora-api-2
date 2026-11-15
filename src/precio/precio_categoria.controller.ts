@@ -5,6 +5,7 @@ import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { PrecioCategoria } from './entity/precio_categoria.entity';
 import { PrecioCategoriaService } from './precio_categoria.service';
 import type { PrecioCategoriaUsoRetornoProp } from './retorno/precio.retorno';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('precio-categoria')
 @UseGuards(UsuarioGuard)
@@ -27,23 +28,22 @@ export class PrecioCategoriaController {
   @HttpCode(200)
   async getAll(
     @Query('q') busqueda: string,
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<PrecioCategoria>> {
-    const pagina: number = Number(pg) > 0 ? Number(pg) : 1;
-    const offset = (pagina - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno = await this.precioCategoriaService.getCategorias({
       qR: req.queryRunner,
-      limite: Number(limite),
+      limite,
       offset,
       busqueda
     });
 
     return {
       total: retorno.total,
-      limite: Number(limite),
+      limite,
       pagina,
       datos: retorno.datos,
       query: busqueda ?? '',

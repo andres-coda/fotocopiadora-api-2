@@ -7,6 +7,7 @@ import { DatoCobroService } from './datoCobro.service';
 import { DtoDatoCobroCrear } from './dto/datoCobroCrear.dto';
 import { DtoDatoCobroEditar } from './dto/datoCobroEditar.dto';
 import { DatoCobroRetorno } from './retorno/datoCobro.retorno';
+import { parsearPaginado } from '@src/utils/paginado';
 
 /**
  * Endpoints de datos de cobro por empresa.
@@ -21,11 +22,11 @@ export class DatoCobroController {
   @Get()
   @HttpCode(200)
   async getDatosCobro(
-    @Query('pagina') pagina = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<DatoCobroRetorno>> {
-    const offset = (pagina - 1) * limite;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno: RetornoGenericoServiceGet<DatoCobroRetorno> = await this.datoCobroService.getDatosCobro({
       qR: req.queryRunner,
@@ -52,22 +53,21 @@ export class DatoCobroController {
   async buscarDatoCobro(
     @Request() req: RequestWithUser,
     @Query('q') busqueda: string,
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
   ): Promise<RetornoGenericoControllerGet<DatoCobroRetorno>> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno: RetornoGenericoServiceGet<DatoCobroRetorno> = busqueda
       ? await this.datoCobroService.buscarDatoCobroNombre({
         qR: req.queryRunner,
-        limite: Number(limite),
+        limite,
         offset,
         busqueda,
       })
       : await this.datoCobroService.getDatosCobro({
         qR: req.queryRunner,
-        limite: Number(limite),
+        limite,
         offset,
       });
 

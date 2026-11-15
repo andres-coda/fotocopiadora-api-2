@@ -8,6 +8,7 @@ import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { RetornoGet } from '@src/base/interface/base.interface';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import { NivelService } from './nivel.service';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('nivel')
 @UseGuards(UsuarioGuard)
@@ -23,14 +24,13 @@ export class NivelController extends BaseController<typeof Entidad.NIVEL, Nivel,
   async buscarNivel(
     @Request() req: RequestWithUser,
     @Query('q') busqueda: string,
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
   ): Promise<RetornoGet<typeof Entidad.NIVEL>> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     if (busqueda) {
       const retorno = await this.nivelService.buscarNivelNombre({
-        limite: Number(limite),
+        limite,
         offset,
         qR: req.queryRunner,
         busqueda
@@ -46,7 +46,7 @@ export class NivelController extends BaseController<typeof Entidad.NIVEL, Nivel,
     }
 
     const retorno = await this.nivelService.getDatoCx({
-      limite: Number(limite),
+      limite,
       offset,
       qR: req.queryRunner
     });

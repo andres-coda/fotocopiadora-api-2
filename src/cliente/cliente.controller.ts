@@ -9,6 +9,7 @@ import { UsuarioGuard } from '@src/auth/guard/user.guard';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { ClienteRetorno } from './retorno/cliente.retorno';
+import { parsearPaginado } from '@src/utils/paginado';
 
 
 @Controller('cliente')
@@ -32,12 +33,11 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
   @HttpCode(200)
   async buscar(
     @Query('q') busqueda: string | undefined,
-    @Query('limite') limite = 20,
-    @Query('pagina') pagDto = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<ClienteRetorno>> {
-    const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
-    const offset = (pagina - 1) * limite;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     if (!busqueda || busqueda.length < 4) {
       const datoRetorno = await this.baseService.getDatoCx({
         entidadError: this.entidadError,
@@ -60,8 +60,8 @@ export class ClienteController extends BaseController<typeof Entidad.CLIENTE, Cl
 
     const retorno = await this.clienteService.buscarClientes(
       busqueda,
-      Number(limite),
-      Number(offset),
+      limite,
+      offset,
       req.queryRunner,
     );
 

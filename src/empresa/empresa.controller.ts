@@ -13,6 +13,7 @@ import { EmpresaRetorno } from './retorno/empresa.retorno';
 import { Configuracion } from '@src/configuracion/entity/configuracion.entity';
 import { User } from '@src/user/entity/user.entity';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('empresa')
 @UseGuards(UsuarioGuard)
@@ -45,13 +46,12 @@ export class EmpresaController extends BaseController<typeof Entidad.EMPRESA, Em
   @HttpCode(200)
   async getEmpresaByLibro(
     @Query('q') idLibro: string | undefined,
-    @Query('limite') limite = 20,
-    @Query('pagina') pagDto = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
     @Request() req: RequestWithUser
   ): Promise<RetornoGenericoControllerGet<EmpresaRetorno>> {
     if (!idLibro) throw new NotFoundException('Falta el id del libro')
-    const pagina = Number(pagDto) > 0 ? Number(pagDto) : 1;
-    const offset = (pagina - 1) * limite;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const datoRetorno = await this.empresaService.getEmpresasByLibro(idLibro, limite, offset, req.queryRunner);
     return {

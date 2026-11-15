@@ -7,6 +7,7 @@ import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { LibroRetorno } from './retorno/libro.retorno';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { DtoLibroExtraEditar, DtoLibroPrincipalEditar } from './dto/libroEditar.dto';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -22,14 +23,13 @@ export class LibroController {
     @Param('idLibro') idLibro: string,
     @Query('comp') componentes: string | undefined = undefined,
     @Query('nivel') nivel: string | undefined = undefined,
-    @Query('limite') limite = 20,
-    @Query('pagina') pg = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
   ): Promise<RetornoGenericoControllerGet<LibroRetorno> | undefined> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno = await this.libroService.buscarLibroCompleto({
-      limite: Number(limite),
+      limite,
       offset,
       qR: req.queryRunner,
       id: idLibro,
@@ -51,16 +51,15 @@ export class LibroController {
   async getLibrosNombreBusqueda(
     @Request() req: RequestWithUser,
     @Query('q') busqueda: string,
-    @Query('limite') limite = 20,
-    @Query('pagina') pg = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
   ): Promise<RetornoGenericoControllerGet<LibroRetorno> | undefined> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     if (!busqueda || busqueda.length < 3) return undefined;
 
     const retorno = await this.libroService.buscarLibroNombre({
-      limite: Number(limite),
+      limite,
       offset,
       qR: req.queryRunner,
       busqueda
@@ -94,14 +93,13 @@ export class LibroController {
   async getLibrosBusqueda(
     @Request() req: RequestWithUser,
     @Query('q') busqueda: string,
-    @Query('limite') limite = 20,
-    @Query('pagina') pg = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
   ): Promise<RetornoGenericoControllerGet<LibroRetorno>> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     if (busqueda) {
       const retorno = await this.libroService.buscarLibro({
-        limite: Number(limite),
+        limite,
         offset,
         qR: req.queryRunner,
         busqueda
@@ -117,7 +115,7 @@ export class LibroController {
     }
 
     const retorno = await this.libroService.getLibroEmpresa({
-      limite: Number(limite),
+      limite,
       offset,
       qR: req.queryRunner
     });

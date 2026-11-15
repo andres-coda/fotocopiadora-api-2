@@ -9,6 +9,7 @@ import { COMPONENTE_RELATIONS, SELECTED_COMPONENTE, SELECTED_COMPONENTE_BY_ID } 
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
 import { RetornoGet } from '@src/base/interface/base.interface';
 import { UsuarioGuard } from '@src/auth/guard/user.guard';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('componente')
 @UseGuards(UsuarioGuard)
@@ -24,14 +25,13 @@ export class ComponenteController extends BaseController<typeof Entidad.COMPONEN
   async buscarComponente(
     @Request() req: RequestWithUser,
     @Query('q') busqueda: string,
-    @Query('pagina') pg = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
   ): Promise<RetornoGet<typeof Entidad.COMPONENTE>> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     if (busqueda) {
       const retorno = await this.componenteService.buscarComponenteNombre({
-        limite: Number(limite),
+        limite,
         offset,
         qR: req.queryRunner,
         busqueda
@@ -47,7 +47,7 @@ export class ComponenteController extends BaseController<typeof Entidad.COMPONEN
     }
 
     const retorno = await this.componenteService.getDatoCx({
-      limite: Number(limite),
+      limite,
       offset,
       qR: req.queryRunner
     });

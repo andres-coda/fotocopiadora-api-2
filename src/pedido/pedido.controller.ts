@@ -14,6 +14,7 @@ import { OrdenPedidoCliente } from '@src/cliente/interface/cliente_retorno.inter
 import { OrdenPedidoClientePipe } from '@src/pipe/OrdenPedidoClientePipe';
 import { PedidoRetorno } from './retorno/pedido.retorno';
 import { ItemRetorno } from '@src/pedido_item/retorno/item.retorno';
+import { parsearPaginado } from '@src/utils/paginado';
 
 const aArreglo = (valor?: string | string[]): string[] => {
   if (valor === undefined || valor === null) return [];
@@ -59,13 +60,11 @@ export class PedidoController extends BaseController<
     @Query('entrega') entrega: string | undefined,
     @Query('tomado') tomado: string | undefined,
     @Query('orden') orden: string | string[] | undefined,
-    @Query('limite') limite = '20',
-    @Query('pagina') pg = '1',
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<ItemRetorno>> {
-    const pagina = Number(pg) > 0 ? Number(pg) : 1;
-    const limiteNum = Number(limite) > 0 ? Number(limite) : 20;
-    const offset = (pagina - 1) * limiteNum;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno = await this.pedidoService.buscarPedidos({
       busqueda,
@@ -74,14 +73,14 @@ export class PedidoController extends BaseController<
       entrega: normalizarFecha(entrega),
       tomado: normalizarFecha(tomado),
       orden: normalizarTexto(orden),
-      limite: limiteNum,
+      limite,
       offset,
       qR: req.queryRunner,
     });
 
     return {
       ...retorno,
-      limite: limiteNum,
+      limite,
       pagina,
       query: busqueda ?? '',
     }
@@ -97,13 +96,12 @@ export class PedidoController extends BaseController<
       OrdenPedidoClientePipe,
     )
     orden: OrdenPedidoCliente,
-    @Query('limite') limite = 20,
-    @Query('pagina') pg = 1,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
     @Query('estado') estado: EstadoPedido | undefined = undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<PedidoRetorno> | undefined> {
-    const pagina: number = pg > 0 ? Number(pg) : 1;
-    const offset = (Number(pagina) - 1) * Number(limite);
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     const retorno = await this.pedidoService.buscarPedidosByCliente({
       idCliente,
       orden,

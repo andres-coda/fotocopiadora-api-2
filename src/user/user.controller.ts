@@ -10,6 +10,7 @@ import type { ModificarRole } from './interface/usuario.interface';
 import { EditarUsuarioDto } from './dto/userEditar.dto';
 import { RetornoGenericoControllerGet } from '@src/interface/general.interface';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
+import { parsearPaginado } from '@src/utils/paginado';
 
 @Controller('user')
 @UseGuards(UsuarioGuard)
@@ -22,11 +23,11 @@ export class UserController {
   @HttpCode(200)
   @UseGuards(AdminGuard)
   async getUsuario(
-    @Query('pagina') pagina = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<User>> {
-    const offset = (pagina - 1) * limite;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno = await this.userService.getUsuarios({ qR: req.queryRunner, limite, offset });
 
@@ -44,12 +45,12 @@ export class UserController {
   @UseGuards(SuperAdminGuard)
   async getUsuariosByEmpresa(
     @Param('id') id:string,
-    @Query('pagina') pagina = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGenericoControllerGet<User>> {
     if(!id ) throw new NotFoundException('Requiere seleccionar una empresa para obtener sus usuarios')
-    const offset = (pagina - 1) * limite;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
 
     const retorno = await this.userService.getUsuariosByEmpresa({ id, qR: req.queryRunner, limite, offset });
 

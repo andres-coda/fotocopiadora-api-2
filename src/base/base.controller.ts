@@ -8,6 +8,7 @@ import { EntidadDatoMapType } from '../gateway/dto/gatewayDto.dto';
 import type { CreateProp, RetornoGet, SelectedDeep } from './interface/base.interface';
 import { DeletProp, EditarElementoControllerProp, RelationsKey } from './interface/base.interface';
 import type { RequestWithUser } from '@src/auth/dto/RequestWhitUser.interface';
+import { parsearPaginado } from '@src/utils/paginado';
 
 /**
  * Controlador base genérico.
@@ -54,11 +55,11 @@ export abstract class BaseController<
   @HttpCode(200)
   @UseGuards(UsuarioGuard)
   async findAll(
-    @Query('pagina') pagina = 1,
-    @Query('limite') limite = 20,
+    @Query('pagina') paginaQuery: string | undefined,
+    @Query('limite') limiteQuery: string | undefined,
     @Request() req: RequestWithUser,
   ): Promise<RetornoGet<K>> {
-    const offset = (pagina - 1) * limite;
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
     const datoRetorno: { datos: EntidadDatoMapType[K][], total: number } = await this.baseService.getDatoCx({
       entidadError: this.entidadError,
       relaciones: this.relacionesGenerales ?? this.relaciones,
