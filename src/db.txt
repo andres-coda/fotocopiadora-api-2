@@ -1317,11 +1317,6 @@ alter table precio_categoria
     add constraint uq_precio_categoria_nombre
         unique (nombre);
 
-create policy pc_precio_categoria_select on precio_categoria
-    as permissive
-    for select
-    using (fc_usuario_actual() IS NOT NULL);
-
 create policy pc_precio_categoria_insert on precio_categoria
     as permissive
     for insert
@@ -1337,6 +1332,14 @@ create policy pc_precio_categoria_delete on precio_categoria
     as permissive
     for delete
     using fc_es_super_admin();
+
+create policy pc_precio_categoria_select on precio_categoria
+    as permissive
+    for select
+    using (fc_es_super_admin() OR (EXISTS (SELECT 1
+                                           FROM precio_empresa pe
+                                           WHERE ((pe.id_categoria = precio_categoria.id) AND
+                                                  fc_es_empresa_actual(pe.id_empresa)))));
 
 create table if not exists usuario_mensaje_fav
 (
@@ -1458,7 +1461,9 @@ FROM libro_componente lc
 GROUP BY lc.id_libro;
 
 create or replace view vw_libro_completo
-            (id, nombre, descripcion, edicion, autor, anio, img, nivel, componentes, materia, editorial) as
+            (id, nombre, descripcion, edicion, autor, anio, img, nivel, componentes, materia, editorial,
+             id_libro_nombre, id_materia)
+as
 SELECT lc.id,
        l.nombre,
        lc.descripcion,
@@ -1469,7 +1474,9 @@ SELECT lc.id,
        n.nombre AS nivel,
        vw_c.componentes,
        m.nombre AS materia,
-       e.nombre AS editorial
+       e.nombre AS editorial,
+       l.id     AS id_libro_nombre,
+       m.id     AS id_materia
 FROM libro_completo lc
          LEFT JOIN nivel n ON lc.id_nivel = n.id
          JOIN libro l ON l.id = lc.id_libro

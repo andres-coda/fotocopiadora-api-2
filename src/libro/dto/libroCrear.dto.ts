@@ -1,9 +1,13 @@
 import { BaseDto } from "../../base/dto/baseDto";
 import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString,  Matches } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString,  IsUUID,  Matches } from "class-validator";
 
 export class DtoLibroCrear extends BaseDto {
+  @IsOptional()
+  @IsUUID()
+  id_libro_completo?:string;
+
   @IsNotEmpty({ message: 'El nombre es obligatorio' })
   @IsString({ message: 'El nombre debe ser un texto' })
   nombre!: string;
