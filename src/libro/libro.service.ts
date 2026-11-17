@@ -60,6 +60,55 @@ export class LibroService {
 
   ) { }
 
+  /** Una falla de socket no debe romper ni revertir un cambio de base ya hecho. */
+  private emitirSeguro(payload: Mensaje): void {
+    try {
+      this.gatewayGateway.actualizacionDato(payload);
+    } catch (error) {
+      console.error('No se pudo emitir la actualizacion de libro por socket', error);
+    }
+  }
+
+  private emitirSeguroEmpresas(payload: Mensaje, idsEmpresa: string[]): void {
+    try {
+      this.gatewayGateway.actualizacionDatoEmpresas(payload, idsEmpresa);
+    } catch (error) {
+      console.error('No se pudo emitir la actualizacion de libro por socket', error);
+    }
+  }
+
+  /** Emite el libro editado a cada empresa que lo ve, mas la sala super. */
+  private async emitirLibroEditado(qR: QueryRunner, idLibroCompleto: string): Promise<void> {
+    try {
+      const filas: RetornoVistaLibroProp[] = await qR.manager.query(
+        `select * from vw_libro_busqueda where id = $1`,
+        [idLibroCompleto],
+      );
+
+      for (const fila of filas) {
+        const libro = toRespuestaLibro(fila);
+        if (!libro || !fila.id_empresa) continue;
+
+        const payload: Mensaje = {
+          mensaje: Mens.EDITAR,
+          entidad: Entidad.LIBRO,
+          dato: libro,
+        };
+
+        this.emitirSeguroEmpresas(payload, [fila.id_empresa]);
+      }
+    } catch (error) {
+      console.error('No se pudo emitir la actualizacion de libro por socket', error);
+    }
+  }
+
+  /** fc_procesar_actualizacion_libro_completo siempre devuelve true: solo el diff dice si hubo update directo. */
+  private cambioLibroCompleto(antes: LibroRetorno, despues: LibroRetorno): boolean {
+    const campos: (keyof LibroRetorno)[] = ['autor', 'edicion', 'anio', 'img', 'descripcion'];
+
+    return campos.some((campo) => (antes[campo] ?? null) !== (despues[campo] ?? null));
+  }
+
   async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
     try {
       const rows = await qR.query(
@@ -255,7 +304,15 @@ export class LibroService {
 
       const newLibro: Libro = await qR.manager.save(Libro, libro)
 
-      return await this.getLibroCompletoByIdOrdFail({ id: newLibro.id_libro, qR })
+      const libroActualizado = await this.getLibroCompletoByIdOrdFail({ id: newLibro.id_libro, qR });
+
+      this.emitirSeguro({
+        mensaje: Mens.EDITAR,
+        entidad: Entidad.LIBRO,
+        dato: libroActualizado,
+      });
+
+      return libroActualizado;
 
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el dato ${dto.nombre || id} en el registro de libros`)
@@ -277,11 +334,17 @@ export class LibroService {
       [id, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, dto.nivel]
     );
 
-    return this.getLibroCompletoByIdOrdFail({ id, qR });
+    const libroActualizado = await this.getLibroCompletoByIdOrdFail({ id, qR });
+
+    await this.emitirLibroEditado(qR, id);
+
+    return libroActualizado;
   }
 
   async updateLibroExtra({ dto, qR, id, id_empresa, id_usuario }: EditarLibroExtraProp): Promise<LibroRetorno> {
     try {
+
+      const libroAntes = await this.getLibroCompletoByIdOrdFail({ id, qR });
 
       const [row]: LibroExtraProp[] = await qR.query(
         `select * from fc_procesar_actualizacion_libro_completo(
@@ -289,7 +352,16 @@ export class LibroService {
           `,
         [id, dto.autor, dto.edicion, dto.anio, dto.img, dto.descripcion]
       );
-      return this.getLibroCompletoByIdOrdFail({ id, qR })
+
+      const libroDespues = await this.getLibroCompletoByIdOrdFail({ id, qR });
+
+      // Si la funcion creo una peticion en lugar de actualizar el libro compartido,
+      // nada se emite a proposito: el libro no cambio.
+      if (this.cambioLibroCompleto(libroAntes, libroDespues)) {
+        await this.emitirLibroEditado(qR, id);
+      }
+
+      return libroDespues;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el libro ${id} en el registro de libros`)
     }
@@ -304,6 +376,7 @@ export class LibroService {
         [id, dto.nombre, dto.materia, dto.editorial, dto.nivel, dto.componentes]
       );
 
+      // Solo crea una solicitud: el libro no cambia, emitir confundiria a la interfaz.
       return row;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar editar el libro ${id} en el registro de libros`)
@@ -318,6 +391,13 @@ export class LibroService {
       libro.deleted = true;
       const newLibro = await qR.manager.save(Libro, libro);
       if (!newLibro) throw new NotFoundException(`No se pudo eliminar el libro id ${id}`);
+
+      this.emitirSeguro({
+        mensaje: Mens.ELIMINAR,
+        entidad: Entidad.LIBRO,
+        id,
+      });
+
       return true;
     } catch (er) {
       throw this.erroresService.handleExceptions(er, `Error al intentar eliminar el libro ${id}`)
