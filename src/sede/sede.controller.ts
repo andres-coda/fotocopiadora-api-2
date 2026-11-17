@@ -22,7 +22,6 @@ export class SedeController extends BaseController<typeof Entidad.SEDE, Sede, Dt
 
   @Get('todas')
   @HttpCode(200)
-  @UseGuards(AdminGuard)
   async findAllTodos(
     @Request() req: RequestWithUser,
   ): Promise<SedeRetorno[]> {
