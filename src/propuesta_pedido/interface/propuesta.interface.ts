@@ -16,7 +16,7 @@ export interface PropuestaVistaProp {
   deleted_propuesta:boolean;
   nombre:string;
   descripcion:string;
-  edicion:number;
+  edicion:string;
   autor:string;
   anio:string;
   img:string;

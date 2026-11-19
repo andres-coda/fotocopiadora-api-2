@@ -378,7 +378,7 @@ CREATE FUNCTION public.fc_aplicar_peticion(p_id_peticion uuid, p_estado integer,
 
                 when 'edicion' then
                     update libro_completo lc
-                       set edicion = case when v_texto is null then null else v_texto::integer end
+                       set edicion = v_texto
                      where lc.id = v_id_libro_completo;
 
                 when 'descripcion' then
@@ -602,7 +602,7 @@ CREATE TABLE public.libro_completo (
     anio character varying(4),
     autor character varying(50),
     img character varying(200),
-    edicion integer,
+    edicion character varying(10),
     descripcion character varying(250)
 );
 
@@ -1103,7 +1103,7 @@ $_$;
 -- Name: fc_busqueda_libro(text, integer, integer, boolean); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.fc_busqueda_libro(p_busqueda text, p_limite integer DEFAULT 50, p_offset integer DEFAULT 0, p_deleted boolean DEFAULT false) RETURNS TABLE(id uuid, nombre character varying, descripcion character varying, edicion integer, autor character varying, anio character varying, img character varying, nivel character varying, componentes text, cantidad_pg integer, cantidad_adhesivo integer, especificaciones_defecto jsonb, materia character varying, editorial character varying, pendiente integer, listo integer, retirado integer, cancelado integer, id_empresa uuid, id_materia uuid, detalle_impresion character varying, deleted boolean, stock integer, id_libro uuid, total bigint)
+CREATE FUNCTION public.fc_busqueda_libro(p_busqueda text, p_limite integer DEFAULT 50, p_offset integer DEFAULT 0, p_deleted boolean DEFAULT false) RETURNS TABLE(id uuid, nombre character varying, descripcion character varying, edicion character varying(10), autor character varying, anio character varying, img character varying, nivel character varying, componentes text, cantidad_pg integer, cantidad_adhesivo integer, especificaciones_defecto jsonb, materia character varying, editorial character varying, pendiente integer, listo integer, retirado integer, cancelado integer, id_empresa uuid, id_materia uuid, detalle_impresion character varying, deleted boolean, stock integer, id_libro uuid, total bigint)
     LANGUAGE plpgsql
     AS $_$
 BEGIN
@@ -1167,7 +1167,7 @@ $_$;
 -- Name: fc_busqueda_libro_completo(text, integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.fc_busqueda_libro_completo(p_busqueda text, p_limite integer DEFAULT 50, p_offset integer DEFAULT 0) RETURNS TABLE(id uuid, nombre character varying, descripcion character varying, edicion integer, autor character varying, anio character varying, img character varying, nivel character varying, componentes text, materia character varying, editorial character varying, id_libro_nombre uuid, id_materia uuid, total bigint)
+CREATE FUNCTION public.fc_busqueda_libro_completo(p_busqueda text, p_limite integer DEFAULT 50, p_offset integer DEFAULT 0) RETURNS TABLE(id uuid, nombre character varying, descripcion character varying, edicion character varying(10), autor character varying, anio character varying, img character varying, nivel character varying, componentes text, materia character varying, editorial character varying, id_libro_nombre uuid, id_materia uuid, total bigint)
     LANGUAGE plpgsql
     AS $_$
 BEGIN
@@ -1442,7 +1442,7 @@ $$;
 -- Name: fc_crear_libro(character varying, character varying, character varying, integer, integer, jsonb, uuid, character varying, character varying, character varying, character varying, integer, character varying, jsonb); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.fc_crear_libro(p_libro character varying, p_editorial character varying, p_materia character varying, p_pg integer, p_adhesivos integer, p_esp_defecto jsonb, p_id_libro_completo uuid, p_nivel character varying, p_anio character varying, p_autor character varying, p_img character varying, p_edicion integer, p_descripcion character varying, p_componentes jsonb) RETURNS public.vw_libro_busqueda
+CREATE FUNCTION public.fc_crear_libro(p_libro character varying, p_editorial character varying, p_materia character varying, p_pg integer, p_adhesivos integer, p_esp_defecto jsonb, p_id_libro_completo uuid, p_nivel character varying, p_anio character varying, p_autor character varying, p_img character varying, p_edicion character varying(10), p_descripcion character varying, p_componentes jsonb) RETURNS public.vw_libro_busqueda
     LANGUAGE plpgsql
     AS $$
 DECLARE
@@ -1956,7 +1956,7 @@ $$;
 -- Name: fc_obtener_or_crear_libro_completo(character varying, character varying, character varying, character varying, character varying, character varying, character varying, integer, character varying, jsonb); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.fc_obtener_or_crear_libro_completo(p_libro character varying, p_editorial character varying, p_materia character varying, p_nivel character varying, p_anio character varying, p_autor character varying, p_img character varying, p_edicion integer, p_descripcion character varying, p_componentes jsonb) RETURNS uuid
+CREATE FUNCTION public.fc_obtener_or_crear_libro_completo(p_libro character varying, p_editorial character varying, p_materia character varying, p_nivel character varying, p_anio character varying, p_autor character varying, p_img character varying, p_edicion character varying(10), p_descripcion character varying, p_componentes jsonb) RETURNS uuid
     LANGUAGE plpgsql
     AS $$
 DECLARE
@@ -2321,7 +2321,7 @@ end $$;
 -- Name: fc_procesar_actualizacion_libro_completo(uuid, character varying, integer, character varying, character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.fc_procesar_actualizacion_libro_completo(p_id_libro_completo uuid, p_autor character varying, p_edicion integer, p_anio character varying, p_img character varying, p_descripcion character varying) RETURNS boolean
+CREATE FUNCTION public.fc_procesar_actualizacion_libro_completo(p_id_libro_completo uuid, p_autor character varying, p_edicion character varying(10), p_anio character varying, p_img character varying, p_descripcion character varying) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 declare

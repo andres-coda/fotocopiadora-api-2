@@ -9,7 +9,7 @@ export interface LibroDefaultProp {
   nombre: typeof NAMES_LIBRO[keyof typeof NAMES_LIBRO];
   descripcion?: string;
   autor?: string;
-  edicion?: number;
+  edicion?: string;
   nivel?: string;
   editorial?: string;
   anio?: string;
@@ -37,7 +37,7 @@ export interface RetornoLibroNombreProp extends GetMateriaAdapter{
 
 export interface GetLibroMinimo extends RetornoLibroNombreProp, GetLibroResumen {
   descripcion?: string;
-  edicion?: number;
+  edicion?: string;
   anio?: string;
   nivel?: string;
   componentes?: string;
@@ -61,7 +61,7 @@ export interface RetornoVistaLibroCompletoProp {
   descripcion?: string;
   nivel?: string;
   anio?: string;
-  edicion?: number;
+  edicion?: string;
   componentes?: string;
   
   autor?:string;
@@ -72,4 +72,3 @@ export interface RetornoVistaLibroCompletoProp {
   id_libro_nombre:string;
   id_materia:string;
 }
-

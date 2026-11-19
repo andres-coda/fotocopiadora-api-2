@@ -13,7 +13,7 @@ export interface GetPedidoItemBusqueda{
   cantidad_adhesivos?: number;
   nombre: string;
   descripcion?: string;
-  edicion?: number;
+  edicion?: string;
   anio?: string;
   nivel?: string;
   componentes?: string;

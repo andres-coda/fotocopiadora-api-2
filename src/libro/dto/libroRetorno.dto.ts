@@ -29,7 +29,7 @@ export class DtoLibroNombreRespuesta extends DtoBaseRetorno{
 
 export class DtoLibroMinimoRespuesta extends DtoLibroNombreRespuesta {
   resumen?:ResumenLibro;
-  edicion?: number;
+  edicion?: string;
   anio?: string;
   componentes?: DtoComponenteRespuesta[];
   nivel?: string;
@@ -37,7 +37,7 @@ export class DtoLibroMinimoRespuesta extends DtoLibroNombreRespuesta {
 export class DtoLibroRespuesta extends DtoLibroEmpresaRespuesta {
   nombre!: string;
   editorial?: string;
-  edicion?: number;
+  edicion?: string;
   nivel?: string;
   anio?: string;
   autor?: string;

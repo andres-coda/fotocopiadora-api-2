@@ -1,7 +1,7 @@
 import { BaseDto } from "../../base/dto/baseDto";
 import { Especificaciones } from "../../pedido_item/interface/especificaciones.interface";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Matches } from "class-validator";
+import { IsArray, IsEnum, IsInt, IsOptional, IsString, Matches } from "class-validator";
 
 export class DtoLibroEditar extends BaseDto {
   @IsOptional()
@@ -13,9 +13,8 @@ export class DtoLibroEditar extends BaseDto {
   descripcion?: string;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber({}, { message: 'La edición debe ser un número' })
-  edicion?: number;
+  @IsString({ message: 'La edición debe ser un texto' })
+  edicion?: string;
 
   @IsOptional()
   @IsString({ message: 'El nivel debe ser un texto' })
@@ -74,9 +73,8 @@ export class DtoLibroExtraEditar extends BaseDto {
   autor?: string;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber({}, { message: 'La edición debe ser un número' })
-  edicion?: number;
+  @IsString({ message: 'La edición debe ser un texto' })
+  edicion?: string;
 
   @IsOptional()
   @IsString({ message: 'El año debe ser un texto' })

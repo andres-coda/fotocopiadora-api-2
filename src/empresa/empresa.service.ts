@@ -17,6 +17,7 @@ import { ConfiguracionEmpresaMia } from './retorno/empresaMia.retorno';
 import { ConfiguracionRetorno } from '@src/configuracion/retorno/configuracion.retorno';
 import { toRespuestaEmpresa } from './util/toRespuestaEmpresa';
 import { EmpresaByLibroRetornoProps } from './dto/empresa.interface';
+import { insertarLibroLocalDefault } from '@src/dataBase/seed.libros';
 
 @Injectable()
 export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa, DtoEmpresaCrear, DtoEmpresaEditar> {
@@ -74,12 +75,13 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
         FROM empresa e
         JOIN libro_empresa le ON le.id_empresa = e.id
         WHERE le.id_libro = $1
+        ORDER BY nombre, id
         LIMIT $2 OFFSET $3`,
         [id, limite, offset],
       );
 
       return {
-        total: rows[0].total || 0,
+        total: rows[0]?.total ?? 0,
         datos: rows.map((r) => this.remplaceToReturn(r)).filter(r => r != undefined),
       }
     } catch (er) {
@@ -134,6 +136,18 @@ export class EmpresaService extends BaseService<typeof Entidad.EMPRESA, Empresa,
       const newElemento: Empresa = await this.createDato({ dto, qR, entidad });
 
       const precios = await this.precioService.CreatePrecioDefault(PRECIO_DEFAULT, qR, newElemento.id);
+
+      // El catalogo local de libros solo se siembra para la PRIMERA empresa: es
+      // el catalogo de la fotocopiadora que ya venia usando la app. Si cada
+      // empresa nueva arrancara con 39 libros cargados, el alta terminaria
+      // cargando datos de otra empresa y despues hay que borrarlos a mano.
+      const [{ total }] = await qR.manager.query<{ total: number }[]>(
+        'select count(*)::int as total from empresa',
+      );
+
+      if (total === 1) {
+        await insertarLibroLocalDefault(qR, newElemento.id);
+      }
 
       // Crear el primer usuario admin de la empresa en la misma transaccion.
       // La contrasena se hashea en Postgres (pgcrypto), igual que en UserService.

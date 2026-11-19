@@ -59,7 +59,7 @@ interface LibroXitemRetornoProp {
   cantidad_adhesivos?: number;
   nombre: string;
   descripcion?: string;
-  edicion?: number;
+  edicion?: string;
   anio?: string;
   nivel?: string;
   componentes?: string;
@@ -125,7 +125,7 @@ export class ItemRetorno extends BaseRetorno {
       });
     } else {
       libro.armarLibroBasicoRetorno({
-        componentes, edicion:edicion ? edicion.toString(): '', anio, nivel, descripcion
+        componentes, edicion: edicion ?? '', anio, nivel, descripcion
       })
     }
     libro.agregarMateriaLibroRetorno({ id: id_materia, nombre: materia });

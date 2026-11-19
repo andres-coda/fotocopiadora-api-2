@@ -19,7 +19,7 @@ interface LibroBasicoProp {
 }
 
 interface LibroMinimoSinMateriaRetornoProp extends Pick<ResumenRetornoProp, 'pendiente' | 'listo' | 'retirado' | 'cancelado' | 'stock'> {
-  edicion?: number;
+  edicion?: string;
   anio?: string;
   componentes?: ComponenteRetornoProp[];
   nivel?: string;
@@ -47,7 +47,7 @@ interface AgregarAutorImgProp extends Pick<LibroSimpleRetornoProp, 'autor' | 'im
 export interface LibroVistaPropuestaRetornoProp {
   id_materia: string;
   descripcion: string;
-  edicion?: number;
+  edicion?: string;
   autor: string;
   anio?: string;
   img: string;
@@ -67,7 +67,7 @@ export class LibroRetorno extends BaseRetorno {
   materia?: MateriaRetorno;
 
   resumen?: ResumenRetornoProp;
-  edicion?: number;
+  edicion?: string;
   anio?: string;
   componentes!: ComponenteRetornoProp[];
   nivel?: string;
@@ -127,7 +127,7 @@ export class LibroRetorno extends BaseRetorno {
   public armarLibroBasicoRetorno({
     componentes, edicion, anio, nivel, descripcion
   }:LibroBasicoProp) {
-    this.edicion = Number(edicion) ?? undefined;
+    this.edicion = edicion;
     this.anio = anio;
     this.nivel = nivel;
     this.componentes_texto = componentes;

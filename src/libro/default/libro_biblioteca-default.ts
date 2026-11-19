@@ -10,7 +10,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -24,7 +24,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -38,7 +38,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -52,7 +52,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -66,7 +66,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -80,7 +80,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -94,7 +94,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -108,7 +108,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -122,7 +122,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -136,7 +136,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -150,7 +150,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -164,7 +164,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -178,7 +178,7 @@ export const LIBRO_LEARN: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2019',
@@ -196,7 +196,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -210,7 +210,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -224,7 +224,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 2,
+    edicion: '2',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -238,7 +238,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -252,7 +252,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -266,7 +266,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -280,7 +280,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -294,7 +294,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -308,7 +308,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -322,7 +322,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -336,7 +336,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -350,7 +350,7 @@ export const LIBRO_LEARN_NOW: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.LEARN_NOW,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2025',
@@ -367,7 +367,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: 'starter',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -381,7 +381,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: 'starter',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -395,7 +395,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -409,7 +409,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -423,7 +423,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -437,7 +437,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -451,7 +451,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -465,7 +465,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -479,7 +479,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -493,7 +493,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -507,7 +507,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -521,7 +521,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -535,7 +535,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -549,7 +549,7 @@ export const LIBRO_BRIGHT: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHT,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2018',
@@ -566,7 +566,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: 'starter',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -580,7 +580,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: 'starter',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -594,7 +594,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -608,7 +608,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '1',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -622,7 +622,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -636,7 +636,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '2',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -650,7 +650,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -664,7 +664,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '3',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -678,7 +678,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -692,7 +692,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '4',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -706,7 +706,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -720,7 +720,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '5',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -734,7 +734,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',
@@ -748,7 +748,7 @@ export const LIBRO_BRIGHTER: LibroDefaultProp[] = [
   {
     nombre: NAMES_LIBRO.BRIGHTER,
     descripcion: 'Libro de ingles',
-    edicion: 1,
+    edicion: '1',
     nivel: '6',
     editorial: NAMES_EDITORIAL.OXFORD,
     anio: '2024',

@@ -20,7 +20,7 @@ export const mockDtoCrearLibro:DtoLibroCrear = {
   nombre: 'Test Libro',
   editorial: 'Test Editorial',
   cantidadPg: 100,
-  edicion: 1,
+  edicion: '1',
   nivel: 'Elementary',
   anio: '2024',
   adhesivos:2,

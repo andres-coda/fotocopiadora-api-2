@@ -8,6 +8,7 @@ import { LibroRetorno } from './retorno/libro.retorno';
 import { SuperAdminGuard } from '@src/auth/guard/superAdmin.guard';
 import { DtoLibroExtraEditar, DtoLibroPrincipalEditar } from './dto/libroEditar.dto';
 import { parsearPaginado } from '@src/utils/paginado';
+import { Role } from '@src/auth/rol/rol.enum';
 
 @Controller('libro')
 @UseGuards(UsuarioGuard)
@@ -86,6 +87,81 @@ export class LibroController {
       qR: req.queryRunner
     });
     return libro;
+  }
+
+  @Get()
+  @HttpCode(200)
+  async getLibrosBusquedaSuper(
+    @Request() req: RequestWithUser,
+    @Query('q') busqueda: string,
+    @Query('limite') limiteQuery: string | undefined,
+    @Query('pagina') paginaQuery: string | undefined,
+  ): Promise<RetornoGenericoControllerGet<LibroRetorno>> {
+    const { pagina, limite, offset } = parsearPaginado(paginaQuery, limiteQuery);
+    if (req.user.role === Role.SuperAdmin && busqueda) {
+      const retorno = await this.libroService.buscarLibroCompletoSuper({
+        limite,
+        offset,
+        qR: req.queryRunner,
+        busqueda
+      });
+
+      return {
+        total: retorno.total,
+        limite,
+        pagina,
+        datos: retorno.datos,
+        query: busqueda ?? '',
+      }
+    }
+
+    if(req.user.role === Role.SuperAdmin) {
+      const retorno = await this.libroService.getLibroEmpresaSupre({
+        limite,
+        offset,
+        qR: req.queryRunner
+      });
+  
+      return {
+        total: retorno.total,
+        limite,
+        pagina,
+        datos: retorno.datos,
+        query: busqueda ?? '',
+      }
+    }
+
+    if (busqueda) {
+      const retorno = await this.libroService.buscarLibro({
+        limite,
+        offset,
+        qR: req.queryRunner,
+        busqueda
+      });
+
+      return {
+        total: retorno.total,
+        limite,
+        pagina,
+        datos: retorno.datos,
+        query: busqueda ?? '',
+      }
+    }
+
+    const retorno = await this.libroService.getLibroEmpresa({
+      limite,
+      offset,
+      qR: req.queryRunner
+    });
+
+    return {
+      total: retorno.total,
+      limite,
+      pagina,
+      datos: retorno.datos,
+      query: busqueda ?? '',
+    }
+
   }
 
   @Get()

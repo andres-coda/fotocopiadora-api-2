@@ -42,7 +42,7 @@ export const toRespuestaLibro = (dato?: RetornoVistaLibroProp): LibroRetorno | u
 export const toRespuestaLibroCompleto = (dato?: RetornoVistaLibroCompletoProp): LibroRetorno | undefined => {
   if(!dato) return undefined;
   const libro = new LibroRetorno({...dato});
-  libro.armarLibroBasicoRetorno({...dato, edicion: dato.edicion?.toString()?? ''});
+  libro.armarLibroBasicoRetorno({...dato, edicion: dato.edicion ?? ''});
   libro.agregarMateriaLibroRetorno({nombre:dato.materia, id:dato.id_materia});
   libro.agregarAutorImg({...dato});
   return libro;

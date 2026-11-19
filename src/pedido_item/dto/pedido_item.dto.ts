@@ -169,7 +169,7 @@ export class DtoPedidoItemRespuesta {
     nombre: string;
     descripcion?: string;
     editorial?: string;
-    edicion?: number;
+    edicion?: string;
     nivel?: string;
     cantidadPg: number;
     anio?: string;

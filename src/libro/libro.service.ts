@@ -42,7 +42,7 @@ interface EditarLibroExtraProp extends UpdateGenericoProp<DtoLibroExtraEditar> {
 
 interface LibroExtraProp {
   autor?: string;
-  edicion?: number;
+  edicion?: string;
   anio?: string;
   img?: string;
   descripcion?: string;
@@ -112,7 +112,7 @@ export class LibroService {
   async buscarLibroNombre({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
     try {
       const rows = await qR.query(
-        "SELECT *, count(*) over() AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%' LIMIT $2 OFFSET $3",
+        "SELECT *, count(*) over() AS total FROM vw_libro_nombre WHERE nombre ILIKE '%' || $1 || '%' ORDER BY nombre LIMIT $2 OFFSET $3",
         [busqueda, limite, offset]
       )
 
@@ -176,6 +176,21 @@ export class LibroService {
       }
     } catch (er) {
       this.erroresService.handleExceptions(er, `Error al intentar la busqueda de libros con id ${id}`);
+    }
+  }
+
+  async buscarLibroCompletoSuper({ busqueda, limite = 20, offset = 0, qR }: BusquedaGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
+    try {
+      const rows = await qR.query(
+        `SELECT * FROM fc_busqueda_libro_completo($1, $2, $3)`,
+        [busqueda, limite, offset]
+      );
+      return {
+        total: Number(rows[0]?.total ?? 0),
+        datos: rows.map((r: RetornoVistaLibroCompletoProp) => toRespuestaLibroCompleto(r))
+      }
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar la busqueda de ${busqueda}`);
     }
   }
 
@@ -267,12 +282,35 @@ export class LibroService {
     }
   }
 
+  async getLibroEmpresaSupre({ qR, limite, offset }: GetGenericoProp): Promise<RetornoGenericoServiceGet<LibroRetorno>> {
+    try {
+      const [totalR] = await qR.query(
+        'SELECT COUNT(*) as total FROM vw_libro_completo'
+      );
+
+      const rows = await qR.query(
+        'SELECT * FROM vw_libro_completo ORDER BY nombre ASC, nivel, componentes, id ASC LIMIT $1 OFFSET $2',
+        [Number(limite), Number(offset)]
+      );
+
+      return {
+        total: totalR.total,
+        datos: rows.map((r: RetornoVistaLibroProp) => toRespuestaLibro(r))
+      }
+
+    } catch (er) {
+      this.erroresService.handleExceptions(er, `Error al intentar leer la pagina de libros ${offset}`);
+    }
+  }
+
   async createLibroCompleto({ dto, qR }: CreateGenericoProp<DtoLibroCrear>): Promise<LibroRetorno> {
     try {
 
+      // El alta sin edicion escrita guarda '1': la edicion vacia solo tiene
+      // sentido en el formulario, no como texto suelto en el catalogo.
       const [rows]: RetornoVistaLibroProp[] = await qR.query(
         'SELECT * FROM fc_crear_libro($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
-        [dto.nombre, dto.editorial, dto.materia, dto.cantidadPg, dto.adhesivos ?? 0, JSON.stringify(dto.especificacionesDefecto ?? []), dto.id_libro_completo ?? null, dto.nivel, dto.anio, dto.autor, dto.img, dto.edicion, dto.descripcion, JSON.stringify(dto.componentes ?? [])]
+        [dto.nombre, dto.editorial, dto.materia, dto.cantidadPg, dto.adhesivos ?? 0, JSON.stringify(dto.especificacionesDefecto ?? []), dto.id_libro_completo ?? null, dto.nivel, dto.anio, dto.autor, dto.img, dto.edicion ?? '1', dto.descripcion, JSON.stringify(dto.componentes ?? [])]
       )
 
       const libro: LibroRetorno | undefined = toRespuestaLibro(rows);

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { QueryRunner } from 'typeorm';
 import { CATEGORIAS_PRECIO_DEFAULT_LISTA } from '@src/precio/default/precio.default';
 import { buildDataSource, readDatabase } from './schema.bootstrap';
+import { insertarLibrosDefault } from './seed.libros';
 import {
   COMPONENTES_DEFAULT,
   EDITORIALES_DEFAULT,
@@ -389,6 +390,10 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
         );
         const categorias = await asegurarCategoriasBloqueadas(runner);
 
+        // Catalogo de libros. Solo entra si `libro` y `libro_completo` estan
+        // vacias: en una base con datos propios no se agrega nada.
+        const libros = await insertarLibrosDefault(runner);
+
         await runner.query('COMMIT');
 
         const insertados =
@@ -397,14 +402,24 @@ export async function ensureDatabaseSeed(config: ConfigService): Promise<void> {
           materias +
           editoriales +
           especificaciones +
-          categorias;
+          categorias +
+          libros.libros +
+          libros.completos;
+
+        if (libros.libros === 0 && libros.completos === 0) {
+          logger.log(
+            'Libros: la base ya tenia libros y libros completos, no se carga ' +
+              'el catalogo por defecto.',
+          );
+        }
 
         if (insertados > 0) {
           logger.log(
             `Datos iniciales en "${database}": ${niveles} niveles, ` +
               `${componentes} componentes, ${materias} materias, ` +
               `${editoriales} editoriales, ${especificaciones} especificaciones, ` +
-              `${categorias} categorias bloqueadas.`,
+              `${categorias} categorias bloqueadas, ${libros.libros} libros, ` +
+              `${libros.completos} libros completos.`,
           );
         } else {
           logger.log('Datos iniciales ya presentes: no se inserta nada.');
