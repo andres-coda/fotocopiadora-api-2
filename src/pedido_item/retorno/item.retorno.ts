@@ -118,7 +118,7 @@ export class ItemRetorno extends BaseRetorno {
     materia, editorial, pendiente, listo, retirado, cancelado, id_materia
   }: LibroXitemRetornoProp) {
     const libro = new LibroRetorno({ id: id_libro, nombre, editorial });
-    if (pendiente && listo && retirado && cancelado) {
+    if (pendiente != null && listo != null && retirado != null && cancelado != null) {
       libro.armarLibroCompletoRetorno({
         cantidad_pg, cantidad_adhesivo: cantidad_adhesivos, edicion, anio, componentes_texto: componentes ?? '',
         nivel, pendiente, listo, retirado, cancelado, detalle_impresion: descripcion

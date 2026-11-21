@@ -28,7 +28,9 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
  *   Se reescribe a `CREATE SCHEMA IF NOT EXISTS public;` al cargarlo, en vez de
  *   editar la copia, para que el archivo siga siendo comparable con el original.
  */
-
+const error_claves = (dato?: string): string => {
+  return `No se puede acceder a la base de datos, faltan las claves de segurodad ${dato && `de ${dato}`}`
+};
 const APP_ROLE = 'app_role';
 const SENTINEL_TABLE = 'public.usuario';
 const MIN_SERVER_VERSION = 170000; // PostgreSQL 17
@@ -59,16 +61,23 @@ function readSsl(config: ConfigService): PostgresConnectionOptions['ssl'] {
 
 /** Exportada para que `seed.ts` apunte exactamente a la misma base. */
 export function readDatabase(config: ConfigService): string {
-  return config.get<string>('DB_NAME') || 'fotocopiadora';
+  const nombre = config.get<string>('DB_NAME');
+  if (!nombre) throw new Error(error_claves('nombre'));
+
+  return nombre;
 }
 
 /** Credenciales privilegiadas: solo se usan para crear rol y esquema. */
 function bootstrapCredentials(config: ConfigService) {
+  const user_name = config.get<string>('DB_BOOTSTRAP_USERNAME');
+  if (!user_name) throw new Error(error_claves('nombre de usuario'));
+  const pas_bos = config.get<string>('DB_BOOTSTRAP_PASSWORD');
+  const pas_db = config.get<string>('DB_PASSWORD');
   return {
-    username: config.get<string>('DB_BOOTSTRAP_USERNAME') || 'postgres',
+    username: user_name,
     password:
-      config.get<string>('DB_BOOTSTRAP_PASSWORD') ??
-      config.get<string>('DB_PASSWORD') ??
+      pas_bos ??
+      pas_db ??
       '',
   };
 }
@@ -83,9 +92,12 @@ export function buildDataSource(
 ): DataSource {
   const { username, password } = bootstrapCredentials(config);
 
+  const host = config.get<string>('DB_HOST');
+  if(!host) throw new Error(error_claves('host'));
+
   return new DataSource({
     type: 'postgres',
-    host: config.get<string>('DB_HOST') || 'localhost',
+    host: host,
     port: readNumber(config, 'DB_PORT', 5432),
     username,
     password,
@@ -163,7 +175,7 @@ async function ensureDatabaseExists(
       } catch (error) {
         throw new Error(
           `No pude crear la base "${database}". El rol de bootstrap necesita CREATEDB. ` +
-            `Detalle: ${(error as Error).message}`,
+          `Detalle: ${(error as Error).message}`,
         );
       }
     }
@@ -202,7 +214,7 @@ async function ensureAppRole(
   } catch (error) {
     throw new Error(
       `No pude crear el rol "${APP_ROLE}". El rol de bootstrap necesita CREATEROLE. ` +
-        `Detalle: ${(error as Error).message}`,
+      `Detalle: ${(error as Error).message}`,
     );
   }
 }
@@ -214,7 +226,11 @@ async function ensureAppRole(
 export async function ensureDatabaseSchema(
   config: ConfigService,
 ): Promise<void> {
-  const logger = new Logger(LOGGER_CONTEXT);
+  const log_con = config.get<string>('LOGGER_CONTEXT');
+  if (!log_con) throw new Error(
+    `No se puede acceder a la base de datos, faltan las claves de segurodad`,
+  );
+  const logger = new Logger(log_con);
   const database = readDatabase(config);
   const { username } = bootstrapCredentials(config);
   const host = config.get<string>('DB_HOST') || 'localhost';
@@ -239,7 +255,7 @@ export async function ensureDatabaseSchema(
     if (version[0].v < MIN_SERVER_VERSION) {
       throw new Error(
         `Se requiere PostgreSQL 17 o superior (servidor actual: ${version[0].v}). ` +
-          'El esquema usa objetos que no existen en versiones anteriores.',
+        'El esquema usa objetos que no existen en versiones anteriores.',
       );
     }
 
@@ -260,8 +276,8 @@ export async function ensureDatabaseSchema(
     if (tableCount > 0) {
       throw new Error(
         `La base "${database}" tiene ${tableCount} tablas en public pero falta ${SENTINEL_TABLE}. ` +
-          'El esquema esta a medio crear: revisalo a mano antes de volver a arrancar. ' +
-          'Aplicar el dump encima dejaria un estado inconsistente.',
+        'El esquema esta a medio crear: revisalo a mano antes de volver a arrancar. ' +
+        'Aplicar el dump encima dejaria un estado inconsistente.',
       );
     }
 
